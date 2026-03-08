@@ -15,8 +15,8 @@
             android:id="@+id/action_FirstFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
         <action
-            android:id="@+id/action_FirstFragment_to_CreateEventFragment"
-            app:destination="@id/CreateEventFragment" />
+            android:id="@+id/action_FirstFragment_to_MyEventsFragment"
+            app:destination="@id/MyEventsFragment" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -35,7 +35,17 @@
         tools:layout="@layout/fragment_create_event">
 
         <action
-            android:id="@+id/action_CreateEventFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_CreateEventFragment_to_MyEventsFragment"
+            app:destination="@id/MyEventsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/MyEventsFragment"
+        android:name="com.example.codebase.MyEventsFragment"
+        android:label="Create Event"
+        tools:layout="@layout/fragment_my_events">
+
+        <action
+            android:id="@+id/action_MyEventsFragment_to_CreateEventFragment"
+            app:destination="@id/CreateEventFragment" />
     </fragment>
 </navigation>

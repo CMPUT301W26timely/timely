@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,6 +20,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
+import java.io.InputStream;
 
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
@@ -40,40 +43,47 @@ public class CreateEventFragment extends Fragment {
         binding.buttonPublishEvent.setOnClickListener(v -> saveEvent());
         binding.buttonCancel.setOnClickListener(v ->
                 NavHostFragment.findNavController(CreateEventFragment.this)
-                        .navigate(R.id.action_CreateEventFragment_to_FirstFragment)
+                        .navigate(R.id.action_CreateEventFragment_to_MyEventsFragment)
         );
 
         return binding.getRoot();
     }
 
     private void saveEvent() {
-        if (selectedImageUri == null) return;
+        if (selectedImageUri == null) {
+            Log.d("Firestore", "No image selected");
+            return;
+        }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference eventsRef = db.collection("events");
-        StorageReference storageRef = FirebaseStorage.getInstance()
-                .getReference("event_posters");
 
-        String eventId = eventsRef.document().getId();
-        StorageReference posterRef = storageRef.child(eventId + "/poster.jpg");
+        try {
+            // Convert image to Base64 string
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(selectedImageUri);
+            byte[] bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            inputStream.close();
+            String base64Image = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
 
-        posterRef.putFile(selectedImageUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) throw task.getException();
-                    return posterRef.getDownloadUrl();
-                })
-                .addOnSuccessListener(downloadUri -> {
-                    Event event = new Event();
-                    event.setTitle("My Event"); // replace with your actual form fields
+            String eventId = eventsRef.document().getId();
 
-                    EventPoster poster = new EventPoster(downloadUri.toString(), null);
-                    event.setPoster(poster);
+            Event event = new Event();
+            event.setTitle("My Event");
 
-                    DocumentReference docRef = eventsRef.document(eventId);
-                    docRef.set(event);
-                });
+            EventPoster poster = new EventPoster(base64Image);
+            event.setPoster(poster);
 
-        NavHostFragment.findNavController(CreateEventFragment.this)
-                .navigate(R.id.action_CreateEventFragment_to_FirstFragment);
+            eventsRef.document(eventId).set(event)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("Firestore", "Event saved! ID: " + eventId);
+                        NavHostFragment.findNavController(CreateEventFragment.this)
+                                .navigate(R.id.action_CreateEventFragment_to_MyEventsFragment);
+                    })
+                    .addOnFailureListener(e -> Log.e("Firestore", "Failed to save event: " + e.getMessage()));
+
+        } catch (Exception e) {
+            Log.e("Firestore", "Failed to read image: " + e.getMessage());
+        }
     }
 }

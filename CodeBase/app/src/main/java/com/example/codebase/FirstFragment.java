@@ -34,9 +34,9 @@ public class FirstFragment extends Fragment {
                         .navigate(R.id.action_FirstFragment_to_SecondFragment)
         );
 
-        binding.viewCreateEventButton.setOnClickListener(v ->
+        binding.buttonSeeMyEvents.setOnClickListener(v ->
                 NavHostFragment.findNavController(FirstFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_CreateEventFragment)
+                        .navigate(R.id.action_FirstFragment_to_MyEventsFragment)
         );
     }
 
