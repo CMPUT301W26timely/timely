@@ -1,5 +1,6 @@
 package com.example.codebase;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -14,6 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.codebase.databinding.ActivityMainBinding;
+import android.content.Intent;  // new import
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +29,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         UserRepository.syncRole(this);
+        // ── Route to Organizer screen if role is Organizer ────────────────────
+        String role = WelcomeActivity.getSessionRole(this);
+        if (role.equals(WelcomeActivity.ROLE_ORGANIZER)) {
+            startActivity(new Intent(this, OrganizerActivity.class));
+            finish();
+            return;
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
