@@ -12,16 +12,38 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeBase">
+
+        <!-- SplashActivity — REMOVED launcher intent filter -->
         <activity
-            android:name=".FinalEntrantListActivity"
+            android:name=".SplashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <!-- RoleCheckActivity — ONLY launcher -->
+        <activity
+            android:name=".RoleCheckActivity"
             android:exported="true"
-            android:theme="@style/Theme.CodeBase">
+            android:theme="@style/Theme.CodeBase.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".WelcomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <!-- NEW -->
+        <activity android:name=".OrganizerActivity" android:exported="false" />
+        <activity android:name=".EventDetailActivity" android:exported="false" />
+
     </application>
 
 </manifest>

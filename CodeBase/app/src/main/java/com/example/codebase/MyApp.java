@@ -15,5 +15,6 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         // Warm up the database singleton
+        AppDatabase.getInstance();
     }
 }
