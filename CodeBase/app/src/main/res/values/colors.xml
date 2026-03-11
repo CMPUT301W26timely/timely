@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <!-- Airy Minimal Theme Colors -->
+    <color name="background">#ffffff</color>
+    <color name="pageBg">#f0ede8</color>
+    <color name="surface">#ffffff</color>
+    <color name="inputBg">#f7f7f7</color>
+    <color name="accentTint">#f4f8f4</color>
+    <color name="primaryAccent">#4a7a4a</color>
+    <color name="primaryMid">#6a9e6a</color>
+    <color name="textPrimary">#111111</color>
+    <color name="textSecondary">#555555</color>
+    <color name="textMuted">#aaaaaa</color>
+    <color name="textDisabled">#cccccc</color>
+    <color name="border">#efefef</color>
+    <color name="accentBorderLight">#e2ece2</color>
+    <color name="accentBorderMid">#dceadc</color>
+
+    <!-- Standard Colors -->
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 </resources>

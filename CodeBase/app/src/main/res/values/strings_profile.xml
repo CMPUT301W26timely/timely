@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">Profile</string>
+    <string name="switch_to_admin">Switch to Admin</string>
+    <string name="switch_to_user">Switch to User</string>
+    <string name="user_role_label">Current Role: %s</string>
+    <string name="device_id_label">Device ID: %s</string>
+    <string name="device_id_masked">Device ID: ••••••••</string>
+</resources>
