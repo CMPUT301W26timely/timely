@@ -8,25 +8,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * OrganizerEventAdapter — RecyclerView adapter for My Events screen.
- *
- * Status badge is calculated in real time from Firestore date fields and arrays.
- * Status field in Firestore is NOT used for display.
- *
- * Status logic:
- *   today <= registrationDeadline                              → Registration Open
- *   today > registrationDeadline && today <= drawDate
- *       && selectedEntrants empty                              → Lottery Pending
- *   today > drawDate && today < startDate
- *       && selectedEntrants not empty                          → Lottery Closed
- *   today >= startDate && today <= endDate
- *       && enrolledEntrants not empty                          → Scheduled
- *   today > endDate                                            → Event Ended
- *   any date null or unexpected state                          → Draft
  */
 public class OrganizerEventAdapter extends
         RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
@@ -61,53 +49,22 @@ public class OrganizerEventAdapter extends
     @Override
     public int getItemCount() { return events.size(); }
 
-    // ─── Status Calculation ───────────────────────────────────────────────────
-
     private static String calculateStatus(OrganizerActivity.OrganizerEvent event) {
-        // If any date is null → Draft (event not fully set up)
         if (event.registrationDeadline == null || event.drawDate == null
                 || event.startDate == null || event.endDate == null) {
-            return "Draft";
+            return "DRAFT";
         }
 
-        Date today             = new Date();
+        Date today = new Date();
         List<?> selectedEntrants = event.selectedEntrants;
-        List<?> enrolledEntrants = event.enrolledEntrants;
+        boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
 
-        boolean selectedEmpty  = selectedEntrants == null || selectedEntrants.isEmpty();
-        boolean enrolledEmpty  = enrolledEntrants == null || enrolledEntrants.isEmpty();
-
-        if (!today.after(event.registrationDeadline)) {
-            // today <= registrationDeadline
-            return "Registration Open";
-
-        } else if (today.after(event.registrationDeadline)
-                && !today.after(event.drawDate)
-                && selectedEmpty) {
-            // today > registrationDeadline AND today <= drawDate AND no winners yet
-            return "Lottery Pending";
-
-        } else if (today.after(event.drawDate)
-                && today.before(event.startDate)
-                && !selectedEmpty) {
-            // today > drawDate AND today < startDate AND winners selected
-            return "Lottery Closed & Event Scheduled";
-
-        } else if (!today.before(event.startDate)
-                && !today.after(event.endDate)
-                && !enrolledEmpty) {
-            // today >= startDate AND today <= endDate AND people enrolled
-            return "In Progress";
-
-        } else if (today.after(event.endDate)) {
-            return "Event Ended";
-
-        } else {
-            return "Draft";
-        }
+        if (!today.after(event.registrationDeadline)) return "OPEN";
+        if (today.after(event.registrationDeadline) && !today.after(event.drawDate) && selectedEmpty) return "PENDING";
+        if (today.after(event.drawDate) && today.before(event.startDate)) return "CLOSED";
+        if (!today.before(event.startDate) && !today.after(event.endDate)) return "ACTIVE";
+        return "ENDED";
     }
-
-    // ─── ViewHolder ───────────────────────────────────────────────────────────
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
 
@@ -115,56 +72,43 @@ public class OrganizerEventAdapter extends
         private final TextView tvDate;
         private final TextView tvStatus;
         private final TextView tvWaiting;
-        private final TextView tvSelected;
+        private final TextView tvMonth;
+        private final TextView tvDay;
 
         EventViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle    = itemView.findViewById(R.id.tvEventItemTitle);
-            tvDate     = itemView.findViewById(R.id.tvEventItemDate);
-            tvStatus   = itemView.findViewById(R.id.tvEventStatus);
-            tvWaiting  = itemView.findViewById(R.id.tvWaitingCount);
-            tvSelected = itemView.findViewById(R.id.tvSelectedCount);
+            tvTitle   = itemView.findViewById(R.id.tvEventItemTitle);
+            tvDate    = itemView.findViewById(R.id.tvEventItemDate);
+            tvStatus  = itemView.findViewById(R.id.tvEventStatus);
+            tvWaiting = itemView.findViewById(R.id.tvWaitingCount);
+            tvMonth   = itemView.findViewById(R.id.tvMonth);
+            tvDay     = itemView.findViewById(R.id.tvDay);
         }
 
         void bind(OrganizerActivity.OrganizerEvent event, OnEventClickListener listener) {
             tvTitle.setText(event.title);
-            tvDate.setText(event.displayDate);
+            tvDate.setText("St. Albert Public Library"); // Placeholder as per design
 
-            tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.waitingCount));
-            tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.selectedCount));
-            tvSelected.setVisibility(View.VISIBLE);
+            if (event.startDate != null) {
+                tvMonth.setText(new SimpleDateFormat("MMM", Locale.getDefault()).format(event.startDate).toUpperCase());
+                tvDay.setText(new SimpleDateFormat("dd", Locale.getDefault()).format(event.startDate));
+            } else {
+                tvMonth.setText("TBD");
+                tvDay.setText("--");
+            }
 
-            // ── Calculate and apply status badge ──────────────────────────────
+            tvWaiting.setText(event.waitingCount + " entries");
+
             String status = calculateStatus(event);
             tvStatus.setText(status);
 
-            switch (status) {
-                case "Registration Open":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_open);
-                    tvStatus.setTextColor(0xFF1DB954);
-                    break;
-                case "Lottery Pending":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_draft);
-                    tvStatus.setTextColor(0xFFFFD700);
-                    break;
-                case "Lottery Closed & Event Scheduled":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_closed);
-                    tvStatus.setTextColor(0xFFFF8C00);
-                    break;
-                case "In Progress":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_open);
-                    tvStatus.setTextColor(0xFF1DB954);
-                    break;
-                case "Event Ended":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_closed);
-                    tvStatus.setTextColor(0xFFAAAAAA);
-                    break;
-                default: // Draft
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_draft);
-                    tvStatus.setTextColor(0xFF8899AA);
-                    break;
+            // Minimal styling for status
+            if (status.equals("OPEN") || status.equals("ACTIVE")) {
+                tvStatus.setBackgroundResource(R.drawable.bg_status_badge_open);
+                tvStatus.setTextColor(itemView.getContext().getColor(R.color.primaryAccent));
+            } else {
+                tvStatus.setBackgroundResource(R.drawable.bg_status_badge_closed);
+                tvStatus.setTextColor(itemView.getContext().getColor(R.color.textSecondary));
             }
 
             itemView.setOnClickListener(v -> listener.onEventClick(event));

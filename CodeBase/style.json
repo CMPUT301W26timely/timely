@@ -1,0 +1,165 @@
+{
+  "style": "Airy Minimal",
+  "tagline": "Quiet confidence. Space to breathe. Typography carries the hierarchy.",
+
+  "colors": {
+    "background": "#ffffff",
+    "pageBg": "#f0ede8",
+    "surface": "#ffffff",
+    "inputBg": "#f7f7f7",
+    "accentTint": "#f4f8f4",
+    "primaryAccent": "#4a7a4a",
+    "primaryMid": "#6a9e6a",
+    "textPrimary": "#111111",
+    "textSecondary": "#555555",
+    "textMuted": "#aaaaaa",
+    "textDisabled": "#cccccc",
+    "border": "#efefef",
+    "accentBorderLight": "#e2ece2",
+    "accentBorderMid": "#dceadc",
+    "notes": "Never use pure black or cold grays. All neutrals should feel slightly warm."
+  },
+
+  "typography": {
+    "fonts": {
+      "display": { "family": "Playfair Display", "weights": [600, 700], "notes": "Italic variant for brand names" },
+      "body": { "family": "Jost", "weights": [300, 400, 500, 600], "notes": "Clean geometric sans for all UI copy" }
+    },
+    "scale": {
+      "9px": "Status bar, version text",
+      "10px": "Card metadata, sublabels",
+      "12px": "Body copy, eyebrow labels",
+      "13px": "Card titles, list item names",
+      "14px": "Section headers",
+      "20px": "Page subheadings",
+      "34px": "Hero brand name / display"
+    },
+    "eyebrowLabel": {
+      "font": "Jost",
+      "weight": 500,
+      "fontSize": "9px",
+      "letterSpacing": "0.18em",
+      "textTransform": "uppercase",
+      "color": "#bbbbbb"
+    },
+    "headingLetterSpacing": "-0.02em"
+  },
+
+  "layout": {
+    "screenPaddingHorizontal": "22–28px",
+    "sectionGap": "28–44px",
+    "cardGap": "10px",
+    "borderRadius": {
+      "listCard": "14px",
+      "featureCard": "18–20px",
+      "logoMark": "20px",
+      "iconContainer": "12px",
+      "button": "100px",
+      "input": "14px",
+      "pill": "100px"
+    },
+    "iconContainerSize": "40x40px",
+    "dividers": "1px solid #f0f0f0 — horizontal only"
+  },
+
+  "shadows": {
+    "card": "0 2px 8px rgba(0, 0, 0, 0.05)",
+    "cardHover": "0 4px 16px rgba(74, 122, 74, 0.08)",
+    "phoneContainer": "0 24px 64px rgba(0, 0, 0, 0.11), 0 6px 20px rgba(0, 0, 0, 0.06)",
+    "notes": "Never use dark or dramatic shadows. If a shadow feels heavy, reduce opacity or remove it."
+  },
+
+  "components": {
+    "card": {
+      "background": "#ffffff",
+      "border": "1.5px solid #efefef",
+      "borderRadius": "14–20px",
+      "activeBackground": "#fcfefc",
+      "activeBorder": "#c8dac8",
+      "hoverBorder": "#d8ead8",
+      "hoverShadow": "0 4px 16px rgba(74, 122, 74, 0.08)"
+    },
+    "buttonPrimary": {
+      "background": "#4a7a4a",
+      "textColor": "#ffffff",
+      "font": "Jost",
+      "fontWeight": 600,
+      "letterSpacing": "0.06em",
+      "textTransform": "uppercase",
+      "borderRadius": "100px",
+      "shadow": "none"
+    },
+    "iconButton": {
+      "size": "28x28px",
+      "shape": "circle",
+      "defaultBorder": "1.5px solid #efefef",
+      "defaultArrowStroke": "#cccccc",
+      "activeBackground": "#4a7a4a",
+      "activeBorder": "#4a7a4a",
+      "activeArrowStroke": "#ffffff"
+    },
+    "input": {
+      "background": "#f7f7f7",
+      "border": "1.5px solid #f0f0f0",
+      "borderRadius": "14px",
+      "placeholderFont": "Jost 400",
+      "placeholderColor": "#bbbbbb",
+      "iconSize": "13x13px",
+      "iconStroke": "#cccccc"
+    },
+    "sectionDivider": {
+      "pattern": "[———  label  ———]",
+      "lineColor": "#f0f0f0",
+      "lineHeight": "1px",
+      "labelFont": "Jost",
+      "labelWeight": 500,
+      "labelSize": "9px",
+      "labelLetterSpacing": "0.18em",
+      "labelTextTransform": "uppercase",
+      "labelColor": "#bbbbbb"
+    },
+    "priceDisplay": {
+      "font": "Playfair Display",
+      "weight": 700,
+      "color": "#4a7a4a",
+      "currencySymbol": "superscript at smaller size"
+    },
+    "pillTag": {
+      "background": "#f4f8f4",
+      "border": "1px solid #d8ead8",
+      "textColor": "#6a9e6a",
+      "font": "Jost",
+      "fontWeight": 600,
+      "fontSize": "9px",
+      "textTransform": "uppercase",
+      "borderRadius": "100px"
+    }
+  },
+
+  "states": {
+    "activeNavItem": { "stroke": "#4a7a4a", "labelColor": "#4a7a4a", "notes": "Never use underlines for active state" },
+    "inactiveNavItem": { "stroke": "#cccccc", "labelColor": "#cccccc" },
+    "selectedCard": { "borderColor": "#c8dac8", "background": "#fcfefc" },
+    "disabled": { "color": "#cccccc" },
+    "focusRing": "2px solid #c8dac8, offset 2px"
+  },
+
+  "decorative": {
+    "heroBgBlush": "radial-gradient(circle, rgba(106,158,106,0.07) 0%, transparent 70%)",
+    "logoMarkAccentCircle": { "size": "80x80px", "color": "rgba(106,158,106,0.10)", "position": "top-right, overflow hidden" },
+    "notes": "No photography or heavy illustrations — let typography and whitespace do the work."
+  },
+
+  "antiPatterns": [
+    "Dark backgrounds or dark mode surfaces",
+    "Purple, blue, or cold-toned accents",
+    "Shadows heavier than rgba(0,0,0,0.08)",
+    "Bold or filled bottom-nav icons for inactive states",
+    "Colored card backgrounds — use tints only, never saturated fills",
+    "More than one accent color per screen",
+    "Inter, Roboto, Arial, or system fonts",
+    "Borders that are not 1–1.5px and light gray or sage",
+    "Uppercase body copy — uppercase is reserved for eyebrow labels only",
+    "Subtext under every item — prefer clean single-line labels"
+  ]
+}
