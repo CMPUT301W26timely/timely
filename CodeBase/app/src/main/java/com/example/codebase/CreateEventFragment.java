@@ -41,10 +41,7 @@ public class CreateEventFragment extends Fragment {
         binding = FragmentCreateEventBinding.inflate(inflater, container, false);
         binding.posterUploadBox.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
         binding.buttonPublishEvent.setOnClickListener(v -> saveEvent());
-        binding.buttonCancel.setOnClickListener(v ->
-                NavHostFragment.findNavController(CreateEventFragment.this)
-                        .navigate(R.id.action_CreateEventFragment_to_MyEventsFragment)
-        );
+        binding.buttonCancel.setOnClickListener(v -> requireActivity().finish());
 
         return binding.getRoot();
     }
@@ -69,7 +66,6 @@ public class CreateEventFragment extends Fragment {
             String eventId = eventsRef.document().getId();
 
             Event event = new Event();
-            event.setTitle("My Event");
 
             EventPoster poster = new EventPoster(base64Image);
             event.setPoster(poster);
@@ -77,8 +73,7 @@ public class CreateEventFragment extends Fragment {
             eventsRef.document(eventId).set(event)
                     .addOnSuccessListener(unused -> {
                         Log.d("Firestore", "Event saved! ID: " + eventId);
-                        NavHostFragment.findNavController(CreateEventFragment.this)
-                                .navigate(R.id.action_CreateEventFragment_to_MyEventsFragment);
+                        requireActivity().finish();
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Failed to save event: " + e.getMessage()));
 

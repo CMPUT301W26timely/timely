@@ -36,7 +36,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private TextView              tvNoEvents;
     private FloatingActionButton  fabCreate;
     private OrganizerEventAdapter adapter;
-    private List<OrganizerEvent>  eventList = new ArrayList<>();
+    private List<Event>  eventList = new ArrayList<>();
     private String                deviceId;
 
     @Override
@@ -60,17 +60,15 @@ public class OrganizerActivity extends AppCompatActivity {
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.id);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.title);
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.getId());
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
             startActivity(intent);
         });
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
         rvEvents.setAdapter(adapter);
 
         fabCreate.setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.create_event_coming_soon),
-                        Toast.LENGTH_SHORT).show()
+                startActivity(new Intent(this, CreateEventActivity.class))
         );
 
         loadOrganizerEvents();
@@ -96,10 +94,10 @@ public class OrganizerActivity extends AppCompatActivity {
                 new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            OrganizerEvent event = new OrganizerEvent();
-            event.id    = doc.getId();
-            event.title = doc.getString("title") != null
-                    ? doc.getString("title") : "Untitled Event";
+            Event event = new Event();
+            event.setId(doc.getId());
+            event.setTitle(doc.getString("title") != null
+                    ? doc.getString("title") : "Untitled Event");
 
             // ── Timestamps → Date ─────────────────────────────────────────────
             Timestamp regDeadlineTs = doc.getTimestamp("registrationDeadline");
@@ -107,24 +105,23 @@ public class OrganizerActivity extends AppCompatActivity {
             Timestamp startDateTs   = doc.getTimestamp("startDate");
             Timestamp endDateTs     = doc.getTimestamp("endDate");
 
-            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-            event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
-            event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
-            event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
+            event.setRegistrationDeadline(regDeadlineTs != null ? regDeadlineTs.toDate() : null);
+            event.setDrawDate(drawDateTs    != null ? drawDateTs.toDate()     : null);
+            event.setStartDate(startDateTs   != null ? startDateTs.toDate()    : null);
+            event.setEndDate(endDateTs     != null ? endDateTs.toDate()      : null);
 
-            // ── Display date on card ───────────────────────────────────────────
-            event.displayDate = event.startDate != null
-                    ? displayFormat.format(event.startDate) : "Date not set";
+//            // ── Display date on card ───────────────────────────────────────────
+//            event.displayDate = event.startDate != null
+//                    ? displayFormat.format(event.startDate) : "Date not set";
 
             // ── Arrays ────────────────────────────────────────────────────────
             List<?> waitingList      = (List<?>) doc.get("waitingList");
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
 
-            event.waitingCount      = waitingList      != null ? waitingList.size()      : 0;
-            event.selectedCount     = selectedEntrants != null ? selectedEntrants.size() : 0;
-            event.selectedEntrants  = selectedEntrants;
-            event.enrolledEntrants  = enrolledEntrants;
+            event.setWaitingList((List<String>) waitingList);
+            event.setSelectedEntrants((List<String>) selectedEntrants);
+            event.setEnrolledEntrants((List<String>) enrolledEntrants);
 
             eventList.add(event);
         }

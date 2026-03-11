@@ -32,14 +32,14 @@ public class OrganizerEventAdapter extends
         RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
 
     public interface OnEventClickListener {
-        void onEventClick(OrganizerActivity.OrganizerEvent event);
+        void onEventClick(Event event);
     }
 
-    private final List<OrganizerActivity.OrganizerEvent> events;
-    private final OnEventClickListener                   listener;
+    private final List<Event> events;
+    private final OnEventClickListener   listener;
 
     public OrganizerEventAdapter(
-            List<OrganizerActivity.OrganizerEvent> events,
+            List<Event> events,
             OnEventClickListener listener) {
         this.events   = events;
         this.listener = listener;
@@ -63,43 +63,43 @@ public class OrganizerEventAdapter extends
 
     // ─── Status Calculation ───────────────────────────────────────────────────
 
-    private static String calculateStatus(OrganizerActivity.OrganizerEvent event) {
+    private static String calculateStatus(Event event) {
         // If any date is null → Draft (event not fully set up)
-        if (event.registrationDeadline == null || event.drawDate == null
-                || event.startDate == null || event.endDate == null) {
+        if (event.getRegistrationDeadline() == null || event.getDrawDate() == null
+                || event.getStartDate() == null || event.getEndDate() == null) {
             return "Draft";
         }
 
         Date today             = new Date();
-        List<?> selectedEntrants = event.selectedEntrants;
-        List<?> enrolledEntrants = event.enrolledEntrants;
+        List<?> selectedEntrants = event.getSelectedEntrants();
+        List<?> enrolledEntrants = event.getEnrolledEntrants();
 
         boolean selectedEmpty  = selectedEntrants == null || selectedEntrants.isEmpty();
         boolean enrolledEmpty  = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
-        if (!today.after(event.registrationDeadline)) {
+        if (!today.after(event.getRegistrationDeadline())) {
             // today <= registrationDeadline
             return "Registration Open";
 
-        } else if (today.after(event.registrationDeadline)
-                && !today.after(event.drawDate)
+        } else if (today.after(event.getRegistrationDeadline())
+                && !today.after(event.getDrawDate())
                 && selectedEmpty) {
             // today > registrationDeadline AND today <= drawDate AND no winners yet
             return "Lottery Pending";
 
-        } else if (today.after(event.drawDate)
-                && today.before(event.startDate)
+        } else if (today.after(event.getDrawDate())
+                && today.before(event.getStartDate())
                 && !selectedEmpty) {
             // today > drawDate AND today < startDate AND winners selected
             return "Lottery Closed & Event Scheduled";
 
-        } else if (!today.before(event.startDate)
-                && !today.after(event.endDate)
+        } else if (!today.before(event.getStartDate())
+                && !today.after(event.getEndDate())
                 && !enrolledEmpty) {
             // today >= startDate AND today <= endDate AND people enrolled
             return "In Progress";
 
-        } else if (today.after(event.endDate)) {
+        } else if (today.after(event.getEndDate())) {
             return "Event Ended";
 
         } else {
@@ -126,14 +126,14 @@ public class OrganizerEventAdapter extends
             tvSelected = itemView.findViewById(R.id.tvSelectedCount);
         }
 
-        void bind(OrganizerActivity.OrganizerEvent event, OnEventClickListener listener) {
-            tvTitle.setText(event.title);
-            tvDate.setText(event.displayDate);
+        void bind(Event event, OnEventClickListener listener) {
+            tvTitle.setText(event.getTitle());
+            tvDate.setText(event.getStartDate().toString());
 
             tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.waitingCount));
+                    .getString(R.string.waitlist_count, event.getWaitingList().stream().count()));
             tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.selectedCount));
+                    .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
             tvSelected.setVisibility(View.VISIBLE);
 
             // ── Calculate and apply status badge ──────────────────────────────

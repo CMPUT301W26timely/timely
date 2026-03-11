@@ -1,17 +1,117 @@
 package com.example.codebase;
 
 import java.util.Date;
+import java.util.List;
 
 public class Event {
+    private String id;
     private EventPoster poster;
     private String title;
     private String description;
     private Date startDate;
     private Date endDate;
     private Date registrationDeadline;
-    private int totalSpots;
     private int waitlistCap;
     private float price;
+    private String organizerDeviceId;
+    private String location;
+    private Date drawDate;
+    private String posterUrl;
+    private Long maxCapacity;
+    private Long winnersCount;
+    private List<String> waitingList;
+    private List<String> selectedEntrants;
+    private List<String> enrolledEntrants;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getOrganizerDeviceId() {
+        return organizerDeviceId;
+    }
+
+    public void setOrganizerDeviceId(String organizerDeviceId) {
+        this.organizerDeviceId = organizerDeviceId;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Date getDrawDate() {
+        return drawDate;
+    }
+
+    public void setDrawDate(Date drawDate) {
+        this.drawDate = drawDate;
+    }
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public Long getMaxCapacity() {
+        return maxCapacity;
+    }
+
+    public void setMaxCapacity(Long maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public Long getWinnersCount() {
+        return winnersCount;
+    }
+
+    public void setWinnersCount(Long winnersCount) {
+        this.winnersCount = winnersCount;
+    }
+
+    public List<String> getWaitingList() {
+        return waitingList;
+    }
+
+    public void setWaitingList(List<String> waitingList) {
+        this.waitingList = waitingList;
+    }
+
+    public List<String> getSelectedEntrants() {
+        return selectedEntrants;
+    }
+
+    public void setSelectedEntrants(List<String> selectedEntrants) {
+        this.selectedEntrants = selectedEntrants;
+    }
+
+    public List<String> getEnrolledEntrants() {
+        return enrolledEntrants;
+    }
+
+    public void setEnrolledEntrants(List<String> enrolledEntrants) {
+        this.enrolledEntrants = enrolledEntrants;
+    }
+
+    public List<String> getCancelledEntrants() {
+        return cancelledEntrants;
+    }
+
+    public void setCancelledEntrants(List<String> cancelledEntrants) {
+        this.cancelledEntrants = cancelledEntrants;
+    }
+
+    private List<String> cancelledEntrants;
 
     public EventPoster getPoster() {
         return poster;
@@ -59,14 +159,6 @@ public class Event {
 
     public void setRegistrationDeadline(Date registrationDeadline) {
         this.registrationDeadline = registrationDeadline;
-    }
-
-    public int getTotalSpots() {
-        return totalSpots;
-    }
-
-    public void setTotalSpots(int totalSpots) {
-        this.totalSpots = totalSpots;
     }
 
     public int getWaitlistCap() {
