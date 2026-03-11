@@ -13,18 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeBase">
 
-        <!-- SplashActivity — REMOVED launcher intent filter -->
-        <activity
-            android:name=".SplashActivity"
-            android:exported="false"
-            android:theme="@style/Theme.CodeBase" />
-
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
 
-        <!-- RoleCheckActivity — ONLY launcher -->
         <activity
             android:name=".RoleCheckActivity"
             android:exported="true"
@@ -37,6 +30,26 @@
 
         <activity
             android:name=".WelcomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
+            android:name=".SplashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase.NoDisplay" />
+
+        <activity
+            android:name=".BrowseEventsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
+            android:name=".EventDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
 

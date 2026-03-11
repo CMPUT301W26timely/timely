@@ -3,39 +3,31 @@ package com.example.codebase;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * UserRepository — Handles syncing user role to Firestore.
- *
- * Uses set() with merge option instead of update() so it works
- * whether the document exists or not:
- *   - Document exists → updates role field only
- *   - Document does not exist → creates it with role field
- *
- * Called from MainActivity.onCreate() on every launch.
- *
- * Usage:
- *   UserRepository.syncRole(this);
- */
 public class UserRepository {
 
     private static final String TAG = "UserRepository";
 
-    /**
-     * Syncs the locally saved role to Firestore using set+merge.
-     * Safe to call whether the document exists or not.
-     *
-     * @param context Any context (Activity, Application, etc.)
-     */
+    public interface UserCallback {
+        void onUserLoaded(User user);
+        void onError(Exception e);
+    }
+
+    public interface ErrorCallback {
+        void onError(Exception e);
+    }
+
     public static void syncRole(Context context) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
-        String role     = WelcomeActivity.getSessionRole(context);
+        String role = WelcomeActivity.getSessionRole(context);
 
-        // Use a Map so we only update the role field — not overwrite the whole document
         Map<String, Object> update = new HashMap<>();
         update.put("deviceId", deviceId);
         update.put("role", role.toLowerCase());
@@ -43,10 +35,79 @@ public class UserRepository {
         AppDatabase.getInstance()
                 .usersRef
                 .document(deviceId)
-                .set(update, SetOptions.merge())  // merge = update if exists, create if not
-                .addOnSuccessListener(v ->
-                        Log.d(TAG, "Firestore role synced: " + role))
-                .addOnFailureListener(e ->
-                        Log.e(TAG, "Failed to sync role to Firestore", e));
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(v -> Log.d(TAG, "Firestore role synced: " + role))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to sync role to Firestore", e));
+    }
+
+    public static void saveUserProfile(Context context,
+                                       String name,
+                                       String email,
+                                       String phoneNumber,
+                                       Runnable onSuccess,
+                                       ErrorCallback onFailure) {
+        String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
+        String role = WelcomeActivity.getSessionRole(context);
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("deviceId", deviceId);
+        update.put("role", role.toLowerCase());
+        update.put("name", name);
+        update.put("email", email);
+        update.put("phoneNumber", phoneNumber);
+
+        AppDatabase.getInstance()
+                .usersRef
+                .document(deviceId)
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
+                    User user = new User(deviceId);
+                    user.setRole(role.toLowerCase());
+                    user.setName(name);
+                    user.setEmail(email);
+                    user.setPhoneNumber(phoneNumber);
+
+                    AppCache.getInstance().setCachedUser(user);
+
+                    if (onSuccess != null) onSuccess.run();
+                })
+                .addOnFailureListener(e -> {
+                    if (onFailure != null) onFailure.onError(e);
+                });
+    }
+
+    public static void loadUserProfile(Context context, @NonNull UserCallback callback) {
+        String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
+
+        AppDatabase.getInstance()
+                .usersRef
+                .document(deviceId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    User user = mapDocumentToUser(documentSnapshot, deviceId);
+                    AppCache.getInstance().setCachedUser(user);
+                    callback.onUserLoaded(user);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+    private static User mapDocumentToUser(DocumentSnapshot documentSnapshot, String deviceId) {
+        User user = new User(deviceId);
+
+        if (documentSnapshot.exists()) {
+            user.setDeviceId(deviceId);
+
+            String role = documentSnapshot.getString("role");
+            String name = documentSnapshot.getString("name");
+            String email = documentSnapshot.getString("email");
+            String phoneNumber = documentSnapshot.getString("phoneNumber");
+
+            user.setRole(role != null ? role : "entrant");
+            user.setName(name != null ? name : "");
+            user.setEmail(email != null ? email : "");
+            user.setPhoneNumber(phoneNumber != null ? phoneNumber : "");
+        }
+
+        return user;
     }
 }

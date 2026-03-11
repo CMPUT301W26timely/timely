@@ -8,6 +8,10 @@ package com.example.codebase;
 public class User {
     private String deviceId;
     private String role;
+    private String name;
+    private String email;
+    private String phoneNumber;
+
 
     /**
      * Default constructor required for Firebase Firestore serialization.
@@ -25,6 +29,9 @@ public class User {
     public User(String deviceId) {
         this.deviceId = deviceId;
         this.role = "entrant";
+        this.name = "";
+        this.email = "";
+        this.phoneNumber = "";
     }
 
     /**
@@ -32,6 +39,7 @@ public class User {
      * @return The device ID string.
      */
     public String getDeviceId() {
+
         return deviceId;
     }
 
@@ -40,6 +48,7 @@ public class User {
      * @param deviceId The device ID string to set.
      */
     public void setDeviceId(String deviceId) {
+
         this.deviceId = deviceId;
     }
 
@@ -48,6 +57,7 @@ public class User {
      * @return The user's role.
      */
     public String getRole() {
+
         return role;
     }
 
@@ -55,7 +65,34 @@ public class User {
      * Sets the role for the user.
      * @param role The role to assign to the user.
      */
+
+
     public void setRole(String role) {
+
         this.role = role;
     }
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
 }
