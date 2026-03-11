@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * OrganizerActivity — "My Events" screen for Organizer role.
@@ -119,9 +120,26 @@ public class OrganizerActivity extends AppCompatActivity {
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
 
-            event.setWaitingList((List<String>) waitingList);
-            event.setSelectedEntrants((List<String>) selectedEntrants);
-            event.setEnrolledEntrants((List<String>) enrolledEntrants);
+            event.setWaitingList(waitingList != null
+                    ? (List<String>) waitingList
+                    : new ArrayList<>());
+            event.setSelectedEntrants(selectedEntrants != null
+                    ? (List<String>) selectedEntrants
+                    : new ArrayList<>());
+            event.setEnrolledEntrants(enrolledEntrants != null
+                    ? (List<String>) enrolledEntrants
+                    : new ArrayList<>());
+
+            Object posterObj = doc.get("poster");
+
+            if (posterObj instanceof Map) {
+                Map<String, Object> posterMap = (Map<String, Object>) posterObj;
+                String base64 = (String) posterMap.get("posterImageBase64");
+
+                if (base64 != null) {
+                    event.setPoster(new EventPoster(base64));
+                }
+            }
 
             eventList.add(event);
         }
