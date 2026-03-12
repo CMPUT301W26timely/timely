@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="font_family_display">sans-serif-medium</string> <!-- Fallback for Playfair -->
+    <string name="font_family_body">sans-serif</string> <!-- Fallback for Jost -->
+</resources>

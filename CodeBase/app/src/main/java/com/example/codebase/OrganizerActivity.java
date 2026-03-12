@@ -55,12 +55,15 @@ public class OrganizerActivity extends AppCompatActivity {
         rvEvents.setAdapter(adapter);
 
         fabCreate.setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.create_event_coming_soon),
-                        Toast.LENGTH_SHORT).show()
+                startActivity(new Intent(this, CreateEventActivity.class))
         );
 
         setupBottomNavigation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadOrganizerEvents();
     }
 
@@ -90,7 +93,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerDeviceId", deviceId)
+                .whereEqualTo("organizerId", deviceId) 
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -109,25 +112,26 @@ public class OrganizerActivity extends AppCompatActivity {
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
             OrganizerEvent event = new OrganizerEvent();
             event.id    = doc.getId();
-            event.title = doc.getString("title") != null
-                    ? doc.getString("title") : "Untitled Event";
+            
+            event.title = doc.getString("name") != null ? doc.getString("name") :
+                          (doc.getString("title") != null ? doc.getString("title") : "Untitled Event");
+                          
+            event.location = doc.getString("location") != null ? doc.getString("location") : "Location TBD";
+            event.status = doc.getString("status") != null ? doc.getString("status") : "draft";
 
-            // ── Timestamps → Date ─────────────────────────────────────────────
-            Timestamp regDeadlineTs = doc.getTimestamp("registrationDeadline");
-            Timestamp drawDateTs    = doc.getTimestamp("drawDate");
-            Timestamp startDateTs   = doc.getTimestamp("startDate");
-            Timestamp endDateTs     = doc.getTimestamp("endDate");
+            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
+            Timestamp drawDateTs    = doc.getTimestamp("drawDate"); // May not exist
+            Timestamp startDateTs   = doc.getTimestamp("eventStart");
+            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
 
             event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
             event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
             event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
             event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
 
-            // ── Display date on card ───────────────────────────────────────────
             event.displayDate = event.startDate != null
                     ? displayFormat.format(event.startDate) : "Date not set";
 
-            // ── Arrays ────────────────────────────────────────────────────────
             List<?> waitingList      = (List<?>) doc.get("waitingList");
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
@@ -148,6 +152,8 @@ public class OrganizerActivity extends AppCompatActivity {
     public static class OrganizerEvent {
         public String id;
         public String title;
+        public String location;
+        public String status; // "published" or "draft"
         public String displayDate;
         public Date registrationDeadline;
         public Date drawDate;

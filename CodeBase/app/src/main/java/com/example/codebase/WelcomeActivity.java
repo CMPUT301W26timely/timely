@@ -38,7 +38,8 @@ public class WelcomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
 
-        isRegistered = getIntent().getBooleanExtra(RoleCheckActivity.KEY_REGISTERED, false);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        isRegistered = prefs.getBoolean(RoleCheckActivity.KEY_REGISTERED, false);
 
         CardView btnUser  = findViewById(R.id.btnEntrant);
         CardView btnAdmin = findViewById(R.id.btnAdmin);
