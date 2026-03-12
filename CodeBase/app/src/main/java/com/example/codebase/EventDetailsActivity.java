@@ -6,6 +6,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+
 /**
  * Displays details for a selected event.
  */
@@ -15,6 +18,10 @@ public class EventDetailsActivity extends AppCompatActivity {
     private TextView textViewDetailEventDate;
     private TextView textViewDetailEventLocation;
     private TextView textViewDetailEventDescription;
+
+    // Format Date objects into readable text
+    private final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +54,16 @@ public class EventDetailsActivity extends AppCompatActivity {
                     return;
                 }
 
-                textViewDetailEventName.setText(event.getName());
-                textViewDetailEventDate.setText("Date: " + event.getDate());
+                // Use merged team Event model fields
+                textViewDetailEventName.setText(event.getTitle());
                 textViewDetailEventLocation.setText("Location: " + event.getLocation());
                 textViewDetailEventDescription.setText(event.getDescription());
+
+                if (event.getStartDate() != null) {
+                    textViewDetailEventDate.setText("Date: " + dateFormat.format(event.getStartDate()));
+                } else {
+                    textViewDetailEventDate.setText("Date: Not set");
+                }
             }
 
             @Override

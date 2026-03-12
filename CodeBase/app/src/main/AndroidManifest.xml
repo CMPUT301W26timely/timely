@@ -14,6 +14,11 @@
         android:theme="@style/Theme.CodeBase">
 
         <activity
+            android:name=".SplashActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
@@ -34,30 +39,58 @@
             android:theme="@style/Theme.CodeBase" />
 
         <activity
+            android:name=".OrganizerActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EventDetailActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ProfileActivity"
-            android:exported="false"
-            android:theme="@style/Theme.CodeBase" />
+            android:exported="false" />
 
         <activity
-            android:name=".ProfileSettingsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.CodeBase" />
+            android:name=".CreateEventActivity"
+            android:exported="false" />
 
         <activity
-            android:name=".SplashActivity"
-            android:exported="false"
-            android:theme="@style/Theme.CodeBase.NoDisplay" />
+            android:name=".InvitedEntrantsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CancelledEntrantsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".QrDisplayActivity"
+            android:exported="false" />
 
         <activity
             android:name=".BrowseEventsActivity"
-            android:exported="false"
-            android:theme="@style/Theme.CodeBase" />
+            android:exported="false" />
 
         <activity
             android:name=".EventDetailsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileSettingsActivity"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:theme="@style/Theme.CodeBase" />
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
 
 </manifest>

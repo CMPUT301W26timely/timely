@@ -28,7 +28,6 @@ public class EventRepository {
     public static void loadActiveEvents(@NonNull EventsCallback callback) {
         AppDatabase.getInstance()
                 .eventsRef
-                .whereEqualTo("active", true)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Event> events = new ArrayList<>();

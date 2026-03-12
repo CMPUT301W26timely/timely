@@ -12,17 +12,26 @@ public class AppDatabase {
     private static AppDatabase instance;
     private final FirebaseFirestore db;
 
+    /**
+     * Public collection reference for the 'users' collection.
+     */
     public final CollectionReference usersRef;
     public final CollectionReference eventsRef;
-    public final CollectionReference notificationsRef;
 
+    /**
+     * Private constructor to initialize the Firestore instance and collection references.
+     */
     private AppDatabase() {
         db = FirebaseFirestore.getInstance();
         usersRef = db.collection("users");
         eventsRef = db.collection("events");
-        notificationsRef = db.collection("notifications");
     }
 
+    /**
+     * Thread-safe singleton access to the AppDatabase instance.
+     *
+     * @return The single instance of AppDatabase.
+     */
     public static synchronized AppDatabase getInstance() {
         if (instance == null) {
             instance = new AppDatabase();

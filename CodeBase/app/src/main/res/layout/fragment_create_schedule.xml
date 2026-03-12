@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="22dp">
+
+    <!-- Event Dates Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EVENT DATES"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_marginBottom="24dp">
+
+        <!-- Start Date -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start Date"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etEventStart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select date"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:background="@drawable/bg_input_field"
+                android:padding="16dp" />
+        </LinearLayout>
+
+        <!-- End Date -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="End Date"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etEventEnd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select date"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:background="@drawable/bg_input_field"
+                android:padding="16dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Registration Window Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="REGISTRATION WINDOW"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_marginBottom="24dp">
+
+        <!-- Open Date -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Opens"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etRegOpen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select date"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:background="@drawable/bg_input_field"
+                android:padding="16dp" />
+        </LinearLayout>
+
+        <!-- Close Date -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Closes"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etRegClose"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Select date"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:background="@drawable/bg_input_field"
+                android:padding="16dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Capacity Section -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CAPACITY LIMIT"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Max Attendees"
+        android:textColor="@color/textPrimary"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etCapacity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="e.g., 50"
+        android:inputType="number"
+        android:background="@drawable/bg_input_field"
+        android:padding="16dp" />
+
+</LinearLayout>

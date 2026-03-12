@@ -1,107 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_dark">
+    android:background="@color/pageBg">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Profile Settings"
-            android:textColor="@color/text_primary"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
-
+        <!-- Top bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_dark"
-            android:padding="20dp"
-            android:layout_marginBottom="20dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PERSONAL INFORMATION"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp"
+                android:text="@string/profile_title"
+                android:textSize="28sp"
+                android:fontFamily="serif"
                 android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:textColor="@color/textPrimary" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Full Name"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:layout_marginBottom="6dp" />
-
-            <EditText
-                android:id="@+id/editTextName"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_button_secondary"
-                android:hint="Enter full name"
-                android:textColorHint="@color/text_muted"
-                android:textColor="@color/text_primary"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="14dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Email Address"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:layout_marginBottom="6dp" />
-
-            <EditText
-                android:id="@+id/editTextEmail"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_button_secondary"
-                android:hint="Enter email"
-                android:textColorHint="@color/text_muted"
-                android:textColor="@color/text_primary"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="14dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phone Number"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:layout_marginBottom="6dp" />
-
-            <EditText
-                android:id="@+id/editTextPhone"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_button_secondary"
-                android:hint="Optional"
-                android:textColorHint="@color/text_muted"
-                android:textColor="@color/text_primary"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="18dp" />
-
-            <Button
-                android:id="@+id/buttonSaveProfile"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/bg_button_primary"
-                android:text="Save Changes"
-                android:textAllCaps="false"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
         </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="100dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp">
+
+                <!-- Profile Info Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp"
+                        android:gravity="start">
+
+                        <TextView
+                            android:id="@+id/tvUserRole"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="User Role"
+                            android:textSize="18sp"
+                            android:fontFamily="sans-serif-medium"
+                            android:textColor="@color/textPrimary" />
+
+                        <!-- Device ID Field -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="8dp">
+
+                            <TextView
+                                android:id="@+id/tvDeviceId"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Device ID: ••••••••"
+                                android:textSize="14sp"
+                                android:fontFamily="sans-serif"
+                                android:textColor="@color/textSecondary" />
+
+                            <ImageButton
+                                android:id="@+id/btnToggleDeviceId"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@android:drawable/ic_menu_view"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                app:tint="@color/textMuted"
+                                android:contentDescription="Toggle Device ID visibility" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
-</ScrollView>
+
+    <!-- Switch Role Button at the bottom -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSwitchRole"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="112dp"
+        android:text="Switch Role"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:fontFamily="sans-serif-medium"
+        app:cornerRadius="100dp"
+        app:backgroundTint="@color/primaryAccent"
+        app:elevation="2dp" />
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="20dp"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/surface"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/border">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <!-- Explore -->
+            <LinearLayout
+                android:id="@+id/navExplore"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_explore"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_explore" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_explore"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Search -->
+            <LinearLayout
+                android:id="@+id/navSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_search"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_search" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_search"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- My Events -->
+            <LinearLayout
+                android:id="@+id/navMyEvents"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_events"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_my_events" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_my_events"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Notifications -->
+            <LinearLayout
+                android:id="@+id/navNotifications"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_notifications"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_notifications" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_notifications"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Profile (Active) -->
+            <LinearLayout
+                android:id="@+id/navProfile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_role_icon_blue"
+                    android:backgroundTint="@color/accentTint">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_nav_profile"
+                        app:tint="@color/primaryAccent"
+                        android:contentDescription="@string/nav_profile" />
+                </FrameLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_profile"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/primaryAccent"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

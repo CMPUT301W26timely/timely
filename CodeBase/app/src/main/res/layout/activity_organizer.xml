@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0EDE8">
+
+    <!-- Main content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="36dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <ImageButton
+                android:id="@+id/btnBackOrganizer"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_media_previous"
+                android:background="@drawable/bg_icon_btn_light"
+                android:contentDescription="@string/back_button_desc" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/my_events_title"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:letterSpacing="-0.02"
+                android:textColor="#111111"
+                android:paddingStart="12dp" />
+
+        </LinearLayout>
+
+        <!-- Eyebrow label -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="YOUR EVENTS"
+            android:textSize="9sp"
+            android:letterSpacing="0.18"
+            android:textColor="#AAAAAA"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Events list -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvEvents"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false" />
+
+        <!-- Empty state -->
+        <TextView
+            android:id="@+id/tvNoEvents"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="@string/no_events_yet"
+            android:textSize="14sp"
+            android:textColor="#AAAAAA"
+            android:gravity="center"
+            android:visibility="gone" />
+
+        <!-- Bottom navigation -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:background="#FFFFFF"
+            android:elevation="4dp"
+            android:baselineAligned="false">
+
+            <!-- Explore -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@android:drawable/ic_menu_compass"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_explore" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_explore"
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
+            </LinearLayout>
+
+            <!-- Search -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_search" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_search"
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
+            </LinearLayout>
+
+            <!-- My Events (active) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    app:tint="#4A7A4A"
+                    android:contentDescription="@string/nav_my_events" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_my_events"
+                    android:textSize="12sp"
+                    android:textColor="#4A7A4A" />
+            </LinearLayout>
+
+            <!-- Notifications -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@android:drawable/ic_popup_reminder"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_notifications" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_notifications"
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
+            </LinearLayout>
+
+            <!-- Profile -->
+            <TextView
+                android:id="@+id/navProfile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:drawableTop="@android:drawable/ic_menu_my_calendar"
+                android:drawableTint="#CCCCCC"
+                android:drawablePadding="2dp"
+                android:text="@string/nav_profile"
+                android:textSize="12sp"
+                android:textColor="#CCCCCC" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCreateEvent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="76dp"
+        android:contentDescription="@string/create_event_fab_desc"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:backgroundTint="#4A7A4A"
+        app:tint="#FFFFFF" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

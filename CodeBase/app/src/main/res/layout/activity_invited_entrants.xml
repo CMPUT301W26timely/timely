@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0EDE8">
+
+    <!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="36dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:background="#F0EDE8">
+
+        <ImageButton
+            android:id="@+id/btnBackInvited"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="@drawable/bg_icon_btn_light"
+            android:contentDescription="@string/back_button_desc" />
+
+        <TextView
+            android:id="@+id/tvInvitedTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Invited Entrants"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.02"
+            android:textColor="#111111"
+            android:gravity="center"
+            android:layout_marginEnd="40dp" />
+
+    </LinearLayout>
+
+    <!-- ── TABS ─────────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tabAll"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="All"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_tab_active"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tabPending"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Pending"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_tab_inactive"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tabAccepted"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Accepted"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_tab_inactive"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tabDeclined"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Declined"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_tab_inactive" />
+
+    </LinearLayout>
+
+    <!-- ── COUNT ROW ─────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/tvInvitedCount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0 ENTRANTS"
+            android:textSize="9sp"
+            android:textColor="#AAAAAA"
+            android:letterSpacing="0.18" />
+
+        <ProgressBar
+            android:id="@+id/invitedProgressBar"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- ── EMPTY STATE ───────────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvNoInvitedEntrants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="No entrants found"
+        android:textSize="14sp"
+        android:textColor="#AAAAAA"
+        android:paddingTop="48dp"
+        android:visibility="gone" />
+
+    <!-- ── LIST ─────────────────────────────────────────────────────────── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvInvitedEntrants"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>

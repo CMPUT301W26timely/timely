@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Organizer Home — My Events -->
+    <string name="my_events_title">My Events</string>
+    <string name="no_events_yet">No events yet.\nTap + to create your first event.</string>
+    <string name="create_event_coming_soon">Create Event — Coming Soon</string>
+    <string name="create_event_fab_desc">Create new event</string>
+    <string name="error_loading_events">Failed to load events</string>
+    <string name="search_desc">Search events</string>
+    <string name="more_options_desc">More options</string>
+
+    <!-- Event card stats -->
+    <string name="waitlist_count">Waitlist: %d</string>
+    <string name="drawn_count">Drawn: %d Selected</string>
+    <string name="stat_drawn">Drawn</string>
+
+    <!-- Status badges — event cards -->
+    <string name="status_open">Registration Open</string>
+    <string name="status_closed">Lottery Closed</string>
+    <string name="status_draft">Draft</string>
+    <string name="status_scheduled">Scheduled</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_explore">Explore</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_my_events">My Events</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Event Detail — Header -->
+    <string name="back_button_desc">Go back</string>
+    <string name="untitled_event">Untitled Event</string>
+    <string name="status_badge_open">REGISTRATION OPEN</string>
+    <string name="status_badge_closed">LOTTERY CLOSED</string>
+
+    <!-- Event Detail — Stat cards -->
+    <string name="stat_waiting_list">Waiting List</string>
+    <string name="stat_invited">Invited</string>
+    <string name="stat_enrolled">Enrolled</string>
+    <string name="stat_cancelled">Cancelled</string>
+
+    <!-- Event Detail — Section headers -->
+    <string name="section_lottery_management">Lottery Management</string>
+    <string name="section_event_data">Event Data</string>
+    <string name="section_settings">Settings</string>
+
+    <!-- Event Detail — Row items -->
+    <string name="row_run_lottery">Run Lottery Draw</string>
+    <string name="row_send_notification">Send Notification</string>
+    <string name="row_view_waiting_list">View Waiting List</string>
+    <string name="row_view_entrant_map">View Entrant Map</string>
+    <string name="row_view_qr_code">View Event QR Code</string>
+    <string name="row_edit_event">Edit Event Details</string>
+    <string name="row_cancelled_users">View Cancelled Users</string>
+
+    <!-- Coming soon placeholders -->
+    <string name="lottery_draw_coming_soon">Run Lottery Draw — Coming Soon</string>
+    <string name="send_notification_coming_soon">Send Notification — Coming Soon</string>
+    <string name="view_waiting_list_coming_soon">View Waiting List — Coming Soon</string>
+    <string name="view_entrant_map_coming_soon">View Entrant Map — Coming Soon</string>
+    <string name="view_qr_coming_soon">View QR Code — Coming Soon</string>
+    <string name="edit_event_coming_soon">Edit Event — Coming Soon</string>
+    <string name="cancelled_users_coming_soon">View Cancelled Users — Coming Soon</string>
+
+    <!-- Accessibility -->
+    <string name="decorative_image">Decorative image</string>
+    <string name="event_poster_desc">Event poster</string>
+
+    <!-- Event detail new fields -->
+    <string name="date_not_set">Date not set</string>
+    <string name="max_capacity_label">Max Capacity</string>
+    <string name="winners_count_label">Winners Count</string>
+
+    <!-- Errors -->
+    <string name="error_loading_event_detail">Failed to load event details</string>
+    <string name="error_event_not_found">Event not found</string>
+
+</resources>

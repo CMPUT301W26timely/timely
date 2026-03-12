@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0EDE8">
+
+    <!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="36dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <ImageButton
+            android:id="@+id/btnBackCancelled"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="@drawable/bg_icon_btn_light"
+            android:contentDescription="@string/back_button_desc" />
+
+        <TextView
+            android:id="@+id/tvCancelledTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancelled Entrants"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.02"
+            android:textColor="#111111"
+            android:gravity="center"
+            android:layout_marginEnd="40dp" />
+
+    </LinearLayout>
+
+    <!-- ── TABS ─────────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tabCancelledAll"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="All"
+            android:gravity="center"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/bg_tab_active"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tabCancelledDeclined"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Declined"
+            android:gravity="center"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_tab_inactive"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:id="@+id/tabCancelledCancelled"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Cancelled"
+            android:gravity="center"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:background="@drawable/bg_tab_inactive" />
+
+    </LinearLayout>
+
+    <!-- ── COUNT LABEL ───────────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvCancelledCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:textSize="9sp"
+        android:letterSpacing="0.08"
+        android:textColor="#AAAAAA"
+        android:text="Showing 0 removed participants" />
+
+    <!-- ── PROGRESS BAR ──────────────────────────────────────────────────── -->
+    <ProgressBar
+        android:id="@+id/cancelledProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <!-- ── EMPTY STATE ───────────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvNoCancelledEntrants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No entrants found"
+        android:textSize="14sp"
+        android:textColor="#AAAAAA"
+        android:gravity="center"
+        android:paddingTop="48dp"
+        android:visibility="gone" />
+
+    <!-- ── LIST ──────────────────────────────────────────────────────────── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCancelledEntrants"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>

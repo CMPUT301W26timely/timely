@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#BB86FC</color>
-    <color name="purple_500">#6200EE</color>
-    <color name="purple_700">#3700B3</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
-    <color name="black">#000000</color>
-    <color name="white">#FFFFFF</color>
+    <!-- Airy Minimal Theme Colors -->
+    <color name="background">#ffffff</color>
+    <color name="pageBg">#f0ede8</color>
+    <color name="surface">#ffffff</color>
+    <color name="inputBg">#f7f7f7</color>
+    <color name="accentTint">#f4f8f4</color>
+    <color name="primaryAccent">#4a7a4a</color>
+    <color name="primaryMid">#6a9e6a</color>
+    <color name="textPrimary">#111111</color>
+    <color name="textSecondary">#555555</color>
+    <color name="textMuted">#aaaaaa</color>
+    <color name="textDisabled">#cccccc</color>
+    <color name="border">#efefef</color>
+    <color name="accentBorderLight">#e2ece2</color>
+    <color name="accentBorderMid">#dceadc</color>
 
-    <color name="bg_dark">#081221</color>
-    <color name="bg_dark_secondary">#0E1B2D</color>
-    <color name="card_dark">#13233A</color>
-    <color name="card_dark_2">#1A2D47</color>
+    <!-- Team/shared dark theme colors -->
+    <color name="accent_blue">#4EA1FF</color>
+    <color name="accent_purple">#7C4DFF</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="bg_dark">#06152B</color>
+    <color name="card_dark">#0B1E3A</color>
+    <color name="card_dark_2">#102443</color>
+    <color name="stroke_subtle">#22385C</color>
+    <color name="chip_gray">#2A3650</color>
+    <color name="accent_green">#4CAF50</color>
+    <color name="accent_orange">#FF9800</color>
 
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#A9B4C7</color>
-    <color name="text_muted">#6E7D96</color>
-
-    <color name="accent_blue">#2F80FF</color>
-    <color name="accent_purple">#7B61FF</color>
-    <color name="accent_green">#22C55E</color>
-    <color name="accent_orange">#F59E0B</color>
-    <color name="accent_red">#EF4444</color>
-
-    <color name="chip_gray">#31435F</color>
-    <color name="stroke_subtle">#263750</color>
+    <!-- Standard Colors -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 </resources>

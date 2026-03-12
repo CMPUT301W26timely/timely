@@ -12,7 +12,6 @@ public class User {
     private String email;
     private String phoneNumber;
 
-
     /**
      * Default constructor required for Firebase Firestore serialization.
      */
@@ -39,7 +38,6 @@ public class User {
      * @return The device ID string.
      */
     public String getDeviceId() {
-
         return deviceId;
     }
 
@@ -48,16 +46,14 @@ public class User {
      * @param deviceId The device ID string to set.
      */
     public void setDeviceId(String deviceId) {
-
         this.deviceId = deviceId;
     }
 
     /**
-     * Gets the current role of the user (e.g., "entrant").
+     * Gets the current role of the user.
      * @return The user's role.
      */
     public String getRole() {
-
         return role;
     }
 
@@ -65,34 +61,55 @@ public class User {
      * Sets the role for the user.
      * @param role The role to assign to the user.
      */
-
-
     public void setRole(String role) {
-
         this.role = role;
     }
+
+    /**
+     * Gets the name for the user.
+     * @return The user's name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name for the user.
+     * @param name The name to assign to the user.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Gets the email for the user.
+     * @return The user's email.
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Sets the email for the user.
+     * @param email The email to assign to the user.
+     */
     public void setEmail(String email) {
         this.email = email;
     }
 
+    /**
+     * Gets the optional phone number for the user.
+     * @return The user's phone number.
+     */
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    /**
+     * Sets the optional phone number for the user.
+     * @param phoneNumber The phone number to assign to the user.
+     */
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
 }
