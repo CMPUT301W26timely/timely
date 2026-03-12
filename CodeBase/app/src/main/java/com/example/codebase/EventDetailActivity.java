@@ -85,6 +85,10 @@ public class EventDetailActivity extends AppCompatActivity {
         // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
+        // ── Stats Boxes ───────────────────────────────────────────────────────
+        findViewById(R.id.boxViewEnrolled).setOnClickListener(new View.OnClickListener() {
+            //navigate to FinalEntrantListFragment
+        });
         // ── LOTTERY MANAGEMENT ────────────────────────────────────────────────
         findViewById(R.id.rowRunLottery).setOnClickListener(v ->
                 Toast.makeText(this,

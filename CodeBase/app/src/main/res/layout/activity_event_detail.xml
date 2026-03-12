@@ -323,39 +323,45 @@
                 app:cardBackgroundColor="#1A2335"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
+
                 <LinearLayout
+                    android:id="@+id/boxViewEnrolled"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:gravity="center_vertical"
+                    android:orientation="vertical"
                     android:padding="12dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/stat_enrolled"
-                            android:textSize="11sp"
+                            android:textAllCaps="true"
                             android:textColor="#7A8FA6"
-                            android:textAllCaps="true" />
+                            android:textSize="11sp" />
+
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@android:drawable/ic_menu_add"
                             app:tint="#2ECC71" />
                     </LinearLayout>
+
                     <TextView
                         android:id="@+id/tvEnrolledCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
+                        android:textColor="#FFFFFF"
                         android:textSize="26sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

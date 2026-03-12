@@ -8,6 +8,8 @@ package com.example.codebase;
 public class User {
     private String deviceId;
     private String role;
+    private String name;
+    private String email;
 
     /**
      * Default constructor required for Firebase Firestore serialization.
@@ -57,5 +59,37 @@ public class User {
      */
     public void setRole(String role) {
         this.role = role;
+    }
+
+    /**
+     * Gets the name for the user.
+     * @return The users name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the name for the user.
+     * @param name The name to assign to the user.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the email for the user.
+     * @return The users email.
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Sets the email for the user.
+     * @param email The name to assign to the user.
+     */
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
