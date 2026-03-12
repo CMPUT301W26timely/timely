@@ -31,4 +31,12 @@
         android:label="Create Event"
         tools:layout="@layout/fragment_create_event">
     </fragment>
+    <fragment
+        android:id="@+id/finalEntrantListFragment2"
+        android:name="com.example.codebase.FinalEntrantListFragment"
+        android:label="FinalEntrantListFragment" />
+    <activity
+        android:id="@+id/eventDetailActivity2"
+        android:name="com.example.codebase.EventDetailActivity"
+        android:label="EventDetailActivity" />
 </navigation>

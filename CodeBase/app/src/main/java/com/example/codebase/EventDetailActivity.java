@@ -27,13 +27,16 @@ import java.util.Locale;
 /**
  * EventDetailActivity — Refined event detail screen.
  */
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity implements FinalEntrantListFragment.FinalEntrantListListener{
 
     public static final String EXTRA_EVENT_ID    = "event_id";
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
     private String eventId;
     private String eventTitle;
+
+    //All event details should be stored in a event class
+    private Event event;
 
     private TextView tvDetailTitle;
     private TextView tvDetailDate;
@@ -76,6 +79,12 @@ public class EventDetailActivity extends AppCompatActivity {
 
         Button btnViewWaitingList = findViewById(R.id.btnViewWaitingList);
         Button btnViewQr = findViewById(R.id.btnViewQr);
+        // ── Stats Boxes ───────────────────────────────────────────────────────
+        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
+                Toast.makeText(this,
+                    "Add nav to Final Entrants frag",
+                    Toast.LENGTH_SHORT).show()
+        );
 
         // ── Toolbar / Back button ─────────────────────────────────────────────
         setSupportActionBar(toolbar);
@@ -214,5 +223,10 @@ public class EventDetailActivity extends AppCompatActivity {
             tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_closed);
             tvStatusBadge.setTextColor(getColor(R.color.textSecondary));
         }
+    }
+
+    @Override
+    public Event getEvent() {
+        return event;
     }
 }
