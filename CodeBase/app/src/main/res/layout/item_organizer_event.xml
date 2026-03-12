@@ -1,135 +1,117 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="6dp"
-    app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/border">
+    android:layout_marginBottom="10dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:orientation="horizontal"
+        android:padding="14dp">
 
-        <!-- Thumbnail / Date Badge -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/dateBadge"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            app:cardBackgroundColor="@color/accentTint"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/tvMonth"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OCT"
-                    android:textSize="10sp"
-                    android:textColor="@color/primaryAccent"
-                    android:textAllCaps="true"
-                    android:fontFamily="sans-serif-medium"
-                    android:letterSpacing="0.1" />
-
-                <TextView
-                    android:id="@+id/tvDay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="24"
-                    android:textSize="20sp"
-                    android:textColor="@color/primaryAccent"
-                    android:textStyle="bold"
-                    android:fontFamily="serif" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        <!-- Thumbnail -->
+        <ImageView
+            android:id="@+id/ivEventThumbnail"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/bg_event_thumbnail"
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"
+            android:layout_marginEnd="14dp"
+            android:contentDescription="@string/event_poster_desc" />
 
         <!-- Content -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            app:layout_constraintTop_toTopOf="@id/dateBadge"
-            app:layout_constraintBottom_toBottomOf="@id/dateBadge"
-            app:layout_constraintStart_toEndOf="@id/dateBadge"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
+            <!-- Title -->
             <TextView
                 android:id="@+id/tvEventItemTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Art Workshop: Minimalist Patterns"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/textPrimary"
-                android:fontFamily="sans-serif-medium"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:textColor="#111111"
+                android:letterSpacing="-0.01"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="3dp" />
 
             <!-- Date -->
             <TextView
                 android:id="@+id/tvEventItemDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="St. Albert Public Library"
-                android:textSize="12sp"
-                android:textColor="@color/textSecondary"
-                android:layout_marginTop="2dp" />
+                android:textSize="11sp"
+                android:textColor="#AAAAAA"
+                android:layout_marginBottom="8dp" />
 
-            <!-- Status & Stats Row -->
+            <!-- Status badge — pill style -->
+            <TextView
+                android:id="@+id/tvEventStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Stats row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="8dp">
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/tvEventStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OPEN"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:letterSpacing="0.1"
-                    android:background="@drawable/bg_status_badge_open"
-                    android:textColor="@color/primaryAccent" />
-
-                <View
-                    android:layout_width="4dp"
-                    android:layout_height="4dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:background="@drawable/bg_icon_circle"
-                    android:backgroundTint="@color/textDisabled" />
+                <ImageView
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/stat_waiting_list"
+                    android:layout_marginEnd="4dp" />
 
                 <TextView
                     android:id="@+id/tvWaitingCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="128 entries"
-                    android:textSize="12sp"
-                    android:textColor="@color/textSecondary" />
+                    android:textSize="11sp"
+                    android:textColor="#AAAAAA"
+                    android:layout_marginEnd="14dp" />
+
+                <ImageView
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@android:drawable/ic_menu_rotate"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/stat_drawn"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/tvSelectedCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="#AAAAAA" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

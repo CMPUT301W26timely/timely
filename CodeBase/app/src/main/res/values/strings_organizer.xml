@@ -65,6 +65,7 @@
 
     <!-- Accessibility -->
     <string name="decorative_image">Decorative image</string>
+    <string name="event_poster_desc">Event poster</string>
 
     <!-- Event detail new fields -->
     <string name="date_not_set">Date not set</string>
