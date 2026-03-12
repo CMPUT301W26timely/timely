@@ -1,19 +1,33 @@
 package com.example.codebase;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.codebase.databinding.FragmentCreateEventBinding;
 import com.google.firebase.firestore.CollectionReference;
@@ -26,94 +40,109 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class CreateEventFragment extends Fragment {
-    private FragmentCreateEventBinding binding;
-    private Uri selectedImageUri;
-    private ImageView previewImage;
-    private ActivityResultLauncher<String> pickImageLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null)
-                    selectedImageUri = uri;
+
+    private CreateEventViewModel viewModel;
+    private FrameLayout posterUploadArea;
+    private ImageView ivPosterPreview;
+
+    private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        try {
+                            Bitmap bitmap;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(requireActivity().getContentResolver(), imageUri));
+                            } else {
+                                bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
+                            }
+
+                            // 1. Resize the image to prevent breaking Firestore 1MB limit
+                            int MAX_DIMENSION = 800;
+                            int width = bitmap.getWidth();
+                            int height = bitmap.getHeight();
+                            if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                                float ratio = Math.min((float) MAX_DIMENSION / width, (float) MAX_DIMENSION / height);
+                                width = Math.round(width * ratio);
+                                height = Math.round(height * ratio);
+                                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+                            }
+
+                            // 2. Compress and convert to Base64
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos); // 60% quality
+                            byte[] imageBytes = baos.toByteArray();
+                            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+
+                            // 3. Save to ViewModel and Show Preview
+                            viewModel.posterBase64 = base64Image;
+                            if (ivPosterPreview == null) {
+                                ivPosterPreview = new ImageView(getContext());
+                                ivPosterPreview.setLayoutParams(new FrameLayout.LayoutParams(
+                                        ViewGroup.LayoutParams.MATCH_PARENT,
+                                        ViewGroup.LayoutParams.MATCH_PARENT));
+                                ivPosterPreview.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                posterUploadArea.addView(ivPosterPreview, 0);
+                            }
+                            ivPosterPreview.setImageBitmap(bitmap);
+
+                        } catch (IOException e) {
+                            Toast.makeText(getContext(), "Failed to load image", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
             });
 
+    @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        binding = FragmentCreateEventBinding.inflate(inflater, container, false);
-        binding.posterUploadBox.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
-        binding.buttonPublishEvent.setOnClickListener(v -> saveEvent());
-        binding.buttonCancel.setOnClickListener(v -> requireActivity().finish());
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_create_basics, container, false);
+        viewModel = new ViewModelProvider(requireActivity()).get(CreateEventViewModel.class);
 
-        return binding.getRoot();
+        posterUploadArea = view.findViewById(R.id.posterUploadArea);
+        posterUploadArea.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
+        });
+
+        EditText etEventName = view.findViewById(R.id.etEventName);
+        EditText etDescription = view.findViewById(R.id.etDescription);
+        EditText etLocation = view.findViewById(R.id.etLocation);
+        EditText etPrice = view.findViewById(R.id.etPrice);
+
+        // Pre-fill if navigating back
+        etEventName.setText(viewModel.name);
+        etDescription.setText(viewModel.description);
+        etLocation.setText(viewModel.location);
+        if (viewModel.price > 0) etPrice.setText(String.valueOf(viewModel.price));
+
+        etEventName.addTextChangedListener(new SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { viewModel.name = s.toString(); }
+        });
+        etDescription.addTextChangedListener(new SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { viewModel.description = s.toString(); }
+        });
+        etLocation.addTextChangedListener(new SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { viewModel.location = s.toString(); }
+        });
+        etPrice.addTextChangedListener(new SimpleTextWatcher() {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try { viewModel.price = Double.parseDouble(s.toString()); } catch (NumberFormatException ignored) {}
+            }
+        });
+
+        return view;
     }
 
-    private void saveEvent() {
-        if (selectedImageUri == null) {
-            Log.d("Firestore", "No image selected");
-            return;
-        }
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference eventsRef = db.collection("events");
-
-        try {
-            // Convert image to Base64 string
-            InputStream inputStream = requireContext().getContentResolver().openInputStream(selectedImageUri);
-            byte[] bytes = new byte[inputStream.available()];
-            inputStream.read(bytes);
-            inputStream.close();
-            String base64Image = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
-
-            int base64SizeBytes = base64Image.getBytes().length;
-            int base64SizeKB = base64SizeBytes / 1024;
-
-            Log.d("ImageSize", "Base64 size: " + base64SizeKB + " KB");
-
-            int MAX_BASE64_KB = 850;
-
-            if (base64SizeKB > MAX_BASE64_KB) {
-                Toast.makeText(requireContext(),
-                        "Poster image exceeds " + MAX_BASE64_KB + " KB.",
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            String eventId = eventsRef.document().getId();
-
-            Event event = new Event();
-
-            EventPoster poster = new EventPoster(base64Image);
-            event.setPoster(poster);
-            event.setId("25");
-            event.setTitle(binding.etEventTitle.getText().toString());
-            event.setDescription(binding.etDescription.getText().toString());
-            event.setLocation(binding.etLocation.getText().toString());
-            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
-            try {
-                Date startDate = formatter.parse(binding.etStartDate.getText().toString());
-                event.setStartDate(startDate);
-                Date endDate = formatter.parse(binding.etEndDate.getText().toString());
-                event.setStartDate(endDate);
-                Date regDate = formatter.parse(binding.etRegistrationDeadline.getText().toString());
-                event.setStartDate(regDate);
-            } catch (ParseException e) {
-
-            }
-            String deviceId = DeviceIdManager.getOrCreateDeviceId(requireContext());
-            event.setOrganizerDeviceId(deviceId);
-
-            eventsRef.document(eventId).set(event)
-                    .addOnSuccessListener(unused -> {
-                        Log.d("Firestore", "Event saved! ID: " + eventId);
-                        requireActivity().finish();
-                    })
-                    .addOnFailureListener(e -> Log.e("Firestore", "Failed to save event: " + e.getMessage()));
-
-        } catch (Exception e) {
-            Log.e("Firestore", "Failed to read image: " + e.getMessage());
-        }
+    // Helper text watcher to keep code clean
+    public abstract static class SimpleTextWatcher implements TextWatcher {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void afterTextChanged(Editable s) {}
     }
 }

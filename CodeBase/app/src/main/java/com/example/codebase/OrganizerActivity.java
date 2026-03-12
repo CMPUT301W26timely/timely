@@ -65,6 +65,11 @@ public class OrganizerActivity extends AppCompatActivity {
         );
 
         setupBottomNavigation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadOrganizerEvents();
     }
 
@@ -94,7 +99,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerDeviceId", deviceId)
+                .whereEqualTo("organizerId", deviceId)
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -122,10 +127,10 @@ public class OrganizerActivity extends AppCompatActivity {
             Timestamp startDateTs   = doc.getTimestamp("startDate");
             Timestamp endDateTs     = doc.getTimestamp("endDate");
 
-            event.setRegistrationDeadline(regDeadlineTs != null ? regDeadlineTs.toDate() : null);
-            event.setDrawDate(drawDateTs    != null ? drawDateTs.toDate()     : null);
-            event.setStartDate(startDateTs   != null ? startDateTs.toDate()    : null);
-            event.setEndDate(endDateTs     != null ? endDateTs.toDate()      : null);
+            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
+            event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
+            event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
+            event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
 
 //            // ── Display date on card ───────────────────────────────────────────
 //            event.displayDate = event.startDate != null
@@ -136,26 +141,10 @@ public class OrganizerActivity extends AppCompatActivity {
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
 
-            event.setWaitingList(waitingList != null
-                    ? (List<String>) waitingList
-                    : new ArrayList<>());
-            event.setSelectedEntrants(selectedEntrants != null
-                    ? (List<String>) selectedEntrants
-                    : new ArrayList<>());
-            event.setEnrolledEntrants(enrolledEntrants != null
-                    ? (List<String>) enrolledEntrants
-                    : new ArrayList<>());
-
-            Object posterObj = doc.get("poster");
-
-            if (posterObj instanceof Map) {
-                Map<String, Object> posterMap = (Map<String, Object>) posterObj;
-                String base64 = (String) posterMap.get("posterImageBase64");
-
-                if (base64 != null) {
-                    event.setPoster(new EventPoster(base64));
-                }
-            }
+            event.waitingCount      = waitingList      != null ? waitingList.size()      : 0;
+            event.selectedCount     = selectedEntrants != null ? selectedEntrants.size() : 0;
+            event.selectedEntrants  = selectedEntrants;
+            event.enrolledEntrants  = enrolledEntrants;
 
             eventList.add(event);
         }

@@ -1,16 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pageBg">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/create_event_nav_host"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+    <!-- Top Bar -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:navGraph="@navigation/nav_graph"
-        app:defaultNavHost="true"
-        app:startDestination="@id/CreateEventFragment" />
+        android:layout_height="?android:attr/actionBarSize"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp">
 
-</FrameLayout>
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_icon_circle"
+            android:src="@drawable/ic_arrow_right"
+            android:rotation="180"
+            android:contentDescription="Back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NEW EVENT"
+                android:textColor="@color/textMuted"
+                android:textSize="9sp"
+                android:letterSpacing="0.18"
+                android:textAllCaps="true" />
+
+            <TextView
+                android:id="@+id/tvStepName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Basics"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnDismiss"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_icon_circle"
+            android:src="@drawable/ic_close"
+            android:contentDescription="Dismiss" />
+    </LinearLayout>
+
+    <!-- ViewPager2 for steps -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Bottom CTA -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="22dp">
+
+        <Button
+            android:id="@+id/btnContinue"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="CONTINUE"
+            android:backgroundTint="@color/primaryAccent"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:letterSpacing="0.06" />
+
+    </FrameLayout>
+</LinearLayout>

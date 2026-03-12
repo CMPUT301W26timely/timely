@@ -13,7 +13,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeBase">
 
-        <!-- SplashActivity — REMOVED launcher intent filter -->
         <activity
             android:name=".SplashActivity"
             android:exported="false"
@@ -24,7 +23,6 @@
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
 
-        <!-- RoleCheckActivity — ONLY launcher -->
         <activity
             android:name=".RoleCheckActivity"
             android:exported="true"
@@ -40,14 +38,23 @@
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
 
-        <activity
-            android:name=".CreateEventActivity"
-            android:exported="false" />
-
-        <!-- NEW -->
         <activity android:name=".OrganizerActivity" android:exported="false" />
         <activity android:name=".EventDetailActivity" android:exported="false" />
         <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".CreateEventActivity" android:exported="false" />
+
+        <!-- NEW QR Display Activity -->
+        <activity android:name=".QrDisplayActivity" android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 
