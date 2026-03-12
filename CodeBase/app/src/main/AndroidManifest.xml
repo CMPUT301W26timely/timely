@@ -42,6 +42,8 @@
         <activity android:name=".EventDetailActivity" android:exported="false" />
         <activity android:name=".ProfileActivity" android:exported="false" />
         <activity android:name=".CreateEventActivity" android:exported="false" />
+        <activity android:name=".InvitedEntrantsActivity" android:exported="false" />
+        <activity android:name=".CancelledEntrantsActivity" android:exported="false" />
 
         <!-- NEW QR Display Activity -->
         <activity android:name=".QrDisplayActivity" android:exported="false" />

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pageBg">
+    android:background="#F0EDE8">
 
     <!-- Main content -->
     <LinearLayout
@@ -18,22 +18,43 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="24dp"
-            android:paddingBottom="16dp">
+            android:paddingTop="36dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <ImageButton
+                android:id="@+id/btnBackOrganizer"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_media_previous"
+                android:background="@drawable/bg_icon_btn_light"
+                android:contentDescription="@string/back_button_desc" />
 
             <TextView
-                android:id="@+id/tvTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/my_events_title"
-                android:textSize="28sp"
-                android:fontFamily="serif"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@color/textPrimary" />
+                android:letterSpacing="-0.02"
+                android:textColor="#111111"
+                android:paddingStart="12dp" />
 
         </LinearLayout>
+
+        <!-- Eyebrow label -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="YOUR EVENTS"
+            android:textSize="9sp"
+            android:letterSpacing="0.18"
+            android:textColor="#AAAAAA"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="8dp" />
 
         <!-- Events list -->
         <androidx.recyclerview.widget.RecyclerView
@@ -41,207 +62,147 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingHorizontal="12dp"
-            android:clipToPadding="false"
-            android:paddingBottom="100dp" />
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false" />
 
         <!-- Empty state -->
-        <LinearLayout
+        <TextView
             android:id="@+id/tvNoEvents"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
+            android:text="@string/no_events_yet"
+            android:textSize="14sp"
+            android:textColor="#AAAAAA"
             android:gravity="center"
-            android:padding="48dp"
-            android:visibility="gone">
+            android:visibility="gone" />
 
-            <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_nav_events"
-                app:tint="@color/textDisabled" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/no_events_yet"
-                android:textSize="15sp"
-                android:textColor="@color/textSecondary"
-                android:layout_marginTop="16dp"
-                android:gravity="center" />
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <!-- Bottom Navigation (Airy Minimal Style) -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_gravity="bottom"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="20dp"
-        app:cardCornerRadius="22dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="@color/surface"
-        app:strokeWidth="1dp"
-        app:strokeColor="@color/border">
-
+        <!-- Bottom navigation -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:background="#FFFFFF"
+            android:elevation="4dp"
+            android:baselineAligned="false">
 
             <!-- Explore -->
             <LinearLayout
-                android:id="@+id/navExplore"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true">
+                android:gravity="center">
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_explore"
-                    app:tint="@color/textDisabled" />
+                    android:src="@android:drawable/ic_menu_compass"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_explore" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_explore"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
             </LinearLayout>
 
             <!-- Search -->
             <LinearLayout
-                android:id="@+id/navSearch"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true">
+                android:gravity="center">
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_search"
-                    app:tint="@color/textDisabled" />
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_search" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_search"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
             </LinearLayout>
 
-            <!-- My Events (Active) -->
+            <!-- My Events (active) -->
             <LinearLayout
-                android:id="@+id/navMyEvents"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true">
-                <FrameLayout
-                    android:layout_width="48dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/bg_role_icon_blue"
-                    android:backgroundTint="@color/accentTint">
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_nav_events"
-                        app:tint="@color/primaryAccent" />
-                </FrameLayout>
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    app:tint="#4A7A4A"
+                    android:contentDescription="@string/nav_my_events" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_my_events"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/primaryAccent"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="12sp"
+                    android:textColor="#4A7A4A" />
             </LinearLayout>
 
             <!-- Notifications -->
             <LinearLayout
-                android:id="@+id/navNotifications"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true">
+                android:gravity="center">
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_notifications"
-                    app:tint="@color/textDisabled" />
+                    android:src="@android:drawable/ic_popup_reminder"
+                    app:tint="#CCCCCC"
+                    android:contentDescription="@string/nav_notifications" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_notifications"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="12sp"
+                    android:textColor="#CCCCCC" />
             </LinearLayout>
 
             <!-- Profile -->
-            <LinearLayout
+            <TextView
                 android:id="@+id/navProfile"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical"
                 android:gravity="center"
-                android:clickable="true"
-                android:focusable="true">
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_profile"
-                    app:tint="@color/textDisabled" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nav_profile"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
+                android:orientation="vertical"
+                android:drawableTop="@android:drawable/ic_menu_my_calendar"
+                android:drawableTint="#CCCCCC"
+                android:drawablePadding="2dp"
+                android:text="@string/nav_profile"
+                android:textSize="12sp"
+                android:textColor="#CCCCCC" />
 
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
-    <!-- FAB (Minimal Style) -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+    </LinearLayout>
+
+    <!-- FAB -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreateEvent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="104dp"
-        android:text="New Event"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:fontFamily="sans-serif-medium"
-        app:icon="@android:drawable/ic_input_add"
-        app:iconTint="@color/white"
-        app:backgroundTint="@color/primaryAccent"
-        app:cornerRadius="100dp" />
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="76dp"
+        android:contentDescription="@string/create_event_fab_desc"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:backgroundTint="#4A7A4A"
+        app:tint="#FFFFFF" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
