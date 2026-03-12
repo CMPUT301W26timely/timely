@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -41,6 +42,23 @@ public class CreateEventActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_event);
 
         viewModel = new ViewModelProvider(this).get(CreateEventViewModel.class);
+        if (getIntent().getBooleanExtra("isEditMode", false)) {
+            viewModel.isEditMode = true;
+            viewModel.editingEventId = getIntent().getStringExtra("editingEventId");
+            viewModel.name = getIntent().getStringExtra("name") != null ? getIntent().getStringExtra("name") : "";
+            viewModel.description = getIntent().getStringExtra("description") != null ? getIntent().getStringExtra("description") : "";
+            viewModel.location = getIntent().getStringExtra("location") != null ? getIntent().getStringExtra("location") : "";
+            viewModel.price = getIntent().getDoubleExtra("price", 0.0);
+            viewModel.geoRequired = getIntent().getBooleanExtra("geoRequired", false);
+            viewModel.waitlistLimit = getIntent().getIntExtra("waitlistCap", -1);
+            viewModel.capacity = getIntent().getIntExtra("capacity", 0);
+            viewModel.posterBase64 = getIntent().getStringExtra("posterBase64") != null ? getIntent().getStringExtra("posterBase64") : "";
+            viewModel.eventStart = getIntent().getStringExtra("eventStart") != null ? getIntent().getStringExtra("eventStart") : "";
+            viewModel.eventEnd = getIntent().getStringExtra("eventEnd") != null ? getIntent().getStringExtra("eventEnd") : "";
+            viewModel.regOpen = getIntent().getStringExtra("regOpen") != null ? getIntent().getStringExtra("regOpen") : "";
+            viewModel.regClose = getIntent().getStringExtra("regClose") != null ? getIntent().getStringExtra("regClose") : "";
+        }
+
 
         viewPager = findViewById(R.id.viewPager);
         tvStepName = findViewById(R.id.tvStepName);
@@ -50,6 +68,9 @@ public class CreateEventActivity extends AppCompatActivity {
 
         viewPager.setAdapter(new WizardPagerAdapter(this));
         viewPager.setUserInputEnabled(false);
+
+        if (viewModel.isEditMode)
+            tvStepName.setText("Edit Event");
 
         btnDismiss.setOnClickListener(v -> finish());
         btnBack.setOnClickListener(v -> {
@@ -82,7 +103,7 @@ public class CreateEventActivity extends AppCompatActivity {
         tvStepName.setText(titleRes[pos]);
 
         if (pos == 2) {
-            btnContinue.setText(R.string.btn_publish);
+            btnContinue.setText(viewModel.isEditMode ? "SAVE CHANGES" : getString(R.string.btn_publish));
             btnContinue.setEnabled(true);
         } else if (pos == 3) {
             btnContinue.setText(R.string.btn_done);
@@ -118,51 +139,105 @@ public class CreateEventActivity extends AppCompatActivity {
         btnContinue.setText("PUBLISHING...");
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String eventId = db.collection("events").document().getId();
+
+        String eventId = viewModel.isEditMode ? viewModel.editingEventId : db.collection("events").document().getId();
         viewModel.generatedEventId = eventId;
 
-        Event event = new Event();
-        event.setId(eventId);
-        event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
-        event.setStatus("published");
-        //event.put("createdAt", new Timestamp(new Date()));
+        if (viewModel.isEditMode){
+            db.collection("events").document(eventId).get().addOnSuccessListener(doc -> {
+                Event existing = doc.toObject(Event.class);
 
-        // Populate exactly matching the Prompt Schema
-        event.setTitle(viewModel.name);
-        event.setDescription(viewModel.description);
-        event.setLocation(viewModel.location);
-        event.setPrice((float) viewModel.price);
-        event.setMaxCapacity((long) viewModel.capacity);
-        event.setWaitlistCap(viewModel.waitlistLimit);
-        event.setGeoEnabled(viewModel.geoRequired);
+                existing.setTitle(viewModel.name);
+                existing.setDescription(viewModel.description);
+                existing.setLocation(viewModel.location);
+                existing.setPrice((float) viewModel.price);
+                existing.setMaxCapacity((long) viewModel.capacity);
+                existing.setWaitlistCap(viewModel.waitlistLimit);
+                existing.setGeoEnabled(viewModel.geoRequired);
 
-        // Parsed Timestamps
-        event.setStartDate(parseDate(viewModel.eventStart).toDate());
-        event.setEndDate(parseDate(viewModel.eventEnd).toDate());
-        event.setRegistrationOpen(parseDate(viewModel.regOpen).toDate());
-        event.setRegistrationDeadline(parseDate(viewModel.regClose).toDate());
+                Timestamp startTs    = parseDate(viewModel.eventStart);
+                Timestamp endTs      = parseDate(viewModel.eventEnd);
+                Timestamp regOpenTs  = parseDate(viewModel.regOpen);
+                Timestamp regCloseTs = parseDate(viewModel.regClose);
+                if (startTs != null)
+                    existing.setStartDate(startTs.toDate());
 
-        event.setWaitingList(new ArrayList<Entrant>());
-        event.setSelectedEntrants(new ArrayList<Entrant>());
-        event.setCancelledEntrants(new ArrayList<Entrant>());
-        event.setEnrolledEntrants(new ArrayList<Entrant>());
-        // Poster Image (Base64)
-        if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty()) {
-            EventPoster poster = new EventPoster(viewModel.posterBase64);
-            event.setPoster(poster);
-        }
+                if (endTs != null)
+                    existing.setEndDate(endTs.toDate());
 
-        db.collection("events").document(eventId).set(event)
-            .addOnSuccessListener(aVoid -> {
-                generateQr(eventId);
-                viewPager.setCurrentItem(3);
-                updateStepUI();
-            })
-            .addOnFailureListener(e -> {
-                btnContinue.setEnabled(true);
-                btnContinue.setText(R.string.btn_publish);
-                Toast.makeText(this, "Failed to publish", Toast.LENGTH_SHORT).show();
+                if (regOpenTs != null)
+                    existing.setRegistrationOpen(regOpenTs.toDate());
+
+                if (regCloseTs != null)
+                    existing.setRegistrationDeadline(regCloseTs.toDate());
+
+                if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
+                    existing.setPoster(new EventPoster(viewModel.posterBase64));
+
+                db.collection("events").document(eventId).set(existing, SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> {
+                            Toast.makeText(this, "Event updated!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        })
+                        .addOnFailureListener(e -> {
+                            btnContinue.setEnabled(true);
+                            btnContinue.setText("SAVE CHANGES");
+                            Toast.makeText(this, "Failed to save", Toast.LENGTH_SHORT).show();
+                        });
             });
+
+        } else {
+            Event event = new Event();
+            event.setId(eventId);
+
+            event.setTitle(viewModel.name);
+            event.setDescription(viewModel.description);
+            event.setLocation(viewModel.location);
+            event.setPrice((float) viewModel.price);
+            event.setMaxCapacity((long) viewModel.capacity);
+            event.setWaitlistCap(viewModel.waitlistLimit);
+            event.setGeoEnabled(viewModel.geoRequired);
+
+            Timestamp startTs    = parseDate(viewModel.eventStart);
+            Timestamp endTs      = parseDate(viewModel.eventEnd);
+            Timestamp regOpenTs  = parseDate(viewModel.regOpen);
+            Timestamp regCloseTs = parseDate(viewModel.regClose);
+            if (startTs != null)
+                event.setStartDate(startTs.toDate());
+
+            if (endTs != null)
+                event.setEndDate(endTs.toDate());
+
+            if (regOpenTs != null)
+                event.setRegistrationOpen(regOpenTs.toDate());
+
+            if (regCloseTs != null)
+                event.setRegistrationDeadline(regCloseTs.toDate());
+
+
+            // Poster Image (Base64)
+            if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
+                event.setPoster(new EventPoster(viewModel.posterBase64));
+
+            event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
+            event.setStatus("published");
+            event.setWaitingList(new ArrayList<Entrant>());
+            event.setSelectedEntrants(new ArrayList<Entrant>());
+            event.setCancelledEntrants(new ArrayList<Entrant>());
+            event.setEnrolledEntrants(new ArrayList<Entrant>());
+
+            db.collection("events").document(eventId).set(event, SetOptions.merge())
+                    .addOnSuccessListener(aVoid -> {
+                        generateQr(eventId);
+                        viewPager.setCurrentItem(3);
+                        updateStepUI();
+                    })
+                    .addOnFailureListener(e -> {
+                        btnContinue.setEnabled(true);
+                        btnContinue.setText(R.string.btn_publish);
+                        Toast.makeText(this, "Failed to publish", Toast.LENGTH_SHORT).show();
+                    });
+        }
     }
 
     private void generateQr(String eventId) {

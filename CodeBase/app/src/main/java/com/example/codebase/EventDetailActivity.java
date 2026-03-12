@@ -7,6 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -55,6 +56,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private TextView tvWinnersCount;
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
+    private Event event;
 
     private final SimpleDateFormat displayFormat =
             new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
@@ -124,11 +126,41 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         // ── SETTINGS ─────────────────────────────────────────────────────────
-        findViewById(R.id.rowEditEvent).setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.edit_event_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.rowEditEvent).setOnClickListener(v -> {
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            Intent intent = new Intent(this, CreateEventActivity.class);
+            intent.putExtra("isEditMode", true);
+            intent.putExtra("editingEventId", eventId);
+            intent.putExtra("name", event.getTitle() != null ? event.getTitle() : "");
+            intent.putExtra("description", event.getDescription() != null ? event.getDescription() : "");
+            intent.putExtra("location", event.getLocation() != null ? event.getLocation() : "");
+            intent.putExtra("price", (double) event.getPrice());
+            intent.putExtra("geoRequired", event.isGeoEnabled());
+            intent.putExtra("waitlistCap", event.getWaitlistCap());
+            intent.putExtra("capacity", event.getMaxCapacity() != null ? event.getMaxCapacity().intValue() : 0);
+            intent.putExtra("posterBase64", event.getPoster() != null ? event.getPoster().getPosterImageBase64() : "");
+
+            if (event.getStartDate() != null)
+                intent.putExtra("eventStart", sdf.format(event.getStartDate()));
+
+            if (event.getEndDate() != null)
+                intent.putExtra("eventEnd", sdf.format(event.getEndDate()));
+
+            if (event.getRegistrationOpen() != null)
+                intent.putExtra("regOpen", sdf.format(event.getRegistrationOpen()));
+
+            if (event.getRegistrationDeadline() != null)
+                intent.putExtra("regClose", sdf.format(event.getRegistrationDeadline()));
+
+            startActivity(intent);
+        });
+
         // Cancelled stat card
         findViewById(R.id.cardCancelled).setOnClickListener(v -> {
             Intent intent = new Intent(this, CancelledEntrantsActivity.class);
@@ -177,7 +209,7 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
-        Event event = doc.toObject(Event.class);
+        event = doc.toObject(Event.class);
 
         // ── Poster image — stored as Base64 string in Firestore ──────────────
         if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
@@ -350,6 +382,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
                 tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (eventId != null) {
+            loadEventDetails();
         }
     }
 }
