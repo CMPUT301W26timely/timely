@@ -16,6 +16,7 @@ public class AppDatabase {
      * Public collection reference for the 'users' collection.
      */
     public final CollectionReference usersRef;
+    public final CollectionReference eventsRef;
 
     /**
      * Private constructor to initialize the Firestore instance and collection references.
@@ -23,6 +24,7 @@ public class AppDatabase {
     private AppDatabase() {
         db = FirebaseFirestore.getInstance();
         usersRef = db.collection("users");
+        eventsRef = db.collection("events");
     }
 
     /**

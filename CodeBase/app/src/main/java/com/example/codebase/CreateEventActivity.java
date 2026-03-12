@@ -21,6 +21,7 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -59,7 +60,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 finish();
             }
         });
-        
+
         btnContinue.setOnClickListener(v -> {
             int current = viewPager.getCurrentItem();
             if (current == 2) {
@@ -79,7 +80,7 @@ public class CreateEventActivity extends AppCompatActivity {
         int pos = viewPager.getCurrentItem();
         int[] titleRes = {R.string.step_basics, R.string.step_schedule, R.string.step_settings, R.string.step_created};
         tvStepName.setText(titleRes[pos]);
-        
+
         if (pos == 2) {
             btnContinue.setText(R.string.btn_publish);
             btnContinue.setEnabled(true);
@@ -119,33 +120,38 @@ public class CreateEventActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String eventId = db.collection("events").document().getId();
         viewModel.generatedEventId = eventId;
-        
-        Map<String, Object> event = new HashMap<>();
-        event.put("eventId", eventId);
-        event.put("organizerId", DeviceIdManager.getOrCreateDeviceId(this));
-        event.put("status", "published");
-        event.put("createdAt", new Timestamp(new Date()));
-        
+
+        Event event = new Event();
+        event.setId(eventId);
+        event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
+        event.setStatus("published");
+        //event.put("createdAt", new Timestamp(new Date()));
+
         // Populate exactly matching the Prompt Schema
-        event.put("name", viewModel.name);
-        event.put("description", viewModel.description);
-        event.put("location", viewModel.location);
-        event.put("price", viewModel.price);
-        event.put("capacity", viewModel.capacity);
-        event.put("waitlistLimit", viewModel.waitlistLimit);
-        event.put("geoEnabled", viewModel.geoRequired);
+        event.setTitle(viewModel.name);
+        event.setDescription(viewModel.description);
+        event.setLocation(viewModel.location);
+        event.setPrice((float) viewModel.price);
+        event.setMaxCapacity((long) viewModel.capacity);
+        event.setWaitlistCap(viewModel.waitlistLimit);
+        event.setGeoEnabled(viewModel.geoRequired);
 
         // Parsed Timestamps
-        event.put("eventStart", parseDate(viewModel.eventStart));
-        event.put("eventEnd", parseDate(viewModel.eventEnd));
-        event.put("regOpen", parseDate(viewModel.regOpen));
-        event.put("regClose", parseDate(viewModel.regClose));
+        event.setStartDate(parseDate(viewModel.eventStart).toDate());
+        event.setEndDate(parseDate(viewModel.eventEnd).toDate());
+        event.setRegistrationOpen(parseDate(viewModel.regOpen).toDate());
+        event.setRegistrationDeadline(parseDate(viewModel.regClose).toDate());
 
+        event.setWaitingList(new ArrayList<Entrant>());
+        event.setSelectedEntrants(new ArrayList<Entrant>());
+        event.setCancelledEntrants(new ArrayList<Entrant>());
+        event.setEnrolledEntrants(new ArrayList<Entrant>());
         // Poster Image (Base64)
         if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty()) {
-            event.put("posterBase64", viewModel.posterBase64);
+            EventPoster poster = new EventPoster(viewModel.posterBase64);
+            event.setPoster(poster);
         }
-        
+
         db.collection("events").document(eventId).set(event)
             .addOnSuccessListener(aVoid -> {
                 generateQr(eventId);

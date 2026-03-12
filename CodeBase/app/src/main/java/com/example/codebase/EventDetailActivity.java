@@ -13,6 +13,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -176,16 +177,12 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
+        Event event = doc.toObject(Event.class);
+
         // ── Poster image — stored as Base64 string in Firestore ──────────────
-        String posterBase64 = doc.getString("posterBase64");
-        if (posterBase64 != null && !posterBase64.isEmpty()) {
+        if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
             try {
-                // Strip data URI prefix if present e.g. "data:image/jpeg;base64,..."
-                String base64Data = posterBase64.contains(",")
-                        ? posterBase64.split(",")[1]
-                        : posterBase64;
-                byte[] decodedBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
-                android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                android.graphics.Bitmap bitmap = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                 if (bitmap != null) {
                     ivHeroPoster.setImageBitmap(bitmap);
                     ivHeroPoster.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
@@ -200,10 +197,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         // ── Basic fields ──────────────────────────────────────────────────────
-        eventTitle = doc.getString("name") != null
-                ? doc.getString("name") : getString(R.string.untitled_event);
-        String location = doc.getString("location") != null ? doc.getString("location") : "";
-        String description = doc.getString("description") != null ? doc.getString("description") : "";
+        eventTitle = event.getTitle() != null
+                ? event.getTitle() : getString(R.string.untitled_event);
+        String location = event.getLocation() != null ? event.getLocation() : "";
+        String description = event.getDescription() != null ? event.getDescription() : "";
 
         tvDetailTitle.setText(eventTitle);
         tvDetailLocation.setText(location);
@@ -211,33 +208,26 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // ── Timestamps ────────────────────────────────────────────────────────
         // ── Misc fields ───────────────────────────────────────────────────────
-        Boolean geoEnabled = doc.getBoolean("geoEnabled"); // reserved for future use
+        Boolean geoEnabled = event.isGeoEnabled(); // reserved for future use
 
         // ── Timestamps ────────────────────────────────────────────────────────
-        Timestamp regOpenTs = doc.getTimestamp("regOpen");
-        Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-        Timestamp startDateTs = doc.getTimestamp("eventStart");
-        Timestamp endDateTs = doc.getTimestamp("eventEnd");
-
-        Date regOpen = regOpenTs != null ? regOpenTs.toDate() : null;
-        Date registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
+        Date regOpen = event.getRegistrationOpen() != null ? event.getRegistrationOpen() : null;
+        Date registrationDeadline = event.getRegistrationDeadline() != null ? event.getRegistrationDeadline() : null;
         // drawDate = regClose + 3 days (calculated, not stored in Firestore)
-        Date drawDate = registrationDeadline != null
-                ? new Date(registrationDeadline.getTime() + 3L * 24 * 60 * 60 * 1000)
-                : null;
-        Date startDate = startDateTs != null ? startDateTs.toDate() : null;
-        Date endDate = endDateTs != null ? endDateTs.toDate() : null;
+        Date drawDate = event.getDrawDate() != null ? event.getDrawDate() : null;
+        Date startDate = event.getStartDate() != null ? event.getStartDate()  : null;
+        Date endDate = event.getEndDate() != null ? event.getEndDate() : null;
 
         // Display startDate on hero area
         tvDetailDate.setText(startDate != null
                 ? displayFormat.format(startDate) : getString(R.string.date_not_set));
 
         // ── Capacity fields ───────────────────────────────────────────────────
-        Long maxCapacity = doc.getLong("waitlistLimit");
-        Long winnersCount = doc.getLong("capacity");
+        Long maxCapacity = (long) event.getWaitlistCap();
+        Long winnersCount = event.getMaxCapacity();
 
         if (tvMaxCapacity != null) {
-            tvMaxCapacity.setText(maxCapacity != null
+            tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
                     ? String.valueOf(maxCapacity) : "—");
         }
         if (tvWinnersCount != null) {
@@ -246,10 +236,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         // ── Arrays ────────────────────────────────────────────────────────────
-        List<?> waitingList = (List<?>) doc.get("waitingList");
-        List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
-        List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
-        List<?> cancelledEntrants = (List<?>) doc.get("cancelledEntrants");
+        ArrayList<?> waitingList = (ArrayList<?>) event.getWaitingList();
+        ArrayList<?> selectedEntrants = (ArrayList<?>) event.getSelectedEntrants();
+        ArrayList<?> enrolledEntrants = (ArrayList<?>) event.getEnrolledEntrants();
+        ArrayList<?> cancelledEntrants = (ArrayList<?>) event.getCancelledEntrants();
 
         int waitingCount = waitingList != null ? waitingList.size() : 0;
         int invitedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
