@@ -4,14 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Simple in-memory cache for frequently used app data.
- * This avoids waiting on Firestore every time a screen opens.
+ * Simple singleton memory cache for profile and event data.
+ * Avoids fetching from Firestore every time a screen opens.
  */
 public class AppCache {
 
     private static AppCache instance;
 
+    // Cached current user
     private User cachedUser;
+
+    // Cached event list
     private List<Event> cachedEvents;
 
     private AppCache() {

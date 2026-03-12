@@ -11,6 +11,9 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * UserRepository handles Firestore user profile operations.
+ */
 public class UserRepository {
 
     private static final String TAG = "UserRepository";
@@ -36,8 +39,8 @@ public class UserRepository {
                 .usersRef
                 .document(deviceId)
                 .set(update, SetOptions.merge())
-                .addOnSuccessListener(v -> Log.d(TAG, "Firestore role synced: " + role))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to sync role to Firestore", e));
+                .addOnSuccessListener(v -> Log.d(TAG, "Role synced"))
+                .addOnFailureListener(e -> Log.e(TAG, "Role sync failed", e));
     }
 
     public static void saveUserProfile(Context context,
@@ -67,6 +70,7 @@ public class UserRepository {
                     user.setEmail(email);
                     user.setPhoneNumber(phoneNumber);
 
+                    // Save in memory cache too
                     AppCache.getInstance().setCachedUser(user);
 
                     if (onSuccess != null) onSuccess.run();
@@ -85,7 +89,10 @@ public class UserRepository {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     User user = mapDocumentToUser(documentSnapshot, deviceId);
+
+                    // Save in cache
                     AppCache.getInstance().setCachedUser(user);
+
                     callback.onUserLoaded(user);
                 })
                 .addOnFailureListener(callback::onError);

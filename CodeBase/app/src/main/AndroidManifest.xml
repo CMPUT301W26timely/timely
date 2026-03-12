@@ -39,6 +39,11 @@
             android:theme="@style/Theme.CodeBase" />
 
         <activity
+            android:name=".ProfileSettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.CodeBase" />
+
+        <activity
             android:name=".SplashActivity"
             android:exported="false"
             android:theme="@style/Theme.CodeBase.NoDisplay" />
