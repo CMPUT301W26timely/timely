@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.codebase"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.codebase"
@@ -33,7 +31,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
-        viewBinding = true
+        viewBinding = false
     }
 }
 
@@ -51,4 +49,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     // Glide — image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    // QR Code
+    implementation("com.google.zxing:core:3.5.2")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

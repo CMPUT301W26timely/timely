@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="22dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="WAITLIST SETTINGS"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swLimitWaitlist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Limit waiting list size"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GEOLOCATION SETTINGS"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swGeoRequired"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Require geolocation to join"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="A unique QR code will be generated when you publish."
+        android:background="@drawable/bg_input_field"
+        android:padding="16dp"
+        android:layout_marginTop="24dp" />
+
+</LinearLayout>

@@ -4,32 +4,24 @@
     This is a NEW file — do not touch the existing strings.xml
 -->
 <resources>
-    <string name="welcome_logo_desc">EventLottery logo</string>
+    <string name="welcome_logo_desc">Timely logo</string>
     <string name="welcome_to">Welcome to</string>
-    <string name="app_display_name">EventLottery</string>
+    <string name="app_display_name">Timely</string>
     <string name="welcome_subtitle">Connect, participate, and manage\nevents effortlessly.</string>
     <string name="select_your_role">SELECT YOUR ROLE</string>
 
-    <!-- Entrant -->
-    <string name="entrant_icon_desc">Entrant</string>
-    <string name="entrant_title">I am an Entrant</string>
-    <string name="entrant_subtitle">Join lotteries &amp; track wins</string>
-    <string name="entrant_arrow_desc">Go</string>
-
-    <!-- Organizer -->
-    <string name="organizer_icon_desc">Organizer</string>
-    <string name="organizer_title">I am an Organizer</string>
-    <string name="organizer_subtitle">Create &amp; manage events</string>
-    <string name="organizer_arrow_desc">Go</string>
+    <!-- User -->
+    <string name="user_icon_desc">User</string>
+    <string name="user_title">User Login</string>
+    <string name="user_subtitle">Join lotteries &amp; track wins</string>
+    <string name="user_arrow_desc">Go</string>
 
     <!-- Admin -->
     <string name="admin_icon_desc">Admin</string>
-    <string name="admin_title">I am an Admin</string>
+    <string name="admin_title">Admin Login</string>
     <string name="admin_subtitle">System controls &amp; users</string>
     <string name="admin_arrow_desc">Go</string>
 
     <!-- Footer -->
-    <string name="divider_or">OR</string>
-    <string name="help_text">❓ Need help getting started?</string>
-    <string name="version_text">Version 2.4.0 © EventLottery</string>
+    <string name="version_text">Version 2.4.0 © Timely</string>
 </resources>
