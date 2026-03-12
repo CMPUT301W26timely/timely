@@ -36,7 +36,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private TextView              tvNoEvents;
     private FloatingActionButton  fabCreate;
     private OrganizerEventAdapter adapter;
-    private List<OrganizerEvent>  eventList = new ArrayList<>();
+    private List<Event>  eventList = new ArrayList<>();
     private String                deviceId;
 
     @Override
@@ -60,8 +60,8 @@ public class OrganizerActivity extends AppCompatActivity {
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.id);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.title);
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.getId());
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
             startActivity(intent);
         });
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
@@ -87,7 +87,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerId", deviceId)
+                .whereEqualTo("organizerDeviceId", deviceId)
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -104,42 +104,7 @@ public class OrganizerActivity extends AppCompatActivity {
                 new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            OrganizerEvent event = new OrganizerEvent();
-            event.id    = doc.getId();
-            event.title = doc.getString("name") != null
-                    ? doc.getString("name") : "Untitled Event";
-            event.posterBase64 = doc.getString("posterBase64");
-
-            // ── Timestamps → Date ─────────────────────────────────────────────
-            Timestamp regOpenTs     = doc.getTimestamp("regOpen");
-            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-            Timestamp startDateTs   = doc.getTimestamp("eventStart");
-            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
-
-            event.regOpen              = regOpenTs     != null ? regOpenTs.toDate()      : null;
-            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate()  : null;
-            // drawDate = regClose + 3 days (calculated, not stored in Firestore)
-            if (event.registrationDeadline != null) {
-                event.drawDate = new java.util.Date(event.registrationDeadline.getTime() + 3L * 24 * 60 * 60 * 1000);
-            }
-            event.startDate = startDateTs != null ? startDateTs.toDate() : null;
-            event.endDate   = endDateTs   != null ? endDateTs.toDate()   : null;
-
-            // ── Display date on card ───────────────────────────────────────────
-            event.displayDate = event.startDate != null
-                    ? displayFormat.format(event.startDate) : "Date not set";
-
-            // ── Arrays ────────────────────────────────────────────────────────
-            List<?> waitingList      = (List<?>) doc.get("waitingList");
-            List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
-            List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
-
-            event.waitingCount      = waitingList      != null ? waitingList.size()      : 0;
-            event.selectedCount     = selectedEntrants != null ? selectedEntrants.size() : 0;
-            event.selectedEntrants  = selectedEntrants;
-            event.enrolledEntrants  = enrolledEntrants;
-
-            eventList.add(event);
+            eventList.add(doc.toObject(Event.class));
         }
 
         adapter.notifyDataSetChanged();
@@ -148,26 +113,4 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     // ─── Event model ──────────────────────────────────────────────────────────
-
-    public static class OrganizerEvent {
-        public String id;
-        public String title;
-        public String displayDate;           // formatted startDate shown on card
-        public String posterBase64;          // Base64 encoded poster image
-
-        // Dates for status calculation
-        public Date regOpen;             // registration start date
-        public Date registrationDeadline; // regClose
-        public Date drawDate;             // calculated: regClose + 3 days
-        public Date startDate;            // eventStart
-        public Date endDate;              // eventEnd
-
-        // Arrays for status calculation
-        public List<?> selectedEntrants;
-        public List<?> enrolledEntrants;
-
-        // Counts for card stats
-        public int waitingCount;
-        public int selectedCount;
-    }
 }
