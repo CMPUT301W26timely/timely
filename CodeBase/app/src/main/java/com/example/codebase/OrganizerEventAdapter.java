@@ -50,20 +50,25 @@ public class OrganizerEventAdapter extends
     public int getItemCount() { return events.size(); }
 
     private static String calculateStatus(OrganizerActivity.OrganizerEvent event) {
-        if (event.registrationDeadline == null || event.drawDate == null
-                || event.startDate == null || event.endDate == null) {
+        if ("draft".equalsIgnoreCase(event.status)) {
             return "DRAFT";
         }
-
+        
         Date today = new Date();
         List<?> selectedEntrants = event.selectedEntrants;
         boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
 
-        if (!today.after(event.registrationDeadline)) return "OPEN";
-        if (today.after(event.registrationDeadline) && !today.after(event.drawDate) && selectedEmpty) return "PENDING";
-        if (today.after(event.drawDate) && today.before(event.startDate)) return "CLOSED";
-        if (!today.before(event.startDate) && !today.after(event.endDate)) return "ACTIVE";
-        return "ENDED";
+        if (event.registrationDeadline != null && today.before(event.registrationDeadline)) {
+            return "OPEN";
+        }
+        if (event.registrationDeadline != null && today.after(event.registrationDeadline) && selectedEmpty) {
+            return "PENDING"; // Waitlist closed, but lottery not yet drawn
+        }
+        if (event.endDate != null && today.after(event.endDate)) {
+            return "ENDED";
+        }
+        
+        return "ACTIVE";
     }
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
@@ -87,7 +92,7 @@ public class OrganizerEventAdapter extends
 
         void bind(OrganizerActivity.OrganizerEvent event, OnEventClickListener listener) {
             tvTitle.setText(event.title);
-            tvDate.setText("St. Albert Public Library"); // Placeholder as per design
+            tvDate.setText(event.location != null && !event.location.isEmpty() ? event.location : "Location TBD");
 
             if (event.startDate != null) {
                 tvMonth.setText(new SimpleDateFormat("MMM", Locale.getDefault()).format(event.startDate).toUpperCase());

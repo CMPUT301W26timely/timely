@@ -59,10 +59,10 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
-     * Navigates to the MainActivity and finishes the splash activity.
+     * Navigates to OrganizerActivity and finishes the splash activity.
      */
     private void navigateToMain() {
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, OrganizerActivity.class));
         finish();
     }
 }

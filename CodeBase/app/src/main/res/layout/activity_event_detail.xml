@@ -14,10 +14,13 @@
         app:elevation="0dp">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:contentScrim="@color/pageBg"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:expandedTitleTextColor="@android:color/transparent"
+            app:collapsedTitleTextColor="@color/textPrimary"
             app:toolbarId="@+id/toolbar">
 
             <ImageView
@@ -34,12 +37,13 @@
                 android:background="@drawable/bg_welcome_gradient"
                 android:alpha="0.3" />
 
-            <androidx.appcompat.widget.Toolbar
+            <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:navigationIcon="@android:drawable/ic_media_previous" />
+                app:navigationIcon="@drawable/ic_arrow_back"
+                app:navigationIconTint="@color/white" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -79,6 +83,7 @@
                 android:fontFamily="serif"
                 android:textColor="@color/textPrimary" />
 
+            <!-- Date Range -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -97,7 +102,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="Oct 24, 2024 • 10:00 AM"
+                    android:text="Oct 24, 2024 - Oct 26, 2024"
                     android:textSize="14sp"
                     android:textColor="@color/textSecondary" />
             </LinearLayout>
@@ -212,14 +217,31 @@
 
             </GridLayout>
 
+            <!-- Action Buttons -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnJoinWaitingList"
+                android:id="@+id/btnViewWaitingList"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="32dp"
-                android:text="Join Waiting List"
+                android:text="View Waiting List"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:letterSpacing="0.06"
                 app:cornerRadius="100dp"
                 app:backgroundTint="@color/primaryAccent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewQr"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:text="View QR Code"
+                android:textColor="@color/primaryAccent"
+                android:textSize="12sp"
+                android:letterSpacing="0.06"
+                app:cornerRadius="100dp"
+                app:strokeColor="@color/primaryAccent" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
