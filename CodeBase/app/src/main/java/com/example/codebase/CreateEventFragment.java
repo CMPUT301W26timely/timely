@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -22,12 +23,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
     private Uri selectedImageUri;
     private ImageView previewImage;
-    private final ActivityResultLauncher<String> pickImageLauncher =
+    private ActivityResultLauncher<String> pickImageLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null)
                     selectedImageUri = uri;
@@ -63,12 +67,43 @@ public class CreateEventFragment extends Fragment {
             inputStream.close();
             String base64Image = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
 
+            int base64SizeBytes = base64Image.getBytes().length;
+            int base64SizeKB = base64SizeBytes / 1024;
+
+            Log.d("ImageSize", "Base64 size: " + base64SizeKB + " KB");
+
+            int MAX_BASE64_KB = 850;
+
+            if (base64SizeKB > MAX_BASE64_KB) {
+                Toast.makeText(requireContext(),
+                        "Poster image exceeds " + MAX_BASE64_KB + " KB.",
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+
             String eventId = eventsRef.document().getId();
 
             Event event = new Event();
 
             EventPoster poster = new EventPoster(base64Image);
             event.setPoster(poster);
+            event.setId("25");
+            event.setTitle(binding.etEventTitle.getText().toString());
+            event.setDescription(binding.etDescription.getText().toString());
+            event.setLocation(binding.etLocation.getText().toString());
+            SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                Date startDate = formatter.parse(binding.etStartDate.getText().toString());
+                event.setStartDate(startDate);
+                Date endDate = formatter.parse(binding.etEndDate.getText().toString());
+                event.setStartDate(endDate);
+                Date regDate = formatter.parse(binding.etRegistrationDeadline.getText().toString());
+                event.setStartDate(regDate);
+            } catch (ParseException e) {
+
+            }
+            String deviceId = DeviceIdManager.getOrCreateDeviceId(requireContext());
+            event.setOrganizerDeviceId(deviceId);
 
             eventsRef.document(eventId).set(event)
                     .addOnSuccessListener(unused -> {

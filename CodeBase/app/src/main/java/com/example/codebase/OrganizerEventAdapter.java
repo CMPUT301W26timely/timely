@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -116,6 +117,7 @@ public class OrganizerEventAdapter extends
         private final TextView tvStatus;
         private final TextView tvWaiting;
         private final TextView tvSelected;
+        private final ImageView image_poster;
 
         EventViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -124,6 +126,7 @@ public class OrganizerEventAdapter extends
             tvStatus   = itemView.findViewById(R.id.tvEventStatus);
             tvWaiting  = itemView.findViewById(R.id.tvWaitingCount);
             tvSelected = itemView.findViewById(R.id.tvSelectedCount);
+            image_poster = itemView.findViewById(R.id.image_poster);
         }
 
         void bind(Event event, OnEventClickListener listener) {
@@ -135,6 +138,7 @@ public class OrganizerEventAdapter extends
             tvSelected.setText(itemView.getContext()
                     .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
             tvSelected.setVisibility(View.VISIBLE);
+            image_poster.setImageBitmap(EventPoster.decodeImage(event.getPoster().getPosterImageBase64()));
 
             // ── Calculate and apply status badge ──────────────────────────────
             String status = calculateStatus(event);
