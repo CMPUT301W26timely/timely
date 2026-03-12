@@ -21,15 +21,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * OrganizerActivity — "My Events" screen for Organizer role.
- *
- * Add to AndroidManifest.xml:
- *   <activity android:name=".OrganizerActivity" android:exported="false" />
- *
- * Route here from MainActivity when role = ORGANIZER.
  */
 public class OrganizerActivity extends AppCompatActivity {
 
@@ -84,7 +78,7 @@ public class OrganizerActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.navExplore).setOnClickListener(v -> {
-             Toast.makeText(this, "Explore coming soon", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Explore coming soon", Toast.LENGTH_SHORT).show();
         });
 
         findViewById(R.id.navSearch).setOnClickListener(v -> {
@@ -118,33 +112,38 @@ public class OrganizerActivity extends AppCompatActivity {
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
             Event event = new Event();
             event.setId(doc.getId());
-            event.setTitle(doc.getString("title") != null
-                    ? doc.getString("title") : "Untitled Event");
 
-            // ── Timestamps → Date ─────────────────────────────────────────────
-            Timestamp regDeadlineTs = doc.getTimestamp("registrationDeadline");
-            Timestamp drawDateTs    = doc.getTimestamp("drawDate");
-            Timestamp startDateTs   = doc.getTimestamp("startDate");
-            Timestamp endDateTs     = doc.getTimestamp("endDate");
+            event.setTitle(doc.getString("name") != null ? doc.getString("name") :
+                    (doc.getString("title") != null ? doc.getString("title") : "Untitled Event"));
 
-            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-            event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
-            event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
-            event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
+            event.setLocation(doc.getString("location") != null ? doc.getString("location") : "Location TBD");
+            event.setStatus(doc.getString("status") != null ? doc.getString("status") : "draft");
 
-//            // ── Display date on card ───────────────────────────────────────────
-//            event.displayDate = event.startDate != null
-//                    ? displayFormat.format(event.startDate) : "Date not set";
+            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
+            Timestamp drawDateTs    = doc.getTimestamp("drawDate"); // May not exist
+            Timestamp startDateTs   = doc.getTimestamp("eventStart");
+            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
 
-            // ── Arrays ────────────────────────────────────────────────────────
+            event.setRegistrationDeadline(regDeadlineTs != null ? regDeadlineTs.toDate() : null);
+            event.setDrawDate(drawDateTs    != null ? drawDateTs.toDate()     : null);
+            event.setStartDate(startDateTs   != null ? startDateTs.toDate()    : null);
+            event.setEndDate(endDateTs     != null ? endDateTs.toDate()      : null);
+
             List<?> waitingList      = (List<?>) doc.get("waitingList");
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
 
-            event.waitingCount      = waitingList      != null ? waitingList.size()      : 0;
-            event.selectedCount     = selectedEntrants != null ? selectedEntrants.size() : 0;
-            event.selectedEntrants  = selectedEntrants;
-            event.enrolledEntrants  = enrolledEntrants;
+            event.setWaitingList(waitingList != null
+                    ? (List<String>) waitingList
+                    : new ArrayList<>());
+            event.setSelectedEntrants(selectedEntrants != null
+                    ? (List<String>) selectedEntrants
+                    : new ArrayList<>());
+            event.setEnrolledEntrants(enrolledEntrants != null
+                    ? (List<String>) enrolledEntrants
+                    : new ArrayList<>());
+
+            event.setPoster(new EventPoster(doc.get("posterBase64").toString()));
 
             eventList.add(event);
         }
@@ -152,19 +151,5 @@ public class OrganizerActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         tvNoEvents.setVisibility(eventList.isEmpty() ? View.VISIBLE : View.GONE);
         rvEvents.setVisibility(eventList.isEmpty()   ? View.GONE    : View.VISIBLE);
-    }
-
-    public static class OrganizerEvent {
-        public String id;
-        public String title;
-        public String displayDate;
-        public Date registrationDeadline;
-        public Date drawDate;
-        public Date startDate;
-        public Date endDate;
-        public List<?> selectedEntrants;
-        public List<?> enrolledEntrants;
-        public int waitingCount;
-        public int selectedCount;
     }
 }

@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -101,31 +102,34 @@ public class OrganizerEventAdapter extends
         private final TextView tvDate;
         private final TextView tvStatus;
         private final TextView tvWaiting;
-        private final TextView tvSelected;
-        private final ImageView image_poster;
+        private final TextView tvMonth;
+        private final TextView tvDay;
 
         EventViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle    = itemView.findViewById(R.id.tvEventItemTitle);
-            tvDate     = itemView.findViewById(R.id.tvEventItemDate);
-            tvStatus   = itemView.findViewById(R.id.tvEventStatus);
-            tvWaiting  = itemView.findViewById(R.id.tvWaitingCount);
-            tvSelected = itemView.findViewById(R.id.tvSelectedCount);
-            image_poster = itemView.findViewById(R.id.image_poster);
+            tvTitle   = itemView.findViewById(R.id.tvEventItemTitle);
+            tvDate    = itemView.findViewById(R.id.tvEventItemDate);
+            tvStatus  = itemView.findViewById(R.id.tvEventStatus);
+            tvWaiting = itemView.findViewById(R.id.tvWaitingCount);
+            tvMonth   = itemView.findViewById(R.id.tvMonth);
+            tvDay     = itemView.findViewById(R.id.tvDay);
         }
 
         void bind(Event event, OnEventClickListener listener) {
             tvTitle.setText(event.getTitle());
-            tvDate.setText(event.getStartDate().toString());
+            tvDate.setText(event.getLocation() != null && !event.getLocation().isEmpty() ? event.getLocation() : "Location TBD");
 
-            tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.getWaitingList().stream().count()));
-            tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
-            tvSelected.setVisibility(View.VISIBLE);
-            image_poster.setImageBitmap(EventPoster.decodeImage(event.getPoster().getPosterImageBase64()));
+            if (event.getStartDate() != null) {
+                tvMonth.setText(new SimpleDateFormat("MMM", Locale.getDefault()).format(event.getStartDate()).toUpperCase());
+                tvDay.setText(new SimpleDateFormat("dd", Locale.getDefault()).format(event.getStartDate()));
+            } else {
+                tvMonth.setText("TBD");
+                tvDay.setText("--");
+            }
 
-            tvWaiting.setText(event.getWaitingList().stream().count() + " entries");
+            long countWaitingList = event.getWaitingList() != null ? event.getWaitingList().stream().count() : 0;
+
+            tvWaiting.setText(countWaitingList + " entries");
 
             String status = calculateStatus(event);
             tvStatus.setText(status);

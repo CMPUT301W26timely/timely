@@ -22,6 +22,15 @@ public class Event {
     private List<String> waitingList;
     private List<String> selectedEntrants;
     private List<String> enrolledEntrants;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getId() {
         return id;
