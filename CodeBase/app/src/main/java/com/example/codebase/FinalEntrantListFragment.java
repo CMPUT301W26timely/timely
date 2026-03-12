@@ -70,6 +70,14 @@ public class FinalEntrantListFragment extends Fragment {
         entrantAdapter = new FinalEntrantListAdapter(view.getContext(), finalEntrants);
         listView.setAdapter(entrantAdapter);
 
+        int percentageCap = (int)(finalEntrants.size()/maxCapacity*100);
+        String capacityString = finalEntrants.size()+"/"+maxCapacity;
+        String percentageString = Integer.toString(percentageCap)+"%";
+
+        capacityText.setText(capacityString);
+        percentageCapacityText.setText(percentageString);
+        progressBar.setProgress(percentageCap);
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextChange(String newText) {

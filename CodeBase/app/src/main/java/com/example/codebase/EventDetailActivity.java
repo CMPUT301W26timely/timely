@@ -32,13 +32,16 @@ import java.util.Locale;
  * Add to AndroidManifest.xml:
  *   <activity android:name=".EventDetailActivity" android:exported="false" />
  */
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity implements FinalEntrantListFragment.FinalEntrantListListener{
 
     public static final String EXTRA_EVENT_ID    = "event_id";
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
     private String eventId;
     private String eventTitle;
+
+    //All event details should be stored in a event class
+    private Event event;
 
     private TextView tvDetailTitle;
     private TextView tvDetailDate;
@@ -86,9 +89,11 @@ public class EventDetailActivity extends AppCompatActivity {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         // ── Stats Boxes ───────────────────────────────────────────────────────
-        findViewById(R.id.boxViewEnrolled).setOnClickListener(new View.OnClickListener() {
-            //navigate to FinalEntrantListFragment
-        });
+        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
+                Toast.makeText(this,
+                    "Add nav to Final Entrants frag",
+                    Toast.LENGTH_SHORT).show()
+        );
         // ── LOTTERY MANAGEMENT ────────────────────────────────────────────────
         findViewById(R.id.rowRunLottery).setOnClickListener(v ->
                 Toast.makeText(this,
@@ -316,5 +321,10 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvStatusBadge.setTextColor(0xFF8899AA);
                 break;
         }
+    }
+
+    @Override
+    public Event getEvent() {
+        return event;
     }
 }
