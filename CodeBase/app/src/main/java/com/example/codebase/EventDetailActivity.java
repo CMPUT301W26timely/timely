@@ -32,16 +32,13 @@ import java.util.Locale;
  * Add to AndroidManifest.xml:
  *   <activity android:name=".EventDetailActivity" android:exported="false" />
  */
-public class EventDetailActivity extends AppCompatActivity implements FinalEntrantListFragment.FinalEntrantListListener{
+public class EventDetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_EVENT_ID    = "event_id";
+    public static final String EXTRA_EVENT_ID = "event_id";
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
     private String eventId;
     private String eventTitle;
-
-    //All event details should be stored in a event class
-    private Event event;
 
     private TextView tvDetailTitle;
     private TextView tvDetailDate;
@@ -56,7 +53,7 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
     private TextView tvMaxCapacity;
     private TextView tvWinnersCount;
     private android.widget.ImageView ivHeroPoster;
-    private View     progressBar;
+    private View progressBar;
 
     private final SimpleDateFormat displayFormat =
             new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
@@ -66,40 +63,24 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
+        eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
         // ── Bind views ────────────────────────────────────────────────────────
-        tvDetailTitle       = findViewById(R.id.tvDetailTitle);
-        tvDetailDate        = findViewById(R.id.tvDetailDate);
-        tvDetailLocation    = findViewById(R.id.tvDetailLocation);
+        tvDetailTitle = findViewById(R.id.tvDetailTitle);
+        tvDetailDate = findViewById(R.id.tvDetailDate);
+        tvDetailLocation = findViewById(R.id.tvDetailLocation);
         tvDetailDescription = findViewById(R.id.tvDetailDescription);
-        tvStatusBadge       = findViewById(R.id.tvDetailStatusBadge);
-        tvWaitingCount      = findViewById(R.id.tvWaitingCount);
-        tvSelectedCount     = findViewById(R.id.tvSelectedCount);
-        ivHeroPoster        = findViewById(R.id.ivHeroPoster);
-        progressBar         = findViewById(R.id.detailProgressBar);
-        
-        collapsingToolbar   = findViewById(R.id.collapsingToolbar);
-        toolbar             = findViewById(R.id.toolbar);
-        AppBarLayout appbar = findViewById(R.id.appbar);
-
-        Button btnViewWaitingList = findViewById(R.id.btnViewWaitingList);
-        Button btnViewQr = findViewById(R.id.btnViewQr);
-        // ── Stats Boxes ───────────────────────────────────────────────────────
-        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
-                Toast.makeText(this,
-                    "Add nav to Final Entrants frag",
-                    Toast.LENGTH_SHORT).show()
-        );
-
-        // ── Toolbar / Back button ─────────────────────────────────────────────
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
-        
-        if (eventTitle != null) {
-            collapsingToolbar.setTitle(eventTitle);
-        }
+        tvStatusBadge = findViewById(R.id.tvDetailStatusBadge);
+        tvWaitingCount = findViewById(R.id.tvWaitingCount);
+        tvInvitedCount = findViewById(R.id.tvInvitedCount);
+        tvEnrolledCount = findViewById(R.id.tvEnrolledCount);
+        tvCancelledCount = findViewById(R.id.tvCancelledCount);
+        tvWaitingListRowCount = findViewById(R.id.tvWaitingListRowCount);
+        tvMaxCapacity = findViewById(R.id.tvMaxCapacity);
+        tvWinnersCount = findViewById(R.id.tvWinnersCount);
+        ivHeroPoster = findViewById(R.id.ivHeroPoster);
+        progressBar = findViewById(R.id.detailProgressBar);
 
         // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
@@ -107,7 +88,7 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         // ── Invited stat card → InvitedEntrantsActivity ───────────────────────
         findViewById(R.id.cardInvited).setOnClickListener(v -> {
             Intent intent = new Intent(this, InvitedEntrantsActivity.class);
-            intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_ID,    eventId);
+            intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_ID, eventId);
             intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
             startActivity(intent);
         });
@@ -221,7 +202,7 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         // ── Basic fields ──────────────────────────────────────────────────────
         eventTitle = doc.getString("name") != null
                 ? doc.getString("name") : getString(R.string.untitled_event);
-        String location    = doc.getString("location")    != null ? doc.getString("location")    : "";
+        String location = doc.getString("location") != null ? doc.getString("location") : "";
         String description = doc.getString("description") != null ? doc.getString("description") : "";
 
         tvDetailTitle.setText(eventTitle);
@@ -233,26 +214,26 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         Boolean geoEnabled = doc.getBoolean("geoEnabled"); // reserved for future use
 
         // ── Timestamps ────────────────────────────────────────────────────────
-        Timestamp regOpenTs     = doc.getTimestamp("regOpen");
+        Timestamp regOpenTs = doc.getTimestamp("regOpen");
         Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-        Timestamp startDateTs   = doc.getTimestamp("eventStart");
-        Timestamp endDateTs     = doc.getTimestamp("eventEnd");
+        Timestamp startDateTs = doc.getTimestamp("eventStart");
+        Timestamp endDateTs = doc.getTimestamp("eventEnd");
 
-        Date regOpen              = regOpenTs     != null ? regOpenTs.toDate()     : null;
+        Date regOpen = regOpenTs != null ? regOpenTs.toDate() : null;
         Date registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
         // drawDate = regClose + 3 days (calculated, not stored in Firestore)
         Date drawDate = registrationDeadline != null
                 ? new Date(registrationDeadline.getTime() + 3L * 24 * 60 * 60 * 1000)
                 : null;
         Date startDate = startDateTs != null ? startDateTs.toDate() : null;
-        Date endDate   = endDateTs   != null ? endDateTs.toDate()   : null;
+        Date endDate = endDateTs != null ? endDateTs.toDate() : null;
 
         // Display startDate on hero area
         tvDetailDate.setText(startDate != null
                 ? displayFormat.format(startDate) : getString(R.string.date_not_set));
 
         // ── Capacity fields ───────────────────────────────────────────────────
-        Long maxCapacity  = doc.getLong("waitlistLimit");
+        Long maxCapacity = doc.getLong("waitlistLimit");
         Long winnersCount = doc.getLong("capacity");
 
         if (tvMaxCapacity != null) {
@@ -265,13 +246,13 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         }
 
         // ── Arrays ────────────────────────────────────────────────────────────
-        List<?> waitingList      = (List<?>) doc.get("waitingList");
+        List<?> waitingList = (List<?>) doc.get("waitingList");
         List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
         List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
         List<?> cancelledEntrants = (List<?>) doc.get("cancelledEntrants");
 
-        int waitingCount = waitingList      != null ? waitingList.size()       : 0;
-        int invitedCount = selectedEntrants != null ? selectedEntrants.size()  : 0;
+        int waitingCount = waitingList != null ? waitingList.size() : 0;
+        int invitedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
         int enrolledCount = enrolledEntrants != null ? enrolledEntrants.size() : 0;
         int cancelledCount = cancelledEntrants != null ? cancelledEntrants.size() : 0;
 
@@ -380,10 +361,5 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
                 tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
         }
-    }
-
-    @Override
-    public Event getEvent() {
-        return event;
     }
 }
