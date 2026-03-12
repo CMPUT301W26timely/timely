@@ -1,5 +1,6 @@
 package com.example.codebase;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -7,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,7 +22,7 @@ import java.util.Locale;
  *
  * Reads from Firestore:
  *   title, description, location
- *   startDate, endDate, drawDate, registrationDeadline (all Timestamps)
+ *   eventStart, eventEnd, regClose (Timestamps); drawDate = regClose + 3 days (calculated)
  *   maxCapacity, winnersCount
  *   waitingList, selectedEntrants, enrolledEntrants, cancelledEntrants (arrays)
  *
@@ -85,6 +85,14 @@ public class EventDetailActivity extends AppCompatActivity {
         // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
+        // ── Invited stat card → InvitedEntrantsActivity ───────────────────────
+        findViewById(R.id.cardInvited).setOnClickListener(v -> {
+            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
+            intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_ID,    eventId);
+            intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+            startActivity(intent);
+        });
+
         // ── LOTTERY MANAGEMENT ────────────────────────────────────────────────
         findViewById(R.id.rowRunLottery).setOnClickListener(v ->
                 Toast.makeText(this,
@@ -120,11 +128,21 @@ public class EventDetailActivity extends AppCompatActivity {
                         getString(R.string.edit_event_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
-        findViewById(R.id.rowCancelledUsers).setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.cancelled_users_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+        // Cancelled stat card
+        findViewById(R.id.cardCancelled).setOnClickListener(v -> {
+            Intent intent = new Intent(this, CancelledEntrantsActivity.class);
+            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+            startActivity(intent);
+        });
+
+        // View Cancelled Users row
+        findViewById(R.id.rowCancelledUsers).setOnClickListener(v -> {
+            Intent intent = new Intent(this, CancelledEntrantsActivity.class);
+            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+            startActivity(intent);
+        });
 
         loadEventDetails();
     }
@@ -158,18 +176,32 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // ── Poster image ──────────────────────────────────────────────────────
-        String posterUrl = doc.getString("posterUrl");
-        Glide.with(this)
-                .load(posterUrl)
-                .placeholder(R.drawable.bg_hero_image)
-                .error(R.drawable.bg_hero_image)
-                .centerCrop()
-                .into(ivHeroPoster);
+        // ── Poster image — stored as Base64 string in Firestore ──────────────
+        String posterBase64 = doc.getString("posterBase64");
+        if (posterBase64 != null && !posterBase64.isEmpty()) {
+            try {
+                // Strip data URI prefix if present e.g. "data:image/jpeg;base64,..."
+                String base64Data = posterBase64.contains(",")
+                        ? posterBase64.split(",")[1]
+                        : posterBase64;
+                byte[] decodedBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
+                android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                if (bitmap != null) {
+                    ivHeroPoster.setImageBitmap(bitmap);
+                    ivHeroPoster.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                } else {
+                    ivHeroPoster.setBackgroundResource(R.drawable.bg_hero_image);
+                }
+            } catch (Exception e) {
+                ivHeroPoster.setBackgroundResource(R.drawable.bg_hero_image);
+            }
+        } else {
+            ivHeroPoster.setBackgroundResource(R.drawable.bg_hero_image);
+        }
 
         // ── Basic fields ──────────────────────────────────────────────────────
-        eventTitle = doc.getString("title") != null
-                ? doc.getString("title") : getString(R.string.untitled_event);
+        eventTitle = doc.getString("name") != null
+                ? doc.getString("name") : getString(R.string.untitled_event);
         String location    = doc.getString("location")    != null ? doc.getString("location")    : "";
         String description = doc.getString("description") != null ? doc.getString("description") : "";
 
@@ -178,23 +210,31 @@ public class EventDetailActivity extends AppCompatActivity {
         tvDetailDescription.setText(description);
 
         // ── Timestamps ────────────────────────────────────────────────────────
-        Timestamp regDeadlineTs = doc.getTimestamp("registrationDeadline");
-        Timestamp drawDateTs    = doc.getTimestamp("drawDate");
-        Timestamp startDateTs   = doc.getTimestamp("startDate");
-        Timestamp endDateTs     = doc.getTimestamp("endDate");
+        // ── Misc fields ───────────────────────────────────────────────────────
+        Boolean geoEnabled = doc.getBoolean("geoEnabled"); // reserved for future use
 
+        // ── Timestamps ────────────────────────────────────────────────────────
+        Timestamp regOpenTs     = doc.getTimestamp("regOpen");
+        Timestamp regDeadlineTs = doc.getTimestamp("regClose");
+        Timestamp startDateTs   = doc.getTimestamp("eventStart");
+        Timestamp endDateTs     = doc.getTimestamp("eventEnd");
+
+        Date regOpen              = regOpenTs     != null ? regOpenTs.toDate()     : null;
         Date registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-        Date drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
-        Date startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
-        Date endDate              = endDateTs      != null ? endDateTs.toDate()     : null;
+        // drawDate = regClose + 3 days (calculated, not stored in Firestore)
+        Date drawDate = registrationDeadline != null
+                ? new Date(registrationDeadline.getTime() + 3L * 24 * 60 * 60 * 1000)
+                : null;
+        Date startDate = startDateTs != null ? startDateTs.toDate() : null;
+        Date endDate   = endDateTs   != null ? endDateTs.toDate()   : null;
 
         // Display startDate on hero area
         tvDetailDate.setText(startDate != null
                 ? displayFormat.format(startDate) : getString(R.string.date_not_set));
 
         // ── Capacity fields ───────────────────────────────────────────────────
-        Long maxCapacity  = doc.getLong("maxCapacity");
-        Long winnersCount = doc.getLong("winnersCount");
+        Long maxCapacity  = doc.getLong("waitlistLimit");
+        Long winnersCount = doc.getLong("capacity");
 
         if (tvMaxCapacity != null) {
             tvMaxCapacity.setText(maxCapacity != null
@@ -224,7 +264,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // ── Status badge — calculated from dates + arrays ─────────────────────
         String status = calculateStatus(
-                registrationDeadline, drawDate, startDate, endDate,
+                regOpen, registrationDeadline, drawDate, startDate, endDate,
                 selectedEntrants, enrolledEntrants
         );
         applyStatusBadge(status);
@@ -233,6 +273,7 @@ public class EventDetailActivity extends AppCompatActivity {
     // ─── Status calculation ───────────────────────────────────────────────────
 
     private String calculateStatus(
+            Date regOpen,
             Date registrationDeadline,
             Date drawDate,
             Date startDate,
@@ -241,7 +282,7 @@ public class EventDetailActivity extends AppCompatActivity {
             List<?> enrolledEntrants) {
 
         // Any null date → Draft
-        if (registrationDeadline == null || drawDate == null
+        if (regOpen == null || registrationDeadline == null || drawDate == null
                 || startDate == null || endDate == null) {
             return "Draft";
         }
@@ -250,26 +291,30 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
-        if (!today.after(registrationDeadline)) {
-            // today <= registrationDeadline
+        if (today.before(regOpen)) {
+            // today < regOpen
+            return "Registration Opening Soon";
+
+        } else if (!today.before(regOpen) && !today.after(registrationDeadline)) {
+            // today >= regOpen AND today <= regClose
             return "Registration Open";
 
         } else if (today.after(registrationDeadline)
-                && !today.after(drawDate)
+                && today.before(drawDate)
                 && selectedEmpty) {
-            // today > registrationDeadline AND today <= drawDate AND no winners
-            return "Lottery Pending";
+            // today > regClose AND today < drawDate AND no winners yet
+            return "Registration Closed / Lottery Opening Soon";
 
         } else if (today.after(drawDate)
                 && today.before(startDate)
                 && !selectedEmpty) {
-            // today > drawDate AND today < startDate AND winners selected
+            // today > drawDate AND today < eventStart AND winners selected
             return "Lottery Closed & Event Scheduled";
 
         } else if (!today.before(startDate)
                 && !today.after(endDate)
                 && !enrolledEmpty) {
-            // today >= startDate AND today <= endDate AND people enrolled
+            // today >= eventStart AND today <= eventEnd AND people enrolled
             return "In Progress";
 
         } else if (today.after(endDate)) {
@@ -287,29 +332,33 @@ public class EventDetailActivity extends AppCompatActivity {
         tvStatusBadge.setVisibility(View.VISIBLE);
 
         switch (status) {
-            case "Registration Open":
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_open);
-                tvStatusBadge.setTextColor(0xFF1DB954);
+            case "Registration Opening Soon":
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
+                tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
-            case "Lottery Pending":
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_draft);
-                tvStatusBadge.setTextColor(0xFFFFD700);
+            case "Registration Open":
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_green);
+                tvStatusBadge.setTextColor(0xFF4A7A4A);
+                break;
+            case "Registration Closed / Lottery Opening Soon":
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
+                tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
             case "Lottery Closed & Event Scheduled":
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_closed);
-                tvStatusBadge.setTextColor(0xFFFF8C00);
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
+                tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
             case "In Progress":
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_open);
-                tvStatusBadge.setTextColor(0xFF1DB954);
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_green);
+                tvStatusBadge.setTextColor(0xFF4A7A4A);
                 break;
             case "Event Ended":
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_closed);
-                tvStatusBadge.setTextColor(0xFFAAAAAA);
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_red);
+                tvStatusBadge.setTextColor(0xFF8B3A3A);
                 break;
             default: // Draft
-                tvStatusBadge.setBackgroundResource(R.drawable.bg_status_draft);
-                tvStatusBadge.setTextColor(0xFF8899AA);
+                tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
+                tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
         }
     }

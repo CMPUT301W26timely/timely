@@ -43,6 +43,8 @@
         <!-- NEW -->
         <activity android:name=".OrganizerActivity" android:exported="false" />
         <activity android:name=".EventDetailActivity" android:exported="false" />
+        <activity android:name=".InvitedEntrantsActivity" android:exported="false" />
+        <activity android:name=".CancelledEntrantsActivity" android:exported="false" />
 
     </application>
 

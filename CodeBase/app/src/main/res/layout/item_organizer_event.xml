@@ -5,22 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    app:cardBackgroundColor="#1A2335"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp">
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="#FFFFFF"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:padding="14dp">
 
-        <!-- Thumbnail placeholder -->
-        <View
+        <!-- Thumbnail -->
+        <ImageView
+            android:id="@+id/ivEventThumbnail"
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:background="@drawable/bg_event_thumbnail"
-            android:layout_marginEnd="12dp" />
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"
+            android:layout_marginEnd="14dp"
+            android:contentDescription="@string/event_poster_desc" />
 
         <!-- Content -->
         <LinearLayout
@@ -29,37 +34,40 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
+            <!-- Title -->
             <TextView
                 android:id="@+id/tvEventItemTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
+                android:textColor="#111111"
+                android:letterSpacing="-0.01"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_marginBottom="2dp" />
+                android:layout_marginBottom="3dp" />
 
             <!-- Date -->
             <TextView
                 android:id="@+id/tvEventItemDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textColor="#7A8FA6"
-                android:layout_marginBottom="6dp" />
+                android:textSize="11sp"
+                android:textColor="#AAAAAA"
+                android:layout_marginBottom="8dp" />
 
-            <!-- Status badge -->
+            <!-- Status badge — pill style -->
             <TextView
                 android:id="@+id/tvEventStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:textSize="11sp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textSize="9sp"
                 android:textStyle="bold"
+                android:letterSpacing="0.06"
                 android:layout_marginBottom="8dp" />
 
             <!-- Stats row -->
@@ -70,10 +78,10 @@
                 android:gravity="center_vertical">
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
                     android:src="@android:drawable/ic_menu_my_calendar"
-                    app:tint="#7A8FA6"
+                    app:tint="#CCCCCC"
                     android:contentDescription="@string/stat_waiting_list"
                     android:layout_marginEnd="4dp" />
 
@@ -81,15 +89,15 @@
                     android:id="@+id/tvWaitingCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="#7A8FA6"
-                    android:layout_marginEnd="12dp" />
+                    android:textSize="11sp"
+                    android:textColor="#AAAAAA"
+                    android:layout_marginEnd="14dp" />
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
                     android:src="@android:drawable/ic_menu_rotate"
-                    app:tint="#7A8FA6"
+                    app:tint="#CCCCCC"
                     android:contentDescription="@string/stat_drawn"
                     android:layout_marginEnd="4dp" />
 
@@ -97,8 +105,8 @@
                     android:id="@+id/tvSelectedCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="#7A8FA6" />
+                    android:textSize="11sp"
+                    android:textColor="#AAAAAA" />
 
             </LinearLayout>
 

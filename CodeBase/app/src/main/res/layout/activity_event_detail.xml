@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#111827">
+    android:background="#F0EDE8">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,9 +29,9 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#99000000" />
+                android:background="#88000000" />
 
-            <!-- Top bar: back + more -->
+            <!-- Top bar: back + progress -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,7 +46,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@android:drawable/ic_media_previous"
-                    android:background="@drawable/bg_icon_btn"
+                    android:background="@drawable/bg_icon_btn_light"
                     android:contentDescription="@string/back_button_desc" />
 
                 <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
@@ -79,7 +79,7 @@
                     android:paddingBottom="3dp"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#111111"
                     android:background="@drawable/bg_status_badge_open"
                     android:layout_marginBottom="8dp" />
 
@@ -90,7 +90,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#111111"
                     android:layout_marginBottom="6dp" />
 
                 <!-- Date row -->
@@ -105,15 +105,16 @@
                         android:layout_width="14dp"
                         android:layout_height="14dp"
                         android:src="@android:drawable/ic_menu_today"
-                        app:tint="#AABBCC"
-                        android:layout_marginEnd="6dp" />
+                        app:tint="#CCCCCC"
+                        android:layout_marginEnd="6dp"
+                        android:contentDescription="@string/decorative_image" />
 
                     <TextView
                         android:id="@+id/tvDetailDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="13sp"
-                        android:textColor="#AABBCC" />
+                        android:textColor="#555555" />
 
                 </LinearLayout>
 
@@ -128,15 +129,16 @@
                         android:layout_width="14dp"
                         android:layout_height="14dp"
                         android:src="@android:drawable/ic_menu_mylocation"
-                        app:tint="#AABBCC"
-                        android:layout_marginEnd="6dp" />
+                        app:tint="#CCCCCC"
+                        android:layout_marginEnd="6dp"
+                        android:contentDescription="@string/decorative_image" />
 
                     <TextView
                         android:id="@+id/tvDetailLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="13sp"
-                        android:textColor="#AABBCC" />
+                        android:textColor="#555555" />
 
                 </LinearLayout>
 
@@ -154,7 +156,7 @@
             android:paddingTop="12dp"
             android:paddingBottom="4dp"
             android:textSize="13sp"
-            android:textColor="#AABBCC"
+            android:textColor="#555555"
             android:lineSpacingMultiplier="1.4" />
 
         <!-- ── CAPACITY ROW ──────────────────────────────────────────────── -->
@@ -177,7 +179,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/max_capacity_label"
                     android:textSize="11sp"
-                    android:textColor="#556677"
+                    android:textColor="#AAAAAA"
                     android:textAllCaps="true" />
                 <TextView
                     android:id="@+id/tvMaxCapacity"
@@ -186,7 +188,7 @@
                     android:text="—"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#111111" />
             </LinearLayout>
 
             <LinearLayout
@@ -199,7 +201,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/winners_count_label"
                     android:textSize="11sp"
-                    android:textColor="#556677"
+                    android:textColor="#AAAAAA"
                     android:textAllCaps="true" />
                 <TextView
                     android:id="@+id/tvWinnersCount"
@@ -208,7 +210,7 @@
                     android:text="—"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#111111" />
             </LinearLayout>
 
         </LinearLayout>
@@ -229,7 +231,7 @@
                 android:layout_columnWeight="1"
                 android:layout_marginEnd="6dp"
                 android:layout_marginBottom="8dp"
-                app:cardBackgroundColor="#1A2335"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
                 <LinearLayout
@@ -249,13 +251,14 @@
                             android:layout_weight="1"
                             android:text="@string/stat_waiting_list"
                             android:textSize="11sp"
-                            android:textColor="#7A8FA6"
+                            android:textColor="#AAAAAA"
                             android:textAllCaps="true" />
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@android:drawable/ic_menu_my_calendar"
-                            app:tint="#F0A500" />
+                            app:tint="#6A9E6A"
+                            android:contentDescription="@string/decorative_image" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/tvWaitingCount"
@@ -264,18 +267,20 @@
                         android:text="0"
                         android:textSize="26sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
+                        android:textColor="#111111" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- Invited -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardInvited"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_marginStart="6dp"
                 android:layout_marginBottom="8dp"
-                app:cardBackgroundColor="#1A2335"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
                 <LinearLayout
@@ -295,13 +300,14 @@
                             android:layout_weight="1"
                             android:text="@string/stat_invited"
                             android:textSize="11sp"
-                            android:textColor="#7A8FA6"
+                            android:textColor="#AAAAAA"
                             android:textAllCaps="true" />
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@android:drawable/ic_dialog_email"
-                            app:tint="#5B9BD5" />
+                            app:tint="#4A7A4A"
+                            android:contentDescription="@string/decorative_image" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/tvInvitedCount"
@@ -310,7 +316,7 @@
                         android:text="0"
                         android:textSize="26sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
+                        android:textColor="#111111" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -320,7 +326,7 @@
                 android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_marginEnd="6dp"
-                app:cardBackgroundColor="#1A2335"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
                 <LinearLayout
@@ -340,13 +346,14 @@
                             android:layout_weight="1"
                             android:text="@string/stat_enrolled"
                             android:textSize="11sp"
-                            android:textColor="#7A8FA6"
+                            android:textColor="#AAAAAA"
                             android:textAllCaps="true" />
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@android:drawable/ic_menu_add"
-                            app:tint="#2ECC71" />
+                            app:tint="#4A7A4A"
+                            android:contentDescription="@string/decorative_image" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/tvEnrolledCount"
@@ -355,17 +362,19 @@
                         android:text="0"
                         android:textSize="26sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
+                        android:textColor="#111111" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- Cancelled -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardCancelled"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_columnWeight="1"
                 android:layout_marginStart="6dp"
-                app:cardBackgroundColor="#1A2335"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
                 <LinearLayout
@@ -385,13 +394,14 @@
                             android:layout_weight="1"
                             android:text="@string/stat_cancelled"
                             android:textSize="11sp"
-                            android:textColor="#7A8FA6"
+                            android:textColor="#AAAAAA"
                             android:textAllCaps="true" />
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:src="@android:drawable/ic_delete"
-                            app:tint="#E74C3C" />
+                            app:tint="#CC3333"
+                            android:contentDescription="@string/decorative_image" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/tvCancelledCount"
@@ -400,7 +410,7 @@
                         android:text="0"
                         android:textSize="26sp"
                         android:textStyle="bold"
-                        android:textColor="#FFFFFF" />
+                        android:textColor="#111111" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -412,7 +422,7 @@
             android:layout_height="wrap_content"
             android:text="@string/section_lottery_management"
             android:textSize="11sp"
-            android:textColor="#556677"
+            android:textColor="#AAAAAA"
             android:textAllCaps="true"
             android:letterSpacing="0.08"
             android:paddingStart="20dp"
@@ -429,7 +439,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp">
@@ -438,8 +448,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_rotate"
-                app:tint="#7C6AF7"
-                android:layout_marginEnd="14dp" />
+                app:tint="#4A7A4A"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -447,17 +458,18 @@
                 android:layout_weight="1"
                 android:text="@string/row_run_lottery"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
-        <!-- Send Notification — US 02.07.01, 02.07.02, 02.07.03 -->
+        <!-- Send Notification -->
         <LinearLayout
             android:id="@+id/rowSendNotification"
             android:layout_width="match_parent"
@@ -466,7 +478,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp">
@@ -475,8 +487,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_popup_reminder"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -484,13 +497,14 @@
                 android:layout_weight="1"
                 android:text="@string/row_send_notification"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
@@ -500,7 +514,7 @@
             android:layout_height="wrap_content"
             android:text="@string/section_event_data"
             android:textSize="11sp"
-            android:textColor="#556677"
+            android:textColor="#AAAAAA"
             android:textAllCaps="true"
             android:letterSpacing="0.08"
             android:paddingStart="20dp"
@@ -516,7 +530,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp">
@@ -525,8 +539,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_my_calendar"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -534,21 +549,22 @@
                 android:layout_weight="1"
                 android:text="@string/row_view_waiting_list"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <TextView
                 android:id="@+id/tvWaitingListRowCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:textColor="#556677"
+                android:textColor="#AAAAAA"
                 android:layout_marginEnd="6dp" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
@@ -561,7 +577,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp">
@@ -570,8 +586,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_mapmode"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -579,13 +596,14 @@
                 android:layout_weight="1"
                 android:text="@string/row_view_entrant_map"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
@@ -598,7 +616,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp">
@@ -607,8 +625,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_camera"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -616,13 +635,14 @@
                 android:layout_weight="1"
                 android:text="@string/row_view_qr_code"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
@@ -632,7 +652,7 @@
             android:layout_height="wrap_content"
             android:text="@string/section_settings"
             android:textSize="11sp"
-            android:textColor="#556677"
+            android:textColor="#AAAAAA"
             android:textAllCaps="true"
             android:letterSpacing="0.08"
             android:paddingStart="20dp"
@@ -648,7 +668,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="2dp">
@@ -657,8 +677,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_edit"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -666,13 +687,14 @@
                 android:layout_weight="1"
                 android:text="@string/row_edit_event"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 
@@ -685,7 +707,7 @@
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item"
+            android:background="@drawable/bg_row_item_light"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="32dp">
@@ -694,8 +716,9 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#7A8FA6"
-                android:layout_marginEnd="14dp" />
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
 
             <TextView
                 android:layout_width="0dp"
@@ -703,13 +726,14 @@
                 android:layout_weight="1"
                 android:text="@string/row_cancelled_users"
                 android:textSize="15sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#111111" />
 
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@android:drawable/ic_media_next"
-                app:tint="#556677" />
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
 

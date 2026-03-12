@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:background="@drawable/bg_card_light"
+    android:layout_marginBottom="8dp">
+
+    <!-- Device ID -->
+    <TextView
+        android:id="@+id/tvEntrantDeviceId"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="13sp"
+        android:textColor="#111111"
+        android:fontFamily="monospace" />
+
+    <!-- Status badge -->
+    <TextView
+        android:id="@+id/tvEntrantStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Cancel button — visible for Pending only -->
+    <Button
+        android:id="@+id/btnCancelEntrant"
+        android:layout_width="wrap_content"
+        android:layout_height="34dp"
+        android:text="Cancel"
+        android:textSize="11sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#CC3333"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:stateListAnimator="@null"
+        android:visibility="gone" />
+
+</LinearLayout>

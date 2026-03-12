@@ -79,7 +79,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerDeviceId", deviceId)
+                .whereEqualTo("organizerId", deviceId)
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -98,19 +98,24 @@ public class OrganizerActivity extends AppCompatActivity {
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
             OrganizerEvent event = new OrganizerEvent();
             event.id    = doc.getId();
-            event.title = doc.getString("title") != null
-                    ? doc.getString("title") : "Untitled Event";
+            event.title = doc.getString("name") != null
+                    ? doc.getString("name") : "Untitled Event";
+            event.posterBase64 = doc.getString("posterBase64");
 
             // ── Timestamps → Date ─────────────────────────────────────────────
-            Timestamp regDeadlineTs = doc.getTimestamp("registrationDeadline");
-            Timestamp drawDateTs    = doc.getTimestamp("drawDate");
-            Timestamp startDateTs   = doc.getTimestamp("startDate");
-            Timestamp endDateTs     = doc.getTimestamp("endDate");
+            Timestamp regOpenTs     = doc.getTimestamp("regOpen");
+            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
+            Timestamp startDateTs   = doc.getTimestamp("eventStart");
+            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
 
-            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-            event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
-            event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
-            event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
+            event.regOpen              = regOpenTs     != null ? regOpenTs.toDate()      : null;
+            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate()  : null;
+            // drawDate = regClose + 3 days (calculated, not stored in Firestore)
+            if (event.registrationDeadline != null) {
+                event.drawDate = new java.util.Date(event.registrationDeadline.getTime() + 3L * 24 * 60 * 60 * 1000);
+            }
+            event.startDate = startDateTs != null ? startDateTs.toDate() : null;
+            event.endDate   = endDateTs   != null ? endDateTs.toDate()   : null;
 
             // ── Display date on card ───────────────────────────────────────────
             event.displayDate = event.startDate != null
@@ -140,12 +145,14 @@ public class OrganizerActivity extends AppCompatActivity {
         public String id;
         public String title;
         public String displayDate;           // formatted startDate shown on card
+        public String posterBase64;          // Base64 encoded poster image
 
         // Dates for status calculation
-        public Date registrationDeadline;
-        public Date drawDate;
-        public Date startDate;
-        public Date endDate;
+        public Date regOpen;             // registration start date
+        public Date registrationDeadline; // regClose
+        public Date drawDate;             // calculated: regClose + 3 days
+        public Date startDate;            // eventStart
+        public Date endDate;              // eventEnd
 
         // Arrays for status calculation
         public List<?> selectedEntrants;
