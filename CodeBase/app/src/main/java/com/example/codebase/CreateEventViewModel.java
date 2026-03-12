@@ -25,4 +25,6 @@ public class CreateEventViewModel extends ViewModel {
     // Step 3: QR Result
     public Bitmap generatedQr = null;
     public String generatedEventId = "";
+    public boolean isEditMode = false;
+    public String editingEventId = "";
 }
