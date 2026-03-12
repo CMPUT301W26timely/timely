@@ -48,6 +48,8 @@
         <activity android:name=".OrganizerActivity" android:exported="false" />
         <activity android:name=".EventDetailActivity" android:exported="false" />
         <activity android:name=".ProfileActivity" android:exported="false" />
+        <uses-permission android:name="android.permission.CAMERA" />
+        <uses-feature android:name="android.hardware.camera" />
 
     </application>
 
