@@ -80,11 +80,11 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         Button btnViewWaitingList = findViewById(R.id.btnViewWaitingList);
         Button btnViewQr = findViewById(R.id.btnViewQr);
         // ── Stats Boxes ───────────────────────────────────────────────────────
-        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
-                Toast.makeText(this,
-                    "Add nav to Final Entrants frag",
-                    Toast.LENGTH_SHORT).show()
-        );
+//        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
+//                Toast.makeText(this,
+//                    "Add nav to Final Entrants frag",
+//                    Toast.LENGTH_SHORT).show()
+//        );
 
         // ── Toolbar / Back button ─────────────────────────────────────────────
         setSupportActionBar(toolbar);
@@ -153,13 +153,12 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
             return;
         }
 
+        Event event = doc.toObject(Event.class);
         // ── Poster image ──────────────────────────────────────────────────────
-        String posterBase64 = doc.getString("posterBase64");
+        String posterBase64 = event.getPoster().getPosterImageBase64();
         if (posterBase64 != null && !posterBase64.isEmpty()) {
             try {
-                byte[] decodedString = Base64.decode(posterBase64, Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                ivHeroPoster.setImageBitmap(decodedByte);
+                ivHeroPoster.setImageBitmap(EventPoster.decodeImage(posterBase64));
             } catch (Exception e) {
                 ivHeroPoster.setImageResource(R.drawable.bg_hero_image); // Fallback
             }
@@ -168,24 +167,22 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         }
 
         // ── Basic fields ──────────────────────────────────────────────────────
-        eventTitle = doc.getString("name") != null ? doc.getString("name") : 
-                     (doc.getString("title") != null ? doc.getString("title") : "Untitled Event");
+        eventTitle = (event.getTitle()) != null ? event.getTitle() :
+                     (event.getTitle() != null ? event.getTitle() : "Untitled Event");
                      
         collapsingToolbar.setTitle(eventTitle);
         tvDetailTitle.setText(eventTitle);
         
-        String location    = doc.getString("location")    != null ? doc.getString("location")    : "Location TBD";
-        String description = doc.getString("description") != null ? doc.getString("description") : "No description provided.";
+        String location    = event.getLocation()    != null ? event.getLocation()    : "Location TBD";
+        String description = event.getDescription() != null ? event.getDescription() : "No description provided.";
 
         tvDetailLocation.setText(location);
         tvDetailDescription.setText(description);
 
         // ── Timestamps ────────────────────────────────────────────────────────
-        Timestamp startDateTs = doc.getTimestamp("eventStart");
-        Timestamp endDateTs = doc.getTimestamp("eventEnd");
         
-        Date startDate = startDateTs != null ? startDateTs.toDate() : null;
-        Date endDate = endDateTs != null ? endDateTs.toDate() : null;
+        Date startDate = event.getStartDate() != null ? event.getStartDate() : null;
+        Date endDate = event.getEndDate() != null ? event.getEndDate() : null;
 
         String dateRangeStr = "Date TBD";
         if (startDate != null && endDate != null) {
@@ -196,8 +193,8 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         tvDetailDate.setText(dateRangeStr);
 
         // ── Arrays ────────────────────────────────────────────────────────────
-        List<?> waitingList      = (List<?>) doc.get("waitingList");
-        List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
+        List<?> waitingList      = (List<?>) event.getWaitingList();
+        List<?> selectedEntrants = (List<?>) event.getSelectedEntrants();
 
         int waitingCount  = waitingList      != null ? waitingList.size()      : 0;
         int selectedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
@@ -206,9 +203,8 @@ public class EventDetailActivity extends AppCompatActivity implements FinalEntra
         tvSelectedCount.setText(String.valueOf(selectedCount));
 
         // ── Status badge ──────────────────────────────────────────────────────
-        Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-        Date regDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-        String status = doc.getString("status");
+        Date regDeadline = event.getRegistrationDeadline() != null ? event.getRegistrationDeadline() : null;
+        String status = event.getStatus();
         
         if ("draft".equalsIgnoreCase(status)) {
             tvStatusBadge.setText("DRAFT");

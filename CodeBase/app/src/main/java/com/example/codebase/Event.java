@@ -1,16 +1,18 @@
 package com.example.codebase;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Event {
+public class Event implements Serializable {
     private String id;
     private EventPoster poster;
     private String title;
     private String description;
     private Date startDate;
     private Date endDate;
+    private Date registrationOpen;
     private Date registrationDeadline;
     private int waitlistCap;
     private float price;
@@ -20,10 +22,20 @@ public class Event {
     private String posterUrl;
     private Long maxCapacity;
     private Long winnersCount;
-    private List<String> waitingList;
-    private List<String> selectedEntrants;
-    private List<String> enrolledEntrants;
+    private ArrayList<Entrant> waitingList;
+    private ArrayList<Entrant> selectedEntrants;
+    private ArrayList<Entrant> enrolledEntrants;
     private String status;
+    private boolean geoEnabled;
+    private ArrayList<Entrant>  cancelledEntrants;
+
+    public boolean isGeoEnabled() {
+        return geoEnabled;
+    }
+
+    public void setGeoEnabled(boolean geoEnabled) {
+        this.geoEnabled = geoEnabled;
+    }
 
     public String getStatus() {
         return status;
@@ -89,39 +101,37 @@ public class Event {
         this.winnersCount = winnersCount;
     }
 
-    public List<String> getWaitingList() {
+    public ArrayList<Entrant> getWaitingList() {
         return waitingList;
     }
 
-    public void setWaitingList(List<String> waitingList) {
+    public void setWaitingList(ArrayList<Entrant> waitingList) {
         this.waitingList = waitingList;
     }
 
-    public List<String> getSelectedEntrants() {
+    public ArrayList<Entrant> getSelectedEntrants() {
         return selectedEntrants;
     }
 
-    public void setSelectedEntrants(List<String> selectedEntrants) {
+    public void setSelectedEntrants(ArrayList<Entrant> selectedEntrants) {
         this.selectedEntrants = selectedEntrants;
     }
 
-    public List<String> getEnrolledEntrants() {
+    public ArrayList<Entrant> getEnrolledEntrants() {
         return enrolledEntrants;
     }
 
-    public void setEnrolledEntrants(List<String> enrolledEntrants) {
+    public void setEnrolledEntrants(ArrayList<Entrant> enrolledEntrants) {
         this.enrolledEntrants = enrolledEntrants;
     }
 
-    public List<String> getCancelledEntrants() {
+    public ArrayList<Entrant> getCancelledEntrants() {
         return cancelledEntrants;
     }
 
-    public void setCancelledEntrants(List<String> cancelledEntrants) {
+    public void setCancelledEntrants(ArrayList<Entrant>  cancelledEntrants) {
         this.cancelledEntrants = cancelledEntrants;
     }
-
-    private List<String> cancelledEntrants;
 
     public EventPoster getPoster() {
         return poster;
@@ -161,6 +171,14 @@ public class Event {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public Date getRegistrationOpen() {
+        return registrationOpen;
+    }
+
+    public void setRegistrationOpen(Date registrationOpen) {
+        this.registrationOpen = registrationOpen;
     }
 
     public Date getRegistrationDeadline() {

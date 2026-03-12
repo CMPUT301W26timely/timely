@@ -93,7 +93,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerId", deviceId)
+                .whereEqualTo("organizerDeviceId", deviceId)
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -105,47 +105,8 @@ public class OrganizerActivity extends AppCompatActivity {
 
     private void populateList(QuerySnapshot snapshot) {
         eventList.clear();
-
-        SimpleDateFormat displayFormat =
-                new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
-
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            Event event = new Event();
-            event.setId(doc.getId());
-
-            event.setTitle(doc.getString("name") != null ? doc.getString("name") :
-                    (doc.getString("title") != null ? doc.getString("title") : "Untitled Event"));
-
-            event.setLocation(doc.getString("location") != null ? doc.getString("location") : "Location TBD");
-            event.setStatus(doc.getString("status") != null ? doc.getString("status") : "draft");
-
-            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-            Timestamp drawDateTs    = doc.getTimestamp("drawDate"); // May not exist
-            Timestamp startDateTs   = doc.getTimestamp("eventStart");
-            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
-
-            event.setRegistrationDeadline(regDeadlineTs != null ? regDeadlineTs.toDate() : null);
-            event.setDrawDate(drawDateTs    != null ? drawDateTs.toDate()     : null);
-            event.setStartDate(startDateTs   != null ? startDateTs.toDate()    : null);
-            event.setEndDate(endDateTs     != null ? endDateTs.toDate()      : null);
-
-            List<?> waitingList      = (List<?>) doc.get("waitingList");
-            List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
-            List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
-
-            event.setWaitingList(waitingList != null
-                    ? (List<String>) waitingList
-                    : new ArrayList<>());
-            event.setSelectedEntrants(selectedEntrants != null
-                    ? (List<String>) selectedEntrants
-                    : new ArrayList<>());
-            event.setEnrolledEntrants(enrolledEntrants != null
-                    ? (List<String>) enrolledEntrants
-                    : new ArrayList<>());
-
-            event.setPoster(new EventPoster(doc.get("posterBase64").toString()));
-
-            eventList.add(event);
+            eventList.add(doc.toObject(Event.class));
         }
 
         adapter.notifyDataSetChanged();

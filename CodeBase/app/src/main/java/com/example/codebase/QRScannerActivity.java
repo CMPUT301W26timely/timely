@@ -97,24 +97,24 @@ public class QRScannerActivity extends AppCompatActivity {
     }
 
     private void showEventDialog(String eventId, CreateEventViewModel event){
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_qr_result, null);
-        ImageView poster  = dialogView.findViewById(R.id.poster);
-        TextView title = dialogView.findViewById(R.id.eventTitle);
-        Button waitingListButton = dialogView.findViewById(R.id.joinWaitingListButton);
-
-        int waitingListCount = Math.toIntExact(event.getWaitingList().stream().count());
-        int waitingListMax = event.capacity;
-
-        if (waitingListMax > 0 && waitingListCount >= waitingListMax){
-            waitingListButton.setEnabled(false);
-            waitingListButton.setText("Waiting list is full");
-        }
-        else {
-            waitingListButton.setEnabled(true);
-            waitingListButton.setText("Join Waiting List");
-        }
-
-        event.getPoster();
+//        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_qr_result, null);
+//        ImageView poster  = dialogView.findViewById(R.id.poster);
+//        TextView title = dialogView.findViewById(R.id.eventTitle);
+//        Button waitingListButton = dialogView.findViewById(R.id.joinWaitingListButton);
+//
+//        //int waitingListCount = Math.toIntExact(event.getWaitingList().stream().count());
+//        int waitingListMax = event.capacity;
+//
+//        if (waitingListMax > 0 && waitingListCount >= waitingListMax){
+//            waitingListButton.setEnabled(false);
+//            waitingListButton.setText("Waiting list is full");
+//        }
+//        else {
+//            waitingListButton.setEnabled(true);
+//            waitingListButton.setText("Join Waiting List");
+//        }
+//
+//        event.getPoster();
     }
 
     @OptIn(markerClass = ExperimentalGetImage.class)
