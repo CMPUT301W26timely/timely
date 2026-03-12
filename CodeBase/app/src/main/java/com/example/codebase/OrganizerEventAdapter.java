@@ -9,25 +9,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * OrganizerEventAdapter — RecyclerView adapter for My Events screen.
- *
- * Status badge is calculated in real time from Firestore date fields and arrays.
- * Status field in Firestore is NOT used for display.
- *
- * Status logic:
- *   today <= registrationDeadline                              → Registration Open
- *   today > registrationDeadline && today <= drawDate
- *       && selectedEntrants empty                              → Lottery Pending
- *   today > drawDate && today < startDate
- *       && selectedEntrants not empty                          → Lottery Closed
- *   today >= startDate && today <= endDate
- *       && enrolledEntrants not empty                          → Scheduled
- *   today > endDate                                            → Event Ended
- *   any date null or unexpected state                          → Draft
  */
 public class OrganizerEventAdapter extends
         RecyclerView.Adapter<OrganizerEventAdapter.EventViewHolder> {
@@ -140,35 +128,18 @@ public class OrganizerEventAdapter extends
             tvSelected.setVisibility(View.VISIBLE);
             image_poster.setImageBitmap(EventPoster.decodeImage(event.getPoster().getPosterImageBase64()));
 
-            // ── Calculate and apply status badge ──────────────────────────────
+            tvWaiting.setText(event.waitingCount + " entries");
+
             String status = calculateStatus(event);
             tvStatus.setText(status);
 
-            switch (status) {
-                case "Registration Open":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_open);
-                    tvStatus.setTextColor(0xFF1DB954);
-                    break;
-                case "Lottery Pending":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_draft);
-                    tvStatus.setTextColor(0xFFFFD700);
-                    break;
-                case "Lottery Closed & Event Scheduled":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_closed);
-                    tvStatus.setTextColor(0xFFFF8C00);
-                    break;
-                case "In Progress":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_open);
-                    tvStatus.setTextColor(0xFF1DB954);
-                    break;
-                case "Event Ended":
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_closed);
-                    tvStatus.setTextColor(0xFFAAAAAA);
-                    break;
-                default: // Draft
-                    tvStatus.setBackgroundResource(R.drawable.bg_status_draft);
-                    tvStatus.setTextColor(0xFF8899AA);
-                    break;
+            // Minimal styling for status
+            if (status.equals("OPEN") || status.equals("ACTIVE")) {
+                tvStatus.setBackgroundResource(R.drawable.bg_status_badge_open);
+                tvStatus.setTextColor(itemView.getContext().getColor(R.color.primaryAccent));
+            } else {
+                tvStatus.setBackgroundResource(R.drawable.bg_status_badge_closed);
+                tvStatus.setTextColor(itemView.getContext().getColor(R.color.textSecondary));
             }
 
             itemView.setOnClickListener(v -> listener.onEventClick(event));

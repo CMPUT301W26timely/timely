@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,12 +33,12 @@ import java.util.Map;
  */
 public class OrganizerActivity extends AppCompatActivity {
 
-    private RecyclerView          rvEvents;
-    private TextView              tvNoEvents;
-    private FloatingActionButton  fabCreate;
-    private OrganizerEventAdapter adapter;
-    private List<Event>  eventList = new ArrayList<>();
-    private String                deviceId;
+    private RecyclerView                 rvEvents;
+    private View                         tvNoEvents;
+    private ExtendedFloatingActionButton fabCreate;
+    private OrganizerEventAdapter        adapter;
+    private List<OrganizerEvent>         eventList = new ArrayList<>();
+    private String                       deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +46,6 @@ public class OrganizerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_organizer);
 
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
-
-        // Back button → WelcomeActivity
-        findViewById(R.id.btnBackOrganizer).setOnClickListener(v -> {
-            Intent intent = new Intent(this, WelcomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        });
 
         rvEvents   = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
@@ -72,7 +64,31 @@ public class OrganizerActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CreateEventActivity.class))
         );
 
+        setupBottomNavigation();
         loadOrganizerEvents();
+    }
+
+    private void setupBottomNavigation() {
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> {
+            // Already here
+        });
+
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+             Toast.makeText(this, "Explore coming soon", Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+            Toast.makeText(this, "Search coming soon", Toast.LENGTH_SHORT).show();
+        });
+
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            Toast.makeText(this, "Notifications coming soon", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void loadOrganizerEvents() {
@@ -149,24 +165,16 @@ public class OrganizerActivity extends AppCompatActivity {
         rvEvents.setVisibility(eventList.isEmpty()   ? View.GONE    : View.VISIBLE);
     }
 
-    // ─── Event model ──────────────────────────────────────────────────────────
-
     public static class OrganizerEvent {
         public String id;
         public String title;
-        public String displayDate;           // formatted startDate shown on card
-
-        // Dates for status calculation
+        public String displayDate;
         public Date registrationDeadline;
         public Date drawDate;
         public Date startDate;
         public Date endDate;
-
-        // Arrays for status calculation
         public List<?> selectedEntrants;
         public List<?> enrolledEntrants;
-
-        // Counts for card stats
         public int waitingCount;
         public int selectedCount;
     }
