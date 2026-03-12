@@ -32,13 +32,16 @@ import java.util.Locale;
  * Add to AndroidManifest.xml:
  *   <activity android:name=".EventDetailActivity" android:exported="false" />
  */
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity implements FinalEntrantListFragment.FinalEntrantListListener{
 
     public static final String EXTRA_EVENT_ID    = "event_id";
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
     private String eventId;
     private String eventTitle;
+
+    //All event details should be stored in a event class
+    private Event event;
 
     private TextView tvDetailTitle;
     private TextView tvDetailDate;
@@ -67,20 +70,36 @@ public class EventDetailActivity extends AppCompatActivity {
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
         // ── Bind views ────────────────────────────────────────────────────────
-        tvDetailTitle         = findViewById(R.id.tvDetailTitle);
-        tvDetailDate          = findViewById(R.id.tvDetailDate);
-        tvDetailLocation      = findViewById(R.id.tvDetailLocation);
-        tvDetailDescription   = findViewById(R.id.tvDetailDescription);
-        tvStatusBadge         = findViewById(R.id.tvDetailStatusBadge);
-        tvWaitingCount        = findViewById(R.id.tvWaitingCount);
-        tvInvitedCount        = findViewById(R.id.tvInvitedCount);
-        tvEnrolledCount       = findViewById(R.id.tvEnrolledCount);
-        tvCancelledCount      = findViewById(R.id.tvCancelledCount);
-        tvWaitingListRowCount = findViewById(R.id.tvWaitingListRowCount);
-        tvMaxCapacity         = findViewById(R.id.tvMaxCapacity);
-        tvWinnersCount        = findViewById(R.id.tvWinnersCount);
-        ivHeroPoster          = findViewById(R.id.ivHeroPoster);
-        progressBar           = findViewById(R.id.detailProgressBar);
+        tvDetailTitle       = findViewById(R.id.tvDetailTitle);
+        tvDetailDate        = findViewById(R.id.tvDetailDate);
+        tvDetailLocation    = findViewById(R.id.tvDetailLocation);
+        tvDetailDescription = findViewById(R.id.tvDetailDescription);
+        tvStatusBadge       = findViewById(R.id.tvDetailStatusBadge);
+        tvWaitingCount      = findViewById(R.id.tvWaitingCount);
+        tvSelectedCount     = findViewById(R.id.tvSelectedCount);
+        ivHeroPoster        = findViewById(R.id.ivHeroPoster);
+        progressBar         = findViewById(R.id.detailProgressBar);
+        
+        collapsingToolbar   = findViewById(R.id.collapsingToolbar);
+        toolbar             = findViewById(R.id.toolbar);
+        AppBarLayout appbar = findViewById(R.id.appbar);
+
+        Button btnViewWaitingList = findViewById(R.id.btnViewWaitingList);
+        Button btnViewQr = findViewById(R.id.btnViewQr);
+        // ── Stats Boxes ───────────────────────────────────────────────────────
+        findViewById(R.id.boxViewEnrolled).setOnClickListener(v ->
+                Toast.makeText(this,
+                    "Add nav to Final Entrants frag",
+                    Toast.LENGTH_SHORT).show()
+        );
+
+        // ── Toolbar / Back button ─────────────────────────────────────────────
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
+        
+        if (eventTitle != null) {
+            collapsingToolbar.setTitle(eventTitle);
+        }
 
         // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
@@ -361,5 +380,10 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
         }
+    }
+
+    @Override
+    public Event getEvent() {
+        return event;
     }
 }
