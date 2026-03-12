@@ -128,7 +128,7 @@ public class OrganizerEventAdapter extends
             tvSelected.setVisibility(View.VISIBLE);
             image_poster.setImageBitmap(EventPoster.decodeImage(event.getPoster().getPosterImageBase64()));
 
-            tvWaiting.setText(event.waitingCount + " entries");
+            tvWaiting.setText(event.getWaitingList().stream().count() + " entries");
 
             String status = calculateStatus(event);
             tvStatus.setText(status);

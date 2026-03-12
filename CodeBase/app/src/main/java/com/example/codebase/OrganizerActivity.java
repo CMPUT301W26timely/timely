@@ -37,7 +37,7 @@ public class OrganizerActivity extends AppCompatActivity {
     private View                         tvNoEvents;
     private ExtendedFloatingActionButton fabCreate;
     private OrganizerEventAdapter        adapter;
-    private List<OrganizerEvent>         eventList = new ArrayList<>();
+    private List<Event>         eventList = new ArrayList<>();
     private String                       deviceId;
 
     @Override
