@@ -3,6 +3,8 @@
 
     <!-- Organizer Home — My Events -->
     <string name="my_events_title">My Events</string>
+    <string name="browse_events_title">Browse Events</string>
+    <string name="browse_events_empty">No active events available.</string>
     <string name="no_events_yet">No events yet.\nTap + to create your first event.</string>
     <string name="create_event_coming_soon">Create Event — Coming Soon</string>
     <string name="create_event_fab_desc">Create new event</string>
@@ -27,6 +29,11 @@
     <string name="nav_my_events">My Events</string>
     <string name="nav_notifications">Notifications</string>
     <string name="nav_profile">Profile</string>
+    <string name="notifications_updates_label">Updates</string>
+    <string name="notifications_empty_title">No notifications yet.</string>
+    <string name="notifications_empty_subtitle">Event updates and invitation responses will appear here.</string>
+    <string name="notifications_invitation_title">Event Invitations</string>
+    <string name="notifications_invitation_loading">Checking for invitations...</string>
 
     <!-- Event Detail — Header -->
     <string name="back_button_desc">Go back</string>
