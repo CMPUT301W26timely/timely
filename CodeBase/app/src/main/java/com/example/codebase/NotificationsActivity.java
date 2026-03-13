@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +66,9 @@ public class NotificationsActivity extends AppCompatActivity {
     private void loadNotifications() {
         AppDatabase.getInstance()
                 .notificationsRef
-                .whereEqualTo("userId", deviceId)
+                .document(deviceId)
+                .collection("messages")
+                .orderBy("sentAt", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> populateNotifications(queryDocumentSnapshots.getDocuments()))
                 .addOnFailureListener(e ->
@@ -115,7 +118,7 @@ public class NotificationsActivity extends AppCompatActivity {
             AppNotification notification = doc.toObject(AppNotification.class);
             if (notification != null && notification.getEventId() != null) {
                 addNotification(
-                        notification.getStatus() != null ? notification.getStatus() : "Notification",
+                        getNotificationLabel(notification),
                         notification.getMessage() != null ? notification.getMessage() : "No message",
                         notification.getEventId()
                 );
@@ -167,6 +170,24 @@ public class NotificationsActivity extends AppCompatActivity {
 
         items.add(row);
         eventIds.add(eventId);
+    }
+
+    private String getNotificationLabel(AppNotification notification) {
+        if (notification.getStatus() != null && !notification.getStatus().trim().isEmpty()) {
+            return notification.getStatus();
+        }
+
+        String type = notification.getType();
+        if ("selectedEntrants".equals(type)) {
+            return "Selected";
+        }
+        if ("cancelledEntrants".equals(type)) {
+            return "Cancelled";
+        }
+        if ("waitingList".equals(type)) {
+            return "Waiting List";
+        }
+        return "Notification";
     }
 
 }

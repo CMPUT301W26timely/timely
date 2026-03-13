@@ -37,30 +37,39 @@ public class SelectedNotificationChecker {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         AppNotification appNotification = doc.toObject(AppNotification.class);
-                        showNotification(context, appNotification);
-
-                        // mark as read after showing
-                        doc.getReference().update("read", true);
+                        if (showNotification(context, appNotification, doc.getId())) {
+                            doc.getReference().update("read", true);
+                        }
                     }
                 });
     }
 
-    private static void showNotification(Context context, AppNotification appNotification) {
-        Intent intent = new Intent(context, EventDetailActivity.class);
-        intent.putExtra("eventId", appNotification.getEventId());
+    private static boolean showNotification(
+            Context context,
+            AppNotification appNotification,
+            String notificationId) {
+
+        if (appNotification == null || appNotification.getEventId() == null) {
+            return false;
+        }
+
+        Intent intent = new Intent(context, EntrantEventDetailActivity.class);
+        intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, appNotification.getEventId());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context,
-                appNotification.getEventId().hashCode(),
+                notificationId.hashCode(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(appNotification.getTitle())
-                .setContentText(appNotification.getMessage())
+                .setContentTitle(appNotification.getTitle() != null
+                        ? appNotification.getTitle() : "Event update")
+                .setContentText(appNotification.getMessage() != null
+                        ? appNotification.getMessage() : "Open the app to view the update.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
@@ -70,10 +79,11 @@ public class SelectedNotificationChecker {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
                         != PackageManager.PERMISSION_GRANTED) {
-            return;
+            return false;
         }
 
-        manager.notify(appNotification.getEventId().hashCode(), builder.build());
+        manager.notify(notificationId.hashCode(), builder.build());
+        return true;
     }
 
     private static void createNotificationChannel(Context context) {

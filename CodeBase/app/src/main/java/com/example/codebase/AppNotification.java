@@ -7,9 +7,11 @@ public class AppNotification {
     private String notificationId;
     private String userId;
     private String eventId;
+    private String eventTitle;
     private String title;
     private String message;
     private String status;   // "Selected" or "Not Selected"
+    private String type;
     private boolean read;
 
     public AppNotification() {
@@ -36,12 +38,20 @@ public class AppNotification {
         return title;
     }
 
+    public String getEventTitle() {
+        return eventTitle;
+    }
+
     public String getMessage() {
         return message;
     }
 
     public String getStatus() {
         return status;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public boolean isRead() {
@@ -60,12 +70,20 @@ public class AppNotification {
         this.title = title;
     }
 
+    public void setEventTitle(String eventTitle) {
+        this.eventTitle = eventTitle;
+    }
+
     public void setMessage(String message) {
         this.message = message;
     }
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void setRead(boolean read) {

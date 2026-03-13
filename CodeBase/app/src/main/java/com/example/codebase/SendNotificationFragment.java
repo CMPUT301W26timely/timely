@@ -50,6 +50,7 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
     private static final String DEFAULT_SUBJECT_WAITING   = "You're on the waiting list!";
     private static final String DEFAULT_SUBJECT_SELECTED  = "Congratulations! You've been selected!";
     private static final String DEFAULT_SUBJECT_CANCELLED = "Your participation has been cancelled";
+    private static final int MAX_MESSAGE_LENGTH = 500;
 
     private String eventId;
     private String eventTitle;
@@ -123,13 +124,14 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void afterTextChanged(Editable s) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    tvCharCount.setText(s.length() + "/500");
+                    updateCharacterCount(s.length());
                 }
             });
         }
 
         btnCancel.setOnClickListener(v -> dismiss());
         btnSend.setOnClickListener(v   -> sendNotifications());
+        updateCharacterCount(etMessage.getText().length());
     }
 
     private void loadEventLists() {
@@ -213,6 +215,8 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                     break;
             }
         }
+
+        updateCharacterCount(etMessage.getText().length());
     }
 
     private void sendNotifications() {
@@ -221,6 +225,10 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
 
         if (subject.isEmpty()) { etSubject.setError("Subject is required");  return; }
         if (message.isEmpty()) { etMessage.setError("Message is required");  return; }
+        if (message.length() > MAX_MESSAGE_LENGTH) {
+            etMessage.setError("Message must be 500 characters or less");
+            return;
+        }
 
         List<String> recipients;
         switch (selectedType) {
@@ -243,10 +251,12 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
 
         for (String deviceId : recipients) {
             Map<String, Object> notif = new HashMap<>();
+            notif.put("userId",     deviceId);
             notif.put("eventId",    eventId);
             notif.put("eventTitle", eventTitle);
             notif.put("title",      subject);
             notif.put("message",    message);
+            notif.put("status",     getStatusLabel(selectedType));
             notif.put("type",       selectedType);
             notif.put("sentAt",     new Timestamp(new Date()));
             notif.put("read",       false);
@@ -285,5 +295,21 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
             }
         }
         return result;
+    }
+
+    private String getStatusLabel(String type) {
+        if (TYPE_SELECTED.equals(type)) {
+            return "Selected";
+        }
+        if (TYPE_CANCELLED.equals(type)) {
+            return "Cancelled";
+        }
+        return "Waiting List";
+    }
+
+    private void updateCharacterCount(int currentLength) {
+        if (tvCharCount != null) {
+            tvCharCount.setText(currentLength + "/" + MAX_MESSAGE_LENGTH);
+        }
     }
 }
