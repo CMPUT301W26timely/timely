@@ -20,6 +20,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewEvents;
     private TextView textViewEmptyState;
+    private String deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         recyclerViewEvents = findViewById(R.id.recyclerViewEvents);
         textViewEmptyState = findViewById(R.id.textViewEmptyState);
+        deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
 
@@ -65,8 +67,15 @@ public class BrowseEventsActivity extends AppCompatActivity {
         recyclerViewEvents.setVisibility(View.VISIBLE);
 
         EventAdapter adapter = new EventAdapter(events, event -> {
-            Intent intent = new Intent(BrowseEventsActivity.this, EventDetailsActivity.class);
-            intent.putExtra("eventId", event.getEventId());
+            Intent intent;
+            if (deviceId.equals(event.getOrganizerDeviceId())) {
+                intent = new Intent(BrowseEventsActivity.this, EventDetailActivity.class);
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getEventId());
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
+            } else {
+                intent = new Intent(BrowseEventsActivity.this, EntrantEventDetailActivity.class);
+                intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, event.getEventId());
+            }
             startActivity(intent);
         });
 

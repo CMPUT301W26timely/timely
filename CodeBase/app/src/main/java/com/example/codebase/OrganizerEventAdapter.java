@@ -74,8 +74,8 @@ public class OrganizerEventAdapter extends
         }
 
         Date today = new Date();
-        List<?> selectedEntrants = event.getSelectedEntrants();
-        List<?> enrolledEntrants = event.getEnrolledEntrants();
+        List<String> selectedEntrants = event.getSelectedEntrants();
+        List<String> enrolledEntrants = event.getEnrolledEntrants();
 
         boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
