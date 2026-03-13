@@ -12,21 +12,58 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * UserRepository handles Firestore user profile operations.
+ * Repository class responsible for Firestore user profile operations.
+ *
+ * <p>All writes use {@link SetOptions#merge()} so that only the specified fields are
+ * updated without overwriting unrelated document data. Successfully loaded or saved
+ * profiles are stored in {@link AppCache} for synchronous access elsewhere in the app.
+ *
+ * <p>All methods are static; this class is not intended to be instantiated.
  */
 public class UserRepository {
 
     private static final String TAG = "UserRepository";
 
+    /**
+     * Callback interface for operations that return a single {@link User}.
+     */
     public interface UserCallback {
+        /**
+         * Called when the user profile has been successfully loaded.
+         *
+         * @param user The loaded {@link User}; never {@code null}.
+         */
         void onUserLoaded(User user);
+
+        /**
+         * Called when the load operation fails.
+         *
+         * @param e The exception describing the failure.
+         */
         void onError(Exception e);
     }
 
+    /**
+     * Callback interface for operations that only need to report failure.
+     */
     public interface ErrorCallback {
+        /**
+         * Called when an operation fails.
+         *
+         * @param e The exception describing the failure.
+         */
         void onError(Exception e);
     }
 
+    /**
+     * Synchronises the current device ID and session role to the user's Firestore document.
+     *
+     * <p>Only the {@code deviceId} and {@code role} fields are written; all other profile
+     * fields are left unchanged. Outcomes are logged at DEBUG (success) or ERROR (failure)
+     * level using {@link #TAG}.
+     *
+     * @param context The {@link Context} used to resolve the device ID and session role.
+     */
     public static void syncRole(Context context) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
         String role = WelcomeActivity.getSessionRole(context);
@@ -43,6 +80,26 @@ public class UserRepository {
                 .addOnFailureListener(e -> Log.e(TAG, "Role sync failed", e));
     }
 
+    /**
+     * Persists the user's full profile to Firestore and updates the in-memory
+     * {@link AppCache} on success.
+     *
+     * <p>The following fields are written: {@code deviceId}, {@code role}, {@code name},
+     * {@code email}, and {@code phoneNumber}. The role is derived from the current
+     * session via {@link WelcomeActivity#getSessionRole(Context)} and stored in
+     * lower-case.
+     *
+     * <p>{@code onSuccess} is invoked on the main thread after both the Firestore write
+     * and the cache update complete. {@code onFailure} is invoked if the Firestore write
+     * fails; either callback may be {@code null} to ignore the respective outcome.
+     *
+     * @param context      The {@link Context} used to resolve the device ID and session role.
+     * @param name         The display name to save.
+     * @param email        The email address to save.
+     * @param phoneNumber  The phone number to save (may be empty).
+     * @param onSuccess    {@link Runnable} invoked after a successful save, or {@code null}.
+     * @param onFailure    {@link ErrorCallback} invoked on failure, or {@code null}.
+     */
     public static void saveUserProfile(Context context,
                                        String name,
                                        String email,
@@ -70,7 +127,7 @@ public class UserRepository {
                     user.setEmail(email);
                     user.setPhoneNumber(phoneNumber);
 
-                    // Save in memory cache too
+                    // Update the in-memory cache so callers get fresh data immediately.
                     AppCache.getInstance().setCachedUser(user);
 
                     if (onSuccess != null) onSuccess.run();
@@ -80,6 +137,18 @@ public class UserRepository {
                 });
     }
 
+    /**
+     * Loads the current device's user profile from Firestore and updates
+     * {@link AppCache} with the result.
+     *
+     * <p>The Firestore document is mapped to a {@link User} via
+     * {@link #mapDocumentToUser(DocumentSnapshot, String)}. If the document does not
+     * exist, a default {@link User} (role {@code "entrant"}, all other fields empty) is
+     * returned and cached.
+     *
+     * @param context  The {@link Context} used to resolve the device ID.
+     * @param callback The {@link UserCallback} to receive the loaded {@link User} or an error.
+     */
     public static void loadUserProfile(Context context, @NonNull UserCallback callback) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
 
@@ -90,7 +159,7 @@ public class UserRepository {
                 .addOnSuccessListener(documentSnapshot -> {
                     User user = mapDocumentToUser(documentSnapshot, deviceId);
 
-                    // Save in cache
+                    // Cache the result for synchronous access.
                     AppCache.getInstance().setCachedUser(user);
 
                     callback.onUserLoaded(user);
@@ -98,15 +167,27 @@ public class UserRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * Maps a Firestore {@link DocumentSnapshot} to a {@link User} object.
+     *
+     * <p>If the document exists, each profile field is read and applied to the
+     * {@link User}; {@code null} values fall back to safe defaults ({@code "entrant"}
+     * for role, empty strings for all other fields). If the document does not exist,
+     * the {@link User} constructed by {@link User#User(String)} is returned unchanged.
+     *
+     * @param documentSnapshot The Firestore document to map.
+     * @param deviceId         The device ID to assign to the {@link User}.
+     * @return A fully initialised {@link User}; never {@code null}.
+     */
     private static User mapDocumentToUser(DocumentSnapshot documentSnapshot, String deviceId) {
         User user = new User(deviceId);
 
         if (documentSnapshot.exists()) {
             user.setDeviceId(deviceId);
 
-            String role = documentSnapshot.getString("role");
-            String name = documentSnapshot.getString("name");
-            String email = documentSnapshot.getString("email");
+            String role        = documentSnapshot.getString("role");
+            String name        = documentSnapshot.getString("name");
+            String email       = documentSnapshot.getString("email");
             String phoneNumber = documentSnapshot.getString("phoneNumber");
 
             user.setRole(role != null ? role : "entrant");

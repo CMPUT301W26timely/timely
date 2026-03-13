@@ -17,18 +17,47 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 /**
- * ProfileSettingsActivity allows the user to create or update profile info.
- * This satisfies US 01.02.01 and US 01.02.02.
+ * Activity for creating or updating a user's profile information.
+ *
+ * <p>Operates in two distinct modes controlled by {@link #EXTRA_FIRST_RUN}:
+ * <ul>
+ *   <li><b>First-run mode</b> — shown during initial onboarding. The back button is
+ *       disabled and the user must complete the form before proceeding to
+ *       {@link OrganizerActivity}. Clears the {@link WelcomeActivity#KEY_PROFILE_PENDING}
+ *       flag on successful save.</li>
+ *   <li><b>Edit mode</b> — shown for returning users updating an existing profile.
+ *       Normal back-navigation is permitted.</li>
+ * </ul>
+ *
+ * <p>On launch the activity attempts to pre-populate fields from {@link AppCache}
+ * (synchronous) and then from {@link UserRepository} (asynchronous Firestore fetch).
+ *
+ * <p>Satisfies user stories <b>US 01.02.01</b> and <b>US 01.02.02</b>.
  */
 public class ProfileSettingsActivity extends AppCompatActivity {
 
+    /**
+     * Boolean {@link Intent} extra that controls the activity's operating mode.
+     * <ul>
+     *   <li>{@code true} — first-run / onboarding mode.</li>
+     *   <li>{@code false} (default) — profile-edit mode.</li>
+     * </ul>
+     */
     public static final String EXTRA_FIRST_RUN = "extra_first_run";
 
+    /**
+     * Whether the activity was launched during first-run onboarding.
+     * Derived from {@link #EXTRA_FIRST_RUN}; drives {@link #applyMode()}.
+     */
     private boolean isFirstRun;
     private boolean isPopulatingFields;
     private boolean hasUserEditedFields;
     private TextView textViewTitle;
+
+    /** Displays the screen subtitle, which differs between first-run and edit modes. */
     private TextView textViewSubtitle;
+
+    /** Displays the device's unique identifier obtained from {@link DeviceIdManager}. */
     private TextView textViewDeviceId;
     private TextView textViewModeBadge;
     private ImageButton buttonBack;
@@ -40,6 +69,13 @@ public class ProfileSettingsActivity extends AppCompatActivity {
     private TextInputEditText editTextPhone;
     private Button buttonSaveChanges;
 
+    /**
+     * Initialises the activity, resolves the operating mode, populates UI views,
+     * and triggers an asynchronous profile load from {@link UserRepository}.
+     *
+     * @param savedInstanceState If the activity is being re-created from a previous state,
+     *                           this bundle contains the most recent data; otherwise {@code null}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,7 +83,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
         isFirstRun = getIntent().getBooleanExtra(EXTRA_FIRST_RUN, false);
 
-        textViewTitle = findViewById(R.id.textViewTitle);
+        textViewTitle    = findViewById(R.id.textViewTitle);
         textViewSubtitle = findViewById(R.id.textViewSubtitle);
         textViewDeviceId = findViewById(R.id.textViewDeviceId);
         textViewModeBadge = findViewById(R.id.textViewModeBadge);
@@ -88,6 +124,13 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         buttonSaveChanges.setOnClickListener(v -> saveProfile());
     }
 
+    /**
+     * Applies mode-specific string resources to the title, subtitle, and save button
+     * based on the value of {@link #isFirstRun}.
+     *
+     * <p>First-run mode uses onboarding copy and a "Continue" button label.
+     * Edit mode uses standard profile-editing copy and a "Save" button label.
+     */
     private void applyMode() {
         if (isFirstRun) {
             textViewTitle.setText(R.string.profile_settings_first_run_title);
