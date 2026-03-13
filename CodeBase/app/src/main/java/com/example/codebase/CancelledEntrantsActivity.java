@@ -18,54 +18,92 @@ import java.util.List;
 
 /**
  * CancelledEntrantsActivity — US 02.06.02
- * Shows all cancelled entrants split into three tabs:
  *
- *   All       = full cancelledEntrants array
- *   Declined  = cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)
- *               — entrants who actively declined the invite
- *   Cancelled = cancelledEntrants - declined
- *               — entrants cancelled by the organizer
+ * Displays all cancelled entrants for a given event, split across three tabs:
+ * <ul>
+ *   <li><b>All</b> — the full {@code cancelledEntrants} array from Firestore</li>
+ *   <li><b>Declined</b> — entrants who actively declined their invitation:
+ *       {@code cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)}</li>
+ *   <li><b>Cancelled</b> — entrants removed by the organizer:
+ *       {@code cancelledEntrants - declined}</li>
+ * </ul>
+ *
+ * <p>Launched from {@code EventDetailActivity} via the cancelled users row.</p>
  *
  * Add to AndroidManifest.xml:
- *   <activity android:name=".CancelledEntrantsActivity" android:exported="false" />
- *
- * Launch from EventDetailActivity rowCancelledUsers click listener:
- *   Intent intent = new Intent(this, CancelledEntrantsActivity.class);
- *   intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
- *   intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
- *   startActivity(intent);
+ * <pre>
+ *   &lt;activity android:name=".CancelledEntrantsActivity" android:exported="false" /&gt;
+ * </pre>
  */
 public class CancelledEntrantsActivity extends AppCompatActivity {
 
+    /** Intent extra key for the Firestore event document ID. */
     public static final String EXTRA_EVENT_ID    = "event_id";
+
+    /** Intent extra key for the event display title. */
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
-    // Tabs
+    /** Tab index for the All tab — shows every cancelled entrant. */
     private static final int TAB_ALL       = 0;
+
+    /** Tab index for the Declined tab — shows entrants who declined their invitation. */
     private static final int TAB_DECLINED  = 1;
+
+    /** Tab index for the Cancelled tab — shows entrants cancelled by the organizer. */
     private static final int TAB_CANCELLED = 2;
 
+    /** The currently selected tab index. Defaults to {@link #TAB_ALL}. */
     private int currentTab = TAB_ALL;
 
+    /** Displays the event title at the top of the screen. */
     private TextView tvTitle;
+
+    /** Displays the count of entrants shown in the current tab. */
     private TextView tvCount;
+
+    /** Tab button for the All tab. */
     private TextView tvTabAll;
+
+    /** Tab button for the Declined tab. */
     private TextView tvTabDeclined;
+
+    /** Tab button for the Cancelled tab. */
     private TextView tvTabCancelled;
+
+    /** RecyclerView displaying the list of cancelled entrants. */
     private RecyclerView rvEntrants;
+
+    /** Empty state label shown when the current tab has no entrants. */
     private TextView tvNoEntrants;
+
+    /** Progress bar shown while Firestore data is loading. */
     private View progressBar;
 
+    /** Firestore document ID of the event being viewed. */
     private String eventId;
+
+    /** Display title of the event being viewed. */
     private String eventTitle;
 
-    // Lists
+    /** Full list of all cancelled entrants shown in the All tab. */
     private List<CancelledEntrant> allList       = new ArrayList<>();
+
+    /** List of entrants who actively declined their invitation. */
     private List<CancelledEntrant> declinedList  = new ArrayList<>();
+
+    /** List of entrants who were cancelled by the organizer. */
     private List<CancelledEntrant> cancelledList = new ArrayList<>();
 
+    /** Adapter for the cancelled entrants RecyclerView. */
     private CancelledEntrantsAdapter adapter;
 
+    /**
+     * Called when the activity is created.
+     * Binds views, sets up tab listeners, initialises the RecyclerView,
+     * and triggers loading of entrant data from Firestore.
+     *
+     * @param savedInstanceState saved state bundle from a previous instance, or {@code null}
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +112,6 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
         eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
-        // ── Bind views ────────────────────────────────────────────────────────
         tvTitle        = findViewById(R.id.tvCancelledTitle);
         tvCount        = findViewById(R.id.tvCancelledCount);
         tvTabAll       = findViewById(R.id.tabCancelledAll);
@@ -86,15 +123,12 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
 
         if (eventTitle != null) tvTitle.setText(eventTitle);
 
-        // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBackCancelled).setOnClickListener(v -> finish());
 
-        // ── Tabs ──────────────────────────────────────────────────────────────
         tvTabAll.setOnClickListener(v       -> switchTab(TAB_ALL));
         tvTabDeclined.setOnClickListener(v  -> switchTab(TAB_DECLINED));
         tvTabCancelled.setOnClickListener(v -> switchTab(TAB_CANCELLED));
 
-        // ── RecyclerView ──────────────────────────────────────────────────────
         adapter = new CancelledEntrantsAdapter(new ArrayList<>());
         rvEntrants.setLayoutManager(new LinearLayoutManager(this));
         rvEntrants.setAdapter(adapter);
@@ -103,8 +137,11 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
         loadEntrants();
     }
 
-    // ─── Load from Firestore ──────────────────────────────────────────────────
-
+    /**
+     * Loads the event document from Firestore and passes it to
+     * {@link #processDocument(DocumentSnapshot)} on success.
+     * Shows a toast and hides the progress bar on failure.
+     */
     private void loadEntrants() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -119,6 +156,18 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Processes the loaded Firestore document and builds the three entrant lists.
+     *
+     * <p>Calculates which cancelled entrants actively declined vs were removed
+     * by the organizer using the following logic:</p>
+     * <pre>
+     *   declined  = cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)
+     *   cancelled = cancelledEntrants - declined
+     * </pre>
+     *
+     * @param doc the Firestore {@link DocumentSnapshot} for the event
+     */
     private void processDocument(DocumentSnapshot doc) {
         progressBar.setVisibility(View.GONE);
 
@@ -135,24 +184,20 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
             return;
         }
 
-        List<String> selected = event.getSelectedEntrants();
-        List<String> enrolled = event.getEnrolledEntrants();
+        List<String> selected  = event.getSelectedEntrants();
+        List<String> enrolled  = event.getEnrolledEntrants();
         List<String> cancelled = event.getCancelledEntrants();
 
-        // ── Calculate declined ────────────────────────────────────────────────
-        // Declined = cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)
         List<String> selectedMinusEnrolled = new ArrayList<>(selected);
         selectedMinusEnrolled.removeAll(enrolled);
 
         List<String> declinedIds = new ArrayList<>(cancelled);
         declinedIds.retainAll(selectedMinusEnrolled);
 
-        // ── Build display lists ───────────────────────────────────────────────
         allList.clear();
         declinedList.clear();
         cancelledList.clear();
 
-        // No cancelledAt timestamp available per-entrant yet — use null for now
         for (String deviceId : cancelled) {
             String status = declinedIds.contains(deviceId) ? "Declined" : "Cancelled";
             CancelledEntrant entrant = new CancelledEntrant(deviceId, status, null);
@@ -164,8 +209,16 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
         switchTab(currentTab);
     }
 
-    // ─── Tab switching ────────────────────────────────────────────────────────
-
+    /**
+     * Switches the active tab and updates the RecyclerView with the
+     * corresponding entrant list.
+     *
+     * <p>Resets all tab styles, highlights the selected tab, updates the
+     * adapter, count label, and empty state visibility.</p>
+     *
+     * @param tab the tab index to switch to — one of
+     *            {@link #TAB_ALL}, {@link #TAB_DECLINED}, or {@link #TAB_CANCELLED}
+     */
     private void switchTab(int tab) {
         currentTab = tab;
 
@@ -183,7 +236,7 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
                 selectTab(tvTabCancelled);
                 list = cancelledList;
                 break;
-            default: // TAB_ALL
+            default:
                 selectTab(tvTabAll);
                 list = allList;
                 break;
@@ -195,25 +248,58 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
         rvEntrants.setVisibility(list.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
+    /**
+     * Resets a tab button to its inactive visual style.
+     * Sets grey text and the inactive background drawable.
+     *
+     * @param tab the {@link TextView} tab button to reset
+     */
     private void resetTab(TextView tab) {
         tab.setTextColor(0xFFAAAAAA);
         tab.setBackgroundResource(R.drawable.bg_tab_inactive);
     }
 
+    /**
+     * Applies the active visual style to a tab button.
+     * Sets white text and the active background drawable.
+     *
+     * @param tab the {@link TextView} tab button to highlight
+     */
     private void selectTab(TextView tab) {
         tab.setTextColor(0xFFFFFFFF);
         tab.setBackgroundResource(R.drawable.bg_tab_active);
     }
 
-    // ─── Helper ───────────────────────────────────────────────────────────────
-
-    // ─── Model ────────────────────────────────────────────────────────────────
-
+    /**
+     * Lightweight model representing a single cancelled entrant row.
+     *
+     * <p>Used internally by {@link CancelledEntrantsActivity} and
+     * {@link CancelledEntrantsAdapter} to hold display data.</p>
+     */
     public static class CancelledEntrant {
-        public String deviceId;
-        public String status;    // "Declined" or "Cancelled"
-        public Date   cancelledAt; // null for now — no per-entrant timestamp yet
 
+        /** Device ID of the cancelled entrant. */
+        public String deviceId;
+
+        /**
+         * Reason for cancellation.
+         * Expected values: {@code "Declined"} or {@code "Cancelled"}.
+         */
+        public String status;
+
+        /**
+         * Timestamp when the entrant was cancelled.
+         * Currently {@code null} — no per-entrant timestamp is stored yet.
+         */
+        public Date cancelledAt;
+
+        /**
+         * Constructs a new CancelledEntrant with the given fields.
+         *
+         * @param deviceId    the device ID of the cancelled entrant
+         * @param status      the cancellation reason — {@code "Declined"} or {@code "Cancelled"}
+         * @param cancelledAt the timestamp of cancellation, or {@code null} if unavailable
+         */
         public CancelledEntrant(String deviceId, String status, Date cancelledAt) {
             this.deviceId    = deviceId;
             this.status      = status;

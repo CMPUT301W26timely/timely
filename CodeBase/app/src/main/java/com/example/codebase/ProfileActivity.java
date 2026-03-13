@@ -11,23 +11,77 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * ProfileActivity — shows user profile summary and navigation.
- * This supports viewing updated profile data after save.
+ * Displays a summary of the current user's profile and provides navigation to
+ * profile editing and role switching.
+ *
+ * <p>Profile data is loaded in two passes:
+ * <ol>
+ *   <li>Synchronously from {@link AppCache} if a cached {@link User} is available.</li>
+ *   <li>Asynchronously from {@link UserRepository} (Firestore), which overwrites the
+ *       cached values once loaded.</li>
+ * </ol>
+ *
+ * <p>The screen also exposes:
+ * <ul>
+ *   <li>A toggleable device ID display (masked by default).</li>
+ *   <li>A role-switch button that returns the user to {@link WelcomeActivity} for
+ *       re-selection.</li>
+ *   <li>An edit button that launches {@link ProfileSettingsActivity}.</li>
+ *   <li>A bottom navigation bar shared across the main sections of the app.</li>
+ * </ul>
+ *
+ * <p>Profile data is refreshed on every {@link #onResume()} to reflect edits made in
+ * {@link ProfileSettingsActivity}.
  */
 public class ProfileActivity extends AppCompatActivity {
 
+    /**
+     * Whether the full device ID is currently visible in {@link #tvDeviceId}.
+     * Toggled by {@link #btnToggleDeviceId}; defaults to {@code false} (masked).
+     */
     private boolean isDeviceIdVisible = false;
+
+    /**
+     * The unique device identifier obtained from {@link DeviceIdManager}, used for
+     * display purposes in {@link #tvDeviceId}.
+     */
     private String deviceId;
 
+    /** Displays the current session role (e.g. "Admin" or "User"). */
     private TextView tvRole;
+
+    /** Displays the device ID, either masked or in full depending on {@link #isDeviceIdVisible}. */
     private TextView tvDeviceId;
+
+    /** Displays the user's name, or a placeholder if not set. */
     private TextView tvName;
+
+    /** Displays the user's email address, or a placeholder if not set. */
     private TextView tvEmail;
+
+    /** Displays the user's phone number, or a placeholder if not set. */
     private TextView tvPhone;
+
+    /** Toggles the visibility of the full device ID in {@link #tvDeviceId}. */
     private ImageButton btnToggleDeviceId;
+
+    /**
+     * Navigates back to {@link WelcomeActivity} to allow the user to switch roles.
+     * Label reflects the opposite of the current role.
+     */
     private Button btnSwitch;
+
+    /** Launches {@link ProfileSettingsActivity} in edit mode. */
     private Button btnEditProfile;
 
+    /**
+     * Initialises the activity, resolves the current session role, binds all views,
+     * configures button listeners, sets up bottom navigation, and triggers the initial
+     * profile load.
+     *
+     * @param savedInstanceState If the activity is being re-created from a previous state,
+     *                           this bundle contains the most recent data; otherwise {@code null}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,14 +90,14 @@ public class ProfileActivity extends AppCompatActivity {
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
         String currentRole = WelcomeActivity.getSessionRole(this);
 
-        tvRole = findViewById(R.id.tvUserRole);
-        tvDeviceId = findViewById(R.id.tvDeviceId);
-        tvName = findViewById(R.id.tvName);
-        tvEmail = findViewById(R.id.tvEmail);
-        tvPhone = findViewById(R.id.tvPhone);
+        tvRole           = findViewById(R.id.tvUserRole);
+        tvDeviceId       = findViewById(R.id.tvDeviceId);
+        tvName           = findViewById(R.id.tvName);
+        tvEmail          = findViewById(R.id.tvEmail);
+        tvPhone          = findViewById(R.id.tvPhone);
         btnToggleDeviceId = findViewById(R.id.btnToggleDeviceId);
-        btnSwitch = findViewById(R.id.btnSwitchRole);
-        btnEditProfile = findViewById(R.id.btnEditProfile);
+        btnSwitch        = findViewById(R.id.btnSwitchRole);
+        btnEditProfile   = findViewById(R.id.btnEditProfile);
 
         if (WelcomeActivity.ROLE_ADMIN.equals(currentRole)) {
             tvRole.setText(getString(R.string.user_role_label, "Admin"));
@@ -74,12 +128,23 @@ public class ProfileActivity extends AppCompatActivity {
         loadProfile();
     }
 
+    /**
+     * Reloads the user's profile each time the activity returns to the foreground,
+     * ensuring edits made in {@link ProfileSettingsActivity} are reflected immediately.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         loadProfile();
     }
 
+    /**
+     * Updates {@link #tvDeviceId} and the toggle button icon to reflect the current
+     * value of {@link #isDeviceIdVisible}.
+     *
+     * <p>When visible, the full device ID is shown and the icon changes to a close/clear
+     * symbol. When masked, a placeholder string is shown and the icon reverts to an eye symbol.
+     */
     private void updateDeviceIdDisplay() {
         if (isDeviceIdVisible) {
             tvDeviceId.setText(getString(R.string.device_id_label, deviceId));
@@ -90,6 +155,14 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Loads the user's profile data from {@link AppCache} (synchronous) and then from
+     * {@link UserRepository} (asynchronous Firestore fetch).
+     *
+     * <p>If a cached {@link User} exists it is displayed immediately via
+     * {@link #showUser(User)}. The Firestore result overwrites the cached display once
+     * available. Shows a {@link Toast} error if the Firestore load fails.
+     */
     private void loadProfile() {
         if (AppCache.getInstance().hasCachedUser()) {
             showUser(AppCache.getInstance().getCachedUser());
@@ -110,12 +183,31 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Populates the name, email, and phone {@link TextView}s from the given {@link User}.
+     *
+     * <p>If any field is empty or {@code null}, a human-readable placeholder is shown
+     * (e.g. "No name set") rather than a blank field.
+     *
+     * @param user The {@link User} whose data should be displayed.
+     */
     private void showUser(User user) {
-        tvName.setText(TextUtils.isEmpty(user.getName()) ? "No name set" : user.getName());
-        tvEmail.setText(TextUtils.isEmpty(user.getEmail()) ? "No email set" : user.getEmail());
+        tvName.setText(TextUtils.isEmpty(user.getName())        ? "No name set"         : user.getName());
+        tvEmail.setText(TextUtils.isEmpty(user.getEmail())      ? "No email set"        : user.getEmail());
         tvPhone.setText(TextUtils.isEmpty(user.getPhoneNumber()) ? "No phone number set" : user.getPhoneNumber());
     }
 
+    /**
+     * Wires click listeners for the bottom navigation bar items.
+     *
+     * <ul>
+     *   <li><b>My Events</b> — starts {@link OrganizerActivity} and finishes this activity.</li>
+     *   <li><b>Profile</b> — no-op; the user is already on this screen.</li>
+     *   <li><b>Explore</b> — starts {@link BrowseEventsActivity}.</li>
+     *   <li><b>Search</b> — shows a "Not implemented yet" {@link Toast}.</li>
+     *   <li><b>Notifications</b> — starts {@link NotificationsActivity}.</li>
+     * </ul>
+     */
     private void setupBottomNavigation() {
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             startActivity(new Intent(this, OrganizerActivity.class));
@@ -123,7 +215,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.navProfile).setOnClickListener(v -> {
-            // already here
+            // Already on this screen — no action required.
         });
 
         findViewById(R.id.navExplore).setOnClickListener(v ->

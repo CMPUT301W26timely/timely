@@ -18,15 +18,42 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Event detail screen for organizer role.
+ * Event detail screen for the organizer role.
+ *
+ * <p>Displays full event metadata (title, date range, location, description, poster,
+ * status badge, and entrant counts) loaded from Firestore, and provides navigation
+ * to related organizer actions:
+ * <ul>
+ *   <li>View invited entrants → {@link InvitedEntrantsActivity}</li>
+ *   <li>View cancelled entrants → {@link CancelledEntrantsActivity}</li>
+ *   <li>View QR code → {@link QrDisplayActivity}</li>
+ *   <li>Edit event → {@link CreateEventActivity} in edit mode</li>
+ *   <li>Send notification → {@link SendNotificationFragment}</li>
+ *   <li>Run lottery, view waiting list, view entrant map (stubs)</li>
+ * </ul>
+ *
+ * <p>The event document is reloaded every time the activity resumes (via
+ * {@link #onResume()}) so that counts and status remain fresh after returning
+ * from a sub-screen.
+ *
+ * @see EventSchema
+ * @see EventPoster
  */
 public class EventDetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_EVENT_ID = "event_id";
+    /** Intent extra key for the Firestore event document ID. */
+    public static final String EXTRA_EVENT_ID    = "event_id";
+
+    /** Intent extra key for the event title (used for toolbar display). */
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
+    /** Firestore document ID of the event being displayed. */
     private String eventId;
+
+    /** Display title of the event; updated from Firestore on load. */
     private String eventTitle;
+
+    // ── Views ─────────────────────────────────────────────────────────────────
 
     private TextView tvDetailTitle;
     private TextView tvDetailDate;
@@ -43,36 +70,51 @@ public class EventDetailActivity extends AppCompatActivity {
     private TextView tvEventCost;
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
+
+    /** Most recently loaded event; {@code null} until the first Firestore load completes. */
     private Event event;
 
+    /** Formats dates as {@code "MMM dd, yyyy"} for the date range display. */
     private final SimpleDateFormat displayDateFormat =
             new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+
+    /** Formats the event price as a locale-appropriate currency string. */
     private final NumberFormat currencyFormat =
             NumberFormat.getCurrencyInstance(Locale.getDefault());
 
+    /**
+     * Initialises the activity, binds all views, wires click listeners for every
+     * action row and card, and triggers the initial Firestore load.
+     *
+     * <p>The Edit Event row builds an intent with all current event field values
+     * pre-populated as extras so that {@link CreateEventActivity} can enter edit
+     * mode without a separate Firestore fetch.
+     *
+     * @param savedInstanceState Previously saved instance state, or {@code null}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
-        eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
+        eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
-        tvDetailTitle = findViewById(R.id.tvDetailTitle);
-        tvDetailDate = findViewById(R.id.tvDetailDate);
-        tvDetailLocation = findViewById(R.id.tvDetailLocation);
-        tvDetailDescription = findViewById(R.id.tvDetailDescription);
-        tvStatusBadge = findViewById(R.id.tvDetailStatusBadge);
-        tvWaitingCount = findViewById(R.id.tvWaitingCount);
-        tvInvitedCount = findViewById(R.id.tvInvitedCount);
-        tvEnrolledCount = findViewById(R.id.tvEnrolledCount);
-        tvCancelledCount = findViewById(R.id.tvCancelledCount);
+        tvDetailTitle         = findViewById(R.id.tvDetailTitle);
+        tvDetailDate          = findViewById(R.id.tvDetailDate);
+        tvDetailLocation      = findViewById(R.id.tvDetailLocation);
+        tvDetailDescription   = findViewById(R.id.tvDetailDescription);
+        tvStatusBadge         = findViewById(R.id.tvDetailStatusBadge);
+        tvWaitingCount        = findViewById(R.id.tvWaitingCount);
+        tvInvitedCount        = findViewById(R.id.tvInvitedCount);
+        tvEnrolledCount       = findViewById(R.id.tvEnrolledCount);
+        tvCancelledCount      = findViewById(R.id.tvCancelledCount);
         tvWaitingListRowCount = findViewById(R.id.tvWaitingListRowCount);
-        tvMaxCapacity = findViewById(R.id.tvMaxCapacity);
-        tvWinnersCount = findViewById(R.id.tvWinnersCount);
-        tvEventCost = findViewById(R.id.tvEventCost);
-        ivHeroPoster = findViewById(R.id.ivHeroPoster);
-        progressBar = findViewById(R.id.detailProgressBar);
+        tvMaxCapacity         = findViewById(R.id.tvMaxCapacity);
+        tvWinnersCount        = findViewById(R.id.tvWinnersCount);
+        tvEventCost           = findViewById(R.id.tvEventCost);
+        ivHeroPoster          = findViewById(R.id.ivHeroPoster);
+        progressBar           = findViewById(R.id.detailProgressBar);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -88,12 +130,14 @@ public class EventDetailActivity extends AppCompatActivity {
                         getString(R.string.lottery_draw_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
-        findViewById(R.id.rowSendNotification).setOnClickListener(v ->{
+
+        findViewById(R.id.rowSendNotification).setOnClickListener(v -> {
             if (event == null) {
                 Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
                 return;
             }
-            SendNotificationFragment sheet = SendNotificationFragment.newInstance(eventId, event.getTitle());
+            SendNotificationFragment sheet =
+                    SendNotificationFragment.newInstance(eventId, event.getTitle());
             sheet.show(getSupportFragmentManager(), "sendNotification");
         });
 
@@ -102,11 +146,13 @@ public class EventDetailActivity extends AppCompatActivity {
                         getString(R.string.view_waiting_list_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
+
         findViewById(R.id.rowViewEntrantMap).setOnClickListener(v ->
                 Toast.makeText(this,
                         getString(R.string.view_entrant_map_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
+
         findViewById(R.id.rowViewQrCode).setOnClickListener(v -> {
             Intent intent = new Intent(this, QrDisplayActivity.class);
             intent.putExtra("event_id", eventId);
@@ -124,27 +170,21 @@ public class EventDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CreateEventActivity.class);
             intent.putExtra("isEditMode", true);
             intent.putExtra("editingEventId", eventId);
-            intent.putExtra("name", event.getTitle() != null ? event.getTitle() : "");
+            intent.putExtra("name",        event.getTitle()       != null ? event.getTitle()       : "");
             intent.putExtra("description", event.getDescription() != null ? event.getDescription() : "");
-            intent.putExtra("location", event.getLocation() != null ? event.getLocation() : "");
-            intent.putExtra("price", (double) event.getPrice());
+            intent.putExtra("location",    event.getLocation()    != null ? event.getLocation()    : "");
+            intent.putExtra("price",       (double) event.getPrice());
             intent.putExtra("geoRequired", event.isGeoEnabled());
             intent.putExtra("waitlistCap", event.getWaitlistCap());
-            intent.putExtra("capacity", event.getMaxCapacity() != null ? event.getMaxCapacity().intValue() : 0);
-            intent.putExtra("posterBase64", event.getPoster() != null ? event.getPoster().getPosterImageBase64() : "");
+            intent.putExtra("capacity",    event.getMaxCapacity() != null
+                    ? event.getMaxCapacity().intValue() : 0);
+            intent.putExtra("posterBase64", event.getPoster() != null
+                    ? event.getPoster().getPosterImageBase64() : "");
 
-            if (event.getStartDate() != null) {
-                intent.putExtra("startDate", sdf.format(event.getStartDate()));
-            }
-            if (event.getEndDate() != null) {
-                intent.putExtra("endDate", sdf.format(event.getEndDate()));
-            }
-            if (event.getRegistrationOpen() != null) {
-                intent.putExtra("registrationOpen", sdf.format(event.getRegistrationOpen()));
-            }
-            if (event.getRegistrationDeadline() != null) {
-                intent.putExtra("registrationDeadline", sdf.format(event.getRegistrationDeadline()));
-            }
+            if (event.getStartDate()            != null) intent.putExtra("startDate",            sdf.format(event.getStartDate()));
+            if (event.getEndDate()              != null) intent.putExtra("endDate",               sdf.format(event.getEndDate()));
+            if (event.getRegistrationOpen()     != null) intent.putExtra("registrationOpen",      sdf.format(event.getRegistrationOpen()));
+            if (event.getRegistrationDeadline() != null) intent.putExtra("registrationDeadline",  sdf.format(event.getRegistrationDeadline()));
 
             startActivity(intent);
         });
@@ -166,6 +206,13 @@ public class EventDetailActivity extends AppCompatActivity {
         loadEventDetails();
     }
 
+    /**
+     * Fetches the event document from Firestore and delegates to
+     * {@link #onEventLoaded(DocumentSnapshot)} on success.
+     *
+     * <p>Shows the progress bar while the request is in flight and hides it on
+     * failure, displaying a localised error toast.
+     */
     private void loadEventDetails() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -182,6 +229,26 @@ public class EventDetailActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Populates all UI fields from the loaded {@link Event}.
+     *
+     * <p>Handles poster display with three fallback tiers:
+     * <ol>
+     *   <li>Decode Base64 poster and set as bitmap.</li>
+     *   <li>If decoding returns {@code null}, fall back to
+     *       {@code bg_hero_image} drawable.</li>
+     *   <li>If decoding throws, fall back to {@code bg_hero_image} drawable.</li>
+     * </ol>
+     *
+     * <p>Computes entrant counts from the four list fields and delegates status
+     * calculation to {@link #calculateStatus} and badge styling to
+     * {@link #applyStatusBadge(String)}.
+     *
+     * <p>Finishes the activity with a toast if the document does not exist or
+     * cannot be normalised by {@link EventSchema#normalizeLoadedEvent(DocumentSnapshot)}.
+     *
+     * @param doc The Firestore {@link DocumentSnapshot} for the event.
+     */
     private void onEventLoaded(DocumentSnapshot doc) {
         progressBar.setVisibility(View.GONE);
 
@@ -206,7 +273,8 @@ public class EventDetailActivity extends AppCompatActivity {
                 && event.getPoster().getPosterImageBase64() != null
                 && !event.getPoster().getPosterImageBase64().isEmpty()) {
             try {
-                android.graphics.Bitmap bitmap = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
+                android.graphics.Bitmap bitmap =
+                        EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                 if (bitmap != null) {
                     ivHeroPoster.setImageBitmap(bitmap);
                     ivHeroPoster.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
@@ -220,26 +288,25 @@ public class EventDetailActivity extends AppCompatActivity {
             ivHeroPoster.setBackgroundResource(R.drawable.bg_hero_image);
         }
 
-        eventTitle = event.getTitle() != null
-                ? event.getTitle() : getString(R.string.untitled_event);
-        String location = event.getLocation() != null ? event.getLocation() : "";
+        eventTitle  = event.getTitle()       != null ? event.getTitle()       : getString(R.string.untitled_event);
+        String location    = event.getLocation()    != null ? event.getLocation()    : "";
         String description = event.getDescription() != null ? event.getDescription() : "";
 
         tvDetailTitle.setText(eventTitle);
         tvDetailLocation.setText(location);
         tvDetailDescription.setText(description);
 
-        Date regOpen = event.getRegistrationOpen();
+        Date regOpen              = event.getRegistrationOpen();
         Date registrationDeadline = event.getRegistrationDeadline();
-        Date drawDate = event.getDrawDate();
-        Date startDate = event.getStartDate();
-        Date endDate = event.getEndDate();
+        Date drawDate             = event.getDrawDate();
+        Date startDate            = event.getStartDate();
+        Date endDate              = event.getEndDate();
 
         tvDetailDate.setText(formatEventDateRange(startDate, endDate));
 
-        Long maxCapacity = event.getMaxCapacity();
-        int waitlistCap = event.getWaitlistCap();
-        float price = event.getPrice();
+        Long  maxCapacity = event.getMaxCapacity();
+        int   waitlistCap = event.getWaitlistCap();
+        float price       = event.getPrice();
 
         tvEventCost.setText(currencyFormat.format(price));
         tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
@@ -249,14 +316,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 ? String.valueOf(waitlistCap)
                 : getString(R.string.not_applicable_short));
 
-        List<String> waitingList = event.getWaitingList();
-        List<String> selectedEntrants = event.getSelectedEntrants();
-        List<String> enrolledEntrants = event.getEnrolledEntrants();
+        List<String> waitingList       = event.getWaitingList();
+        List<String> selectedEntrants  = event.getSelectedEntrants();
+        List<String> enrolledEntrants  = event.getEnrolledEntrants();
         List<String> cancelledEntrants = event.getCancelledEntrants();
 
-        int waitingCount = waitingList != null ? waitingList.size() : 0;
-        int invitedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
-        int enrolledCount = enrolledEntrants != null ? enrolledEntrants.size() : 0;
+        int waitingCount   = waitingList       != null ? waitingList.size()       : 0;
+        int invitedCount   = selectedEntrants  != null ? selectedEntrants.size()  : 0;
+        int enrolledCount  = enrolledEntrants  != null ? enrolledEntrants.size()  : 0;
         int cancelledCount = cancelledEntrants != null ? cancelledEntrants.size() : 0;
 
         tvWaitingCount.setText(String.valueOf(waitingCount));
@@ -272,6 +339,37 @@ public class EventDetailActivity extends AppCompatActivity {
         applyStatusBadge(status);
     }
 
+    /**
+     * Derives a human-readable event lifecycle status string from the event's key dates
+     * and entrant lists.
+     *
+     * <p>Status values and their conditions (evaluated in order):
+     * <ol>
+     *   <li><b>"Draft"</b> — any required date ({@code regOpen}, {@code registrationDeadline},
+     *       {@code drawDate}, {@code startDate}, {@code endDate}) is {@code null}.</li>
+     *   <li><b>"Registration Opening Soon"</b> — today is before {@code regOpen}.</li>
+     *   <li><b>"Registration Open"</b> — today is between {@code regOpen} and
+     *       {@code registrationDeadline} (inclusive).</li>
+     *   <li><b>"Registration Closed / Lottery Opening Soon"</b> — today is after
+     *       {@code registrationDeadline} but before {@code drawDate}, and no entrants
+     *       have been selected yet.</li>
+     *   <li><b>"Lottery Closed & Event Scheduled"</b> — today is after {@code drawDate}
+     *       and before {@code startDate}, and selected entrants exist.</li>
+     *   <li><b>"In Progress"</b> — today is between {@code startDate} and {@code endDate}
+     *       (inclusive), and enrolled entrants exist.</li>
+     *   <li><b>"Event Ended"</b> — today is after {@code endDate}.</li>
+     *   <li><b>"Draft"</b> — fallback for any other condition.</li>
+     * </ol>
+     *
+     * @param regOpen              Date registration opens; {@code null} triggers "Draft".
+     * @param registrationDeadline Date registration closes; {@code null} triggers "Draft".
+     * @param drawDate             Date of the lottery draw; {@code null} triggers "Draft".
+     * @param startDate            Event start date; {@code null} triggers "Draft".
+     * @param endDate              Event end date; {@code null} triggers "Draft".
+     * @param selectedEntrants     List of selected entrant device IDs; may be {@code null}.
+     * @param enrolledEntrants     List of enrolled entrant device IDs; may be {@code null}.
+     * @return A non-null status string describing the event's current lifecycle phase.
+     */
     private String calculateStatus(
             Date regOpen,
             Date registrationDeadline,
@@ -294,17 +392,11 @@ public class EventDetailActivity extends AppCompatActivity {
             return "Registration Opening Soon";
         } else if (!today.before(regOpen) && !today.after(registrationDeadline)) {
             return "Registration Open";
-        } else if (today.after(registrationDeadline)
-                && today.before(drawDate)
-                && selectedEmpty) {
+        } else if (today.after(registrationDeadline) && today.before(drawDate) && selectedEmpty) {
             return "Registration Closed / Lottery Opening Soon";
-        } else if (today.after(drawDate)
-                && today.before(startDate)
-                && !selectedEmpty) {
+        } else if (today.after(drawDate) && today.before(startDate) && !selectedEmpty) {
             return "Lottery Closed & Event Scheduled";
-        } else if (!today.before(startDate)
-                && !today.after(endDate)
-                && !enrolledEmpty) {
+        } else if (!today.before(startDate) && !today.after(endDate) && !enrolledEmpty) {
             return "In Progress";
         } else if (today.after(endDate)) {
             return "Event Ended";
@@ -313,23 +405,50 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Formats a start and end date into a display string.
+     *
+     * <ul>
+     *   <li>If {@code startDate} is {@code null}, returns the localised "date not set" string.</li>
+     *   <li>If {@code endDate} is {@code null}, returns the formatted start date alone.</li>
+     *   <li>If both dates format to the same string (same-day event), returns that string once.</li>
+     *   <li>Otherwise returns {@code "<startDate> - <endDate>"}.</li>
+     * </ul>
+     *
+     * @param startDate The event start date, or {@code null}.
+     * @param endDate   The event end date, or {@code null}.
+     * @return A formatted date range string for display in {@code tvDetailDate}.
+     */
     private String formatEventDateRange(Date startDate, Date endDate) {
         if (startDate == null) {
             return getString(R.string.date_not_set);
         }
-
         if (endDate == null) {
             return displayDateFormat.format(startDate);
         }
-
         String startText = displayDateFormat.format(startDate);
-        String endText = displayDateFormat.format(endDate);
+        String endText   = displayDateFormat.format(endDate);
         if (startText.equals(endText)) {
             return startText;
         }
         return startText + " - " + endText;
     }
 
+    /**
+     * Sets the text, background drawable, and text colour of {@link #tvStatusBadge}
+     * to match the given status string.
+     *
+     * <p>Colour scheme:
+     * <ul>
+     *   <li>Green pill — {@code "Registration Open"}, {@code "In Progress"}</li>
+     *   <li>Amber pill — {@code "Registration Opening Soon"},
+     *       {@code "Registration Closed / Lottery Opening Soon"},
+     *       {@code "Lottery Closed & Event Scheduled"}, and the default fallback</li>
+     *   <li>Red pill — {@code "Event Ended"}</li>
+     * </ul>
+     *
+     * @param status The status string produced by {@link #calculateStatus}.
+     */
     private void applyStatusBadge(String status) {
         tvStatusBadge.setText(status);
         tvStatusBadge.setVisibility(View.VISIBLE);
@@ -366,6 +485,12 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Reloads the event details from Firestore each time the activity resumes,
+     * ensuring entrant counts and status badge stay current after returning from
+     * sub-screens such as {@link InvitedEntrantsActivity} or
+     * {@link CancelledEntrantsActivity}.
+     */
     @Override
     protected void onResume() {
         super.onResume();

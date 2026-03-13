@@ -13,33 +13,68 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * InvitedEntrantsAdapter — RecyclerView adapter for Invited Entrants screen.
+ * {@link RecyclerView.Adapter} for the Invited Entrants screen.
  *
- * Cancel button rules (US 02.06.04):
- *   - Only shown for Pending entrants
- *   - GREYED OUT (disabled) if today < registration deadline  → entrant still has time
- *   - ENABLED (red)         if today >= registration deadline → time is up
+ * <p>Renders one row per {@link InvitedEntrantsActivity.InvitedEntrant}, showing a
+ * shortened device ID, a colour-coded status badge, and — for Pending entrants only —
+ * a Cancel button whose enabled state depends on the event's registration deadline
+ * (US 02.06.04):
+ * <ul>
+ *   <li><b>Greyed out / disabled</b> — today is before the registration deadline;
+ *       the entrant still has time to respond.</li>
+ *   <li><b>Red / enabled</b> — today is on or after the registration deadline;
+ *       the organizer may cancel the entrant.</li>
+ * </ul>
  *
- * On cancel press → calls CancelListener.onCancelRequested() back to Activity
- * which shows confirmation dialog and updates Firestore.
+ * <p>When the Cancel button is tapped the adapter delegates to
+ * {@link CancelListener#onCancelRequested(InvitedEntrantsActivity.InvitedEntrant)},
+ * allowing the host {@link InvitedEntrantsActivity} to show a confirmation dialog
+ * and perform the Firestore update.
+ *
+ * @see InvitedEntrantsActivity
+ * @see InvitedEntrantsActivity.InvitedEntrant
  */
 public class InvitedEntrantsAdapter extends
         RecyclerView.Adapter<InvitedEntrantsAdapter.EntrantViewHolder> {
 
     // ─── Cancel callback interface ────────────────────────────────────────────
 
+    /**
+     * Callback interface implemented by the host activity to handle cancel
+     * requests initiated from this adapter.
+     */
     public interface CancelListener {
+        /**
+         * Called when the organizer taps the Cancel button for a Pending entrant.
+         *
+         * @param entrant The {@link InvitedEntrantsActivity.InvitedEntrant} the
+         *                organizer wishes to cancel.
+         */
         void onCancelRequested(InvitedEntrantsActivity.InvitedEntrant entrant);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
 
+    /** The current list of entrants being displayed. Replaced on tab switches. */
     private List<InvitedEntrantsActivity.InvitedEntrant> list;
+
+    /** Host activity listener notified when a cancel action is requested. */
     private final CancelListener cancelListener;
 
-    // Set by Activity after loading Firestore — determines button enabled state
+    /**
+     * Registration deadline for the event. Used to determine whether the Cancel
+     * button should be enabled. {@code null} until set by the host activity after
+     * the Firestore document is loaded.
+     */
     private Date registrationDeadlineDate = null;
 
+    /**
+     * Constructs the adapter with an initial entrant list and a cancel listener.
+     *
+     * @param list           Initial list of entrants to display; may be empty.
+     * @param cancelListener Host activity that handles cancel confirmations and
+     *                       Firestore writes.
+     */
     public InvitedEntrantsAdapter(
             List<InvitedEntrantsActivity.InvitedEntrant> list,
             CancelListener cancelListener) {
@@ -47,17 +82,41 @@ public class InvitedEntrantsAdapter extends
         this.cancelListener = cancelListener;
     }
 
-    /** Called by Activity once registration deadline is loaded from Firestore */
+    /**
+     * Sets the event's registration deadline and triggers a full rebind so that
+     * all Cancel button states are updated immediately.
+     *
+     * <p>Called by the host activity once the Firestore document has been loaded
+     * and the deadline date is available.
+     *
+     * @param registrationDeadlineDate The registration deadline {@link Date}, or
+     *                                 {@code null} if the event has no deadline.
+     */
     public void setRegistrationDeadlineDate(Date registrationDeadlineDate) {
         this.registrationDeadlineDate = registrationDeadlineDate;
         notifyDataSetChanged();
     }
 
+    /**
+     * Replaces the current entrant list and triggers a full rebind.
+     *
+     * <p>Called by the host activity when the user switches tabs.
+     *
+     * @param newList The replacement list of entrants to display.
+     */
     public void updateList(List<InvitedEntrantsActivity.InvitedEntrant> newList) {
         this.list = newList;
         notifyDataSetChanged();
     }
 
+    /**
+     * Inflates the {@code item_invited_entrant} layout and wraps it in a new
+     * {@link EntrantViewHolder}.
+     *
+     * @param parent   The parent {@link ViewGroup} into which the new view will be added.
+     * @param viewType Unused; this adapter has a single view type.
+     * @return A new {@link EntrantViewHolder} for the inflated item view.
+     */
     @NonNull
     @Override
     public EntrantViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -66,22 +125,47 @@ public class InvitedEntrantsAdapter extends
         return new EntrantViewHolder(view);
     }
 
+    /**
+     * Binds the entrant at {@code position} to {@code holder}.
+     *
+     * @param holder   The {@link EntrantViewHolder} to update.
+     * @param position The index of the entrant in {@link #list}.
+     */
     @Override
     public void onBindViewHolder(@NonNull EntrantViewHolder holder, int position) {
         holder.bind(list.get(position), registrationDeadlineDate, cancelListener);
     }
 
+    /**
+     * Returns the number of entrants in the current list.
+     *
+     * @return Size of {@link #list}.
+     */
     @Override
     public int getItemCount() { return list.size(); }
 
     // ─── ViewHolder ───────────────────────────────────────────────────────────
 
+    /**
+     * Holds references to the views within a single entrant row and binds data
+     * to them.
+     */
     static class EntrantViewHolder extends RecyclerView.ViewHolder {
 
+        /** Displays a shortened version of the entrant's device ID. */
         private final TextView tvDeviceId;
+
+        /** Colour-coded badge showing the entrant's status. */
         private final TextView tvStatus;
+
+        /** Cancel button; visible only for Pending entrants. */
         private final Button   btnCancel;
 
+        /**
+         * Constructs the ViewHolder and looks up child views by ID.
+         *
+         * @param itemView The inflated item view for this row.
+         */
         EntrantViewHolder(@NonNull View itemView) {
             super(itemView);
             tvDeviceId = itemView.findViewById(R.id.tvEntrantDeviceId);
@@ -89,10 +173,40 @@ public class InvitedEntrantsAdapter extends
             btnCancel  = itemView.findViewById(R.id.btnCancelEntrant);
         }
 
+        /**
+         * Binds an {@link InvitedEntrantsActivity.InvitedEntrant} to this row's views.
+         *
+         * <p>Binding behaviour:
+         * <ul>
+         *   <li><b>Device ID</b> — truncated to {@code <first 8 chars>...<last 4 chars>}
+         *       when longer than 12 characters.</li>
+         *   <li><b>Status badge</b> — background and text colour set per status:
+         *     <ul>
+         *       <li>{@code "Accepted"} → green pill</li>
+         *       <li>{@code "Declined"} → red pill</li>
+         *       <li>{@code "Pending"}  → amber pill</li>
+         *     </ul>
+         *   </li>
+         *   <li><b>Cancel button</b> — hidden for non-Pending entrants. For Pending:
+         *     <ul>
+         *       <li>Enabled (full opacity, labelled "Cancel") when today is on or after
+         *           {@code registrationDeadlineDate}.</li>
+         *       <li>Disabled (40% opacity, labelled "Waiting...") when today is before
+         *           the deadline or the deadline is {@code null}.</li>
+         *     </ul>
+         *   </li>
+         * </ul>
+         *
+         * @param entrant                  The entrant data to display.
+         * @param registrationDeadlineDate The event's registration deadline; may be
+         *                                 {@code null}.
+         * @param cancelListener           Callback invoked when the enabled Cancel
+         *                                 button is tapped.
+         */
         void bind(
                 InvitedEntrantsActivity.InvitedEntrant entrant,
-                 Date registrationDeadlineDate,
-                 CancelListener cancelListener) {
+                Date registrationDeadlineDate,
+                CancelListener cancelListener) {
 
             // ── Shortened deviceId ────────────────────────────────────────────
             String id = entrant.deviceId;
@@ -130,14 +244,12 @@ public class InvitedEntrantsAdapter extends
             boolean canCancel = registrationDeadlineDate != null && today.after(registrationDeadlineDate);
 
             if (canCancel) {
-                // ── Enabled: event has started, time is up ────────────────────
                 btnCancel.setEnabled(true);
                 btnCancel.setAlpha(1.0f);
                 btnCancel.setText("Cancel");
                 btnCancel.setOnClickListener(v ->
                         cancelListener.onCancelRequested(entrant));
             } else {
-                // ── Disabled: entrant still has time to respond ───────────────
                 btnCancel.setEnabled(false);
                 btnCancel.setAlpha(0.4f);
                 btnCancel.setText("Waiting...");
