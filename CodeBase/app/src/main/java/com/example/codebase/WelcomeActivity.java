@@ -26,6 +26,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     public static final String PREFS_NAME     = "event_lottery_prefs";
     public static final String KEY_ROLE       = "user_role";
+    public static final String KEY_PROFILE_PENDING = "profile_setup_pending";
     public static final String ROLE_USER      = "ENTRANT";
     public static final String ROLE_ADMIN     = "ADMIN";
 
@@ -99,6 +100,10 @@ public class WelcomeActivity extends AppCompatActivity {
         if (!isRegistered) {
             prefs.edit().putBoolean(RoleCheckActivity.KEY_REGISTERED, true).apply();
             startActivity(new Intent(this, SplashActivity.class));
+        } else if (prefs.getBoolean(KEY_PROFILE_PENDING, false)) {
+            Intent intent = new Intent(this, ProfileSettingsActivity.class);
+            intent.putExtra(ProfileSettingsActivity.EXTRA_FIRST_RUN, true);
+            startActivity(intent);
         } else {
             // Routing to OrganizerActivity as the primary screen for both roles for now
             startActivity(new Intent(this, OrganizerActivity.class));
