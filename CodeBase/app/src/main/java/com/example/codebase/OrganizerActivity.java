@@ -75,6 +75,11 @@ public class OrganizerActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ProfileActivity.class))
         );
 
+        // Navigate to Explore (Invitations) page
+        findViewById(R.id.navExplore).setOnClickListener(v ->
+                startActivity(new Intent(this, ExplorePageActivity.class))
+        );
+
         loadOrganizerEvents();
     }
 
@@ -100,17 +105,16 @@ public class OrganizerActivity extends AppCompatActivity {
     private void populateList(QuerySnapshot snapshot) {
         eventList.clear();
 
-        SimpleDateFormat displayFormat =
-                new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
-
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            eventList.add(doc.toObject(Event.class));
+            Event event = doc.toObject(Event.class);
+            if (event != null) {
+                event.setId(doc.getId());
+                eventList.add(event);
+            }
         }
 
         adapter.notifyDataSetChanged();
         tvNoEvents.setVisibility(eventList.isEmpty() ? View.VISIBLE : View.GONE);
         rvEvents.setVisibility(eventList.isEmpty()   ? View.GONE    : View.VISIBLE);
     }
-
-    // ─── Event model ──────────────────────────────────────────────────────────
 }

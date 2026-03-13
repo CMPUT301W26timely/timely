@@ -72,8 +72,8 @@ public class OrganizerEventAdapter extends
         }
 
         Date today = new Date();
-        List<?> selectedEntrants = event.getSelectedEntrants();
-        List<?> enrolledEntrants = event.getEnrolledEntrants();
+        List<String> selectedEntrants = event.getSelectedEntrants();
+        List<String> enrolledEntrants = event.getEnrolledEntrants();
 
         boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
@@ -135,7 +135,11 @@ public class OrganizerEventAdapter extends
 
         void bind(Event event, OnEventClickListener listener) {
             tvTitle.setText(event.getTitle());
-            tvDate.setText(event.getStartDate().toString());
+            if (event.getStartDate() != null) {
+                tvDate.setText(event.getStartDate().toString());
+            } else {
+                tvDate.setText("Date not set");
+            }
 
             // ── Poster thumbnail ──────────────────────────────────────────────
             if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
@@ -153,10 +157,13 @@ public class OrganizerEventAdapter extends
                 ivThumbnail.setImageBitmap(null); // shows bg_event_thumbnail placeholder
             }
 
+            int waitingCount = event.getWaitingList() != null ? event.getWaitingList().size() : 0;
+            int selectedCount = event.getSelectedEntrants() != null ? event.getSelectedEntrants().size() : 0;
+
             tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.getWaitingList().stream().count()));
+                    .getString(R.string.waitlist_count, waitingCount));
             tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
+                    .getString(R.string.drawn_count, selectedCount));
             tvSelected.setVisibility(View.VISIBLE);
 
             // ── Calculate and apply status badge ──────────────────────────────

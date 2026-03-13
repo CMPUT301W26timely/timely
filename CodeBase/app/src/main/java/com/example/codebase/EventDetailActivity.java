@@ -210,9 +210,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         event = doc.toObject(Event.class);
+        if (event == null) return;
 
         // ── Poster image — stored as Base64 string in Firestore ──────────────
-        if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
+        if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
             try {
                 android.graphics.Bitmap bitmap = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                 if (bitmap != null) {
@@ -268,10 +269,10 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         // ── Arrays ────────────────────────────────────────────────────────────
-        ArrayList<?> waitingList = (ArrayList<?>) event.getWaitingList();
-        ArrayList<?> selectedEntrants = (ArrayList<?>) event.getSelectedEntrants();
-        ArrayList<?> enrolledEntrants = (ArrayList<?>) event.getEnrolledEntrants();
-        ArrayList<?> cancelledEntrants = (ArrayList<?>) event.getCancelledEntrants();
+        ArrayList<String> waitingList = event.getWaitingList();
+        ArrayList<String> selectedEntrants = event.getSelectedEntrants();
+        ArrayList<String> enrolledEntrants = event.getEnrolledEntrants();
+        ArrayList<String> cancelledEntrants = event.getCancelledEntrants();
 
         int waitingCount = waitingList != null ? waitingList.size() : 0;
         int invitedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
@@ -300,8 +301,8 @@ public class EventDetailActivity extends AppCompatActivity {
             Date drawDate,
             Date startDate,
             Date endDate,
-            List<?> selectedEntrants,
-            List<?> enrolledEntrants) {
+            List<String> selectedEntrants,
+            List<String> enrolledEntrants) {
 
         // Any null date → Draft
         if (regOpen == null || registrationDeadline == null || drawDate == null

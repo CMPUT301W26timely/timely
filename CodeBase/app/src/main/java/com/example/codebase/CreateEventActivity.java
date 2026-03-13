@@ -221,10 +221,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
             event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
             event.setStatus("published");
-            event.setWaitingList(new ArrayList<Entrant>());
-            event.setSelectedEntrants(new ArrayList<Entrant>());
-            event.setCancelledEntrants(new ArrayList<Entrant>());
-            event.setEnrolledEntrants(new ArrayList<Entrant>());
+            event.setWaitingList(new ArrayList<String>());
+            event.setSelectedEntrants(new ArrayList<String>());
+            event.setCancelledEntrants(new ArrayList<String>());
+            event.setEnrolledEntrants(new ArrayList<String>());
 
             db.collection("events").document(eventId).set(event, SetOptions.merge())
                     .addOnSuccessListener(aVoid -> {

@@ -1,13 +1,10 @@
 package com.example.codebase;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
@@ -15,18 +12,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 //User story 02.06.03
 public class FinalEntrantListFragment extends Fragment {
 
     interface FinalEntrantListListener{
         Event getEvent();
-
     }
 
     private FinalEntrantListListener listener;
@@ -38,11 +32,10 @@ public class FinalEntrantListFragment extends Fragment {
     ListView listView;
 
     Event event;
-    ArrayList<Entrant> finalEntrants;
+    ArrayList<String> finalEntrants;
     Long maxCapacity;
 
     FinalEntrantListAdapter entrantAdapter;
-
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -66,13 +59,19 @@ public class FinalEntrantListFragment extends Fragment {
 
         event = listener.getEvent();
         finalEntrants = event.getEnrolledEntrants();
+        if (finalEntrants == null) finalEntrants = new ArrayList<>();
+        
         maxCapacity = event.getMaxCapacity();
+        if (maxCapacity == null || maxCapacity == 0) maxCapacity = 1L; // Avoid division by zero
+
         entrantAdapter = new FinalEntrantListAdapter(view.getContext(), finalEntrants);
         listView.setAdapter(entrantAdapter);
 
-        int percentageCap = (int)(finalEntrants.size()/maxCapacity*100);
-        String capacityString = finalEntrants.size()+"/"+maxCapacity;
-        String percentageString = Integer.toString(percentageCap)+"%";
+        int count = finalEntrants.size();
+        int percentageCap = (int)((count * 100.0) / maxCapacity);
+        
+        String capacityString = count + "/" + maxCapacity;
+        String percentageString = percentageCap + "%";
 
         capacityText.setText(capacityString);
         percentageCapacityText.setText(percentageString);
@@ -94,8 +93,4 @@ public class FinalEntrantListFragment extends Fragment {
 
         return view;
     }
-
-
-
-
 }
