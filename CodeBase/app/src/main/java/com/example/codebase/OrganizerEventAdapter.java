@@ -138,7 +138,7 @@ public class OrganizerEventAdapter extends
             tvDate.setText(event.getStartDate().toString());
 
             // ── Poster thumbnail ──────────────────────────────────────────────
-            if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
+            if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
                 try {
                     android.graphics.Bitmap bmp = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                     if (bmp != null) {

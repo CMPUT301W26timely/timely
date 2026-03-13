@@ -11,33 +11,24 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * OrganizerActivity — "My Events" screen for Organizer role.
- *
- * Add to AndroidManifest.xml:
- *   <activity android:name=".OrganizerActivity" android:exported="false" />
- *
- * Route here from MainActivity when role = ORGANIZER.
  */
 public class OrganizerActivity extends AppCompatActivity {
 
-    private RecyclerView          rvEvents;
-    private TextView              tvNoEvents;
-    private FloatingActionButton  fabCreate;
+    private RecyclerView rvEvents;
+    private TextView tvNoEvents;
+    private FloatingActionButton fabCreate;
     private OrganizerEventAdapter adapter;
-    private List<Event>  eventList = new ArrayList<>();
-    private String                deviceId;
+    private final List<Event> eventList = new ArrayList<>();
+    private String deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,23 +38,18 @@ public class OrganizerActivity extends AppCompatActivity {
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
         // Back button → WelcomeActivity
-        findViewById(R.id.btnBackOrganizer).setOnClickListener(v -> {
-            Intent intent = new Intent(this, WelcomeActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-        });
 
-        rvEvents   = findViewById(R.id.rvEvents);
+        rvEvents = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
-        fabCreate  = findViewById(R.id.fabCreateEvent);
+        fabCreate = findViewById(R.id.fabCreateEvent);
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.getId());
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getId());
             intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
             startActivity(intent);
         });
+
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
         rvEvents.setAdapter(adapter);
 
@@ -71,17 +57,40 @@ public class OrganizerActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CreateEventActivity.class))
         );
 
-        findViewById(R.id.navProfile).setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class))
-        );
-
+        setupBottomNavigation();
         loadOrganizerEvents();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrganizerEvents(); // refresh list when returning from CreateEventActivity
+        loadOrganizerEvents();
+    }
+
+    private void setupBottomNavigation() {
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> {
+            // already here
+        });
+
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            finish();
+        });
     }
 
     private void loadOrganizerEvents() {
@@ -100,17 +109,21 @@ public class OrganizerActivity extends AppCompatActivity {
     private void populateList(QuerySnapshot snapshot) {
         eventList.clear();
 
-        SimpleDateFormat displayFormat =
-                new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
-
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            eventList.add(doc.toObject(Event.class));
+            Event event = doc.toObject(Event.class);
+            if (event != null) {
+                if (event.getId() == null || event.getId().isEmpty()) {
+                    event.setId(doc.getId());
+                }
+                if (event.getEventId() == null || event.getEventId().isEmpty()) {
+                    event.setEventId(doc.getId());
+                }
+                eventList.add(event);
+            }
         }
 
         adapter.notifyDataSetChanged();
         tvNoEvents.setVisibility(eventList.isEmpty() ? View.VISIBLE : View.GONE);
-        rvEvents.setVisibility(eventList.isEmpty()   ? View.GONE    : View.VISIBLE);
+        rvEvents.setVisibility(eventList.isEmpty() ? View.GONE : View.VISIBLE);
     }
-
-    // ─── Event model ──────────────────────────────────────────────────────────
 }

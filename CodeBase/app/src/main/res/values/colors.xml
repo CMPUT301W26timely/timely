@@ -16,6 +16,18 @@
     <color name="accentBorderLight">#e2ece2</color>
     <color name="accentBorderMid">#dceadc</color>
 
+    <!-- Team/shared dark theme colors -->
+    <color name="accent_blue">#4EA1FF</color>
+    <color name="accent_purple">#7C4DFF</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="bg_dark">#06152B</color>
+    <color name="card_dark">#0B1E3A</color>
+    <color name="card_dark_2">#102443</color>
+    <color name="stroke_subtle">#22385C</color>
+    <color name="chip_gray">#2A3650</color>
+    <color name="accent_green">#4CAF50</color>
+    <color name="accent_orange">#FF9800</color>
+
     <!-- Standard Colors -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>

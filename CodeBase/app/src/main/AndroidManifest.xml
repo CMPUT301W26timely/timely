@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+
+
     <application
         android:name=".MyApp"
         android:allowBackup="true"
@@ -12,6 +17,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeBase">
+
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false" />
 
         <activity
             android:name=".SplashActivity"
@@ -38,15 +47,45 @@
             android:exported="false"
             android:theme="@style/Theme.CodeBase" />
 
-        <activity android:name=".OrganizerActivity" android:exported="false" />
-        <activity android:name=".EventDetailActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".CreateEventActivity" android:exported="false" />
-        <activity android:name=".InvitedEntrantsActivity" android:exported="false" />
-        <activity android:name=".CancelledEntrantsActivity" android:exported="false" />
+        <activity
+            android:name=".OrganizerActivity"
+            android:exported="false" />
 
-        <!-- NEW QR Display Activity -->
-        <activity android:name=".QrDisplayActivity" android:exported="false" />
+        <activity
+            android:name=".EventDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CreateEventActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".InvitedEntrantsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CancelledEntrantsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".QrDisplayActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BrowseEventsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EventDetailsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileSettingsActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

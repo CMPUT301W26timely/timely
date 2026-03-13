@@ -2,6 +2,7 @@ package com.example.codebase;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -10,12 +11,22 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * ProfileActivity — Shows user profile, device ID, and allows switching roles.
+ * ProfileActivity — shows user profile summary and navigation.
+ * This supports viewing updated profile data after save.
  */
 public class ProfileActivity extends AppCompatActivity {
 
     private boolean isDeviceIdVisible = false;
     private String deviceId;
+
+    private TextView tvRole;
+    private TextView tvDeviceId;
+    private TextView tvName;
+    private TextView tvEmail;
+    private TextView tvPhone;
+    private ImageButton btnToggleDeviceId;
+    private Button btnSwitch;
+    private Button btnEditProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +36,14 @@ public class ProfileActivity extends AppCompatActivity {
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
         String currentRole = WelcomeActivity.getSessionRole(this);
 
-        TextView tvRole = findViewById(R.id.tvUserRole);
-        TextView tvDeviceId = findViewById(R.id.tvDeviceId);
-        ImageButton btnToggleDeviceId = findViewById(R.id.btnToggleDeviceId);
-        Button btnSwitch = findViewById(R.id.btnSwitchRole);
+        tvRole = findViewById(R.id.tvUserRole);
+        tvDeviceId = findViewById(R.id.tvDeviceId);
+        tvName = findViewById(R.id.tvName);
+        tvEmail = findViewById(R.id.tvEmail);
+        tvPhone = findViewById(R.id.tvPhone);
+        btnToggleDeviceId = findViewById(R.id.btnToggleDeviceId);
+        btnSwitch = findViewById(R.id.btnSwitchRole);
+        btnEditProfile = findViewById(R.id.btnEditProfile);
 
         if (WelcomeActivity.ROLE_ADMIN.equals(currentRole)) {
             tvRole.setText(getString(R.string.user_role_label, "Admin"));
@@ -38,11 +53,11 @@ public class ProfileActivity extends AppCompatActivity {
             btnSwitch.setText(R.string.switch_to_admin);
         }
 
-        updateDeviceIdDisplay(tvDeviceId, btnToggleDeviceId);
+        updateDeviceIdDisplay();
 
         btnToggleDeviceId.setOnClickListener(v -> {
             isDeviceIdVisible = !isDeviceIdVisible;
-            updateDeviceIdDisplay(tvDeviceId, btnToggleDeviceId);
+            updateDeviceIdDisplay();
         });
 
         btnSwitch.setOnClickListener(v -> {
@@ -52,17 +67,53 @@ public class ProfileActivity extends AppCompatActivity {
             finish();
         });
 
+        btnEditProfile.setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileSettingsActivity.class)));
+
         setupBottomNavigation();
+        loadProfile();
     }
 
-    private void updateDeviceIdDisplay(TextView tvDeviceId, ImageButton btnToggle) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadProfile();
+    }
+
+    private void updateDeviceIdDisplay() {
         if (isDeviceIdVisible) {
             tvDeviceId.setText(getString(R.string.device_id_label, deviceId));
-            btnToggle.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+            btnToggleDeviceId.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
         } else {
             tvDeviceId.setText(getString(R.string.device_id_masked));
-            btnToggle.setImageResource(android.R.drawable.ic_menu_view);
+            btnToggleDeviceId.setImageResource(android.R.drawable.ic_menu_view);
         }
+    }
+
+    private void loadProfile() {
+        if (AppCache.getInstance().hasCachedUser()) {
+            showUser(AppCache.getInstance().getCachedUser());
+        }
+
+        UserRepository.loadUserProfile(this, new UserRepository.UserCallback() {
+            @Override
+            public void onUserLoaded(User user) {
+                showUser(user);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(ProfileActivity.this,
+                        "Failed to load profile",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showUser(User user) {
+        tvName.setText(TextUtils.isEmpty(user.getName()) ? "No name set" : user.getName());
+        tvEmail.setText(TextUtils.isEmpty(user.getEmail()) ? "No email set" : user.getEmail());
+        tvPhone.setText(TextUtils.isEmpty(user.getPhoneNumber()) ? "No phone number set" : user.getPhoneNumber());
     }
 
     private void setupBottomNavigation() {
@@ -72,19 +123,16 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.navProfile).setOnClickListener(v -> {
-            // Already here
+            // already here
         });
 
-        findViewById(R.id.navExplore).setOnClickListener(v -> {
-            Toast.makeText(this, "Explore coming soon", Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.navExplore).setOnClickListener(v ->
+                startActivity(new Intent(this, BrowseEventsActivity.class)));
 
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-            Toast.makeText(this, "Search coming soon", Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.navSearch).setOnClickListener(v ->
+                startActivity(new Intent(this, BrowseEventsActivity.class)));
 
-        findViewById(R.id.navNotifications).setOnClickListener(v -> {
-            Toast.makeText(this, "Notifications coming soon", Toast.LENGTH_SHORT).show();
-        });
+        findViewById(R.id.navNotifications).setOnClickListener(v ->
+                startActivity(new Intent(this, NotificationsActivity.class)));
     }
 }
