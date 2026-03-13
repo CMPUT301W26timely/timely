@@ -12,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CodeBase">
+        <activity android:name=".ExplorePageActivity" android:exported="false" />
+        <activity android:name=".InvitationsActivity" android:exported="false" />
+        <activity android:name=".EntrantEventDetailActivity" android:exported="false" />
 
         <activity
             android:name=".SplashActivity"

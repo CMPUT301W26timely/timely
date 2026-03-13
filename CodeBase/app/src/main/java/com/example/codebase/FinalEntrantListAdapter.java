@@ -10,10 +10,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 
-public class FinalEntrantListAdapter extends ArrayAdapter<Entrant> {
-    public FinalEntrantListAdapter(Context context, ArrayList<Entrant> entrants){
+public class FinalEntrantListAdapter extends ArrayAdapter<String> {
+    public FinalEntrantListAdapter(Context context, ArrayList<String> entrants){
         super(context, 0, entrants);
     }
 
@@ -26,15 +28,27 @@ public class FinalEntrantListAdapter extends ArrayAdapter<Entrant> {
         else
             view = convertView;
 
-        Entrant entrant = getItem(position);
+        String deviceId = getItem(position);
 
         TextView entrantName = view.findViewById(R.id.entrantNameTextView);
         TextView entrantEmail = view.findViewById(R.id.entrantEmailTextView);
 
-        entrantName.setText(entrant.getName());
-        entrantName.setText(entrant.getEmail());
+        // Initially show device ID or "Loading..."
+        entrantName.setText("Loading...");
+        entrantEmail.setText(deviceId);
+
+        // Fetch user details from Firestore
+        FirebaseFirestore.getInstance().collection("users").document(deviceId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("name");
+                        String email = documentSnapshot.getString("email");
+                        entrantName.setText(name != null ? name : "Unknown User");
+                        entrantEmail.setText(email != null ? email : deviceId);
+                    }
+                });
 
         return view;
-
     }
 }
