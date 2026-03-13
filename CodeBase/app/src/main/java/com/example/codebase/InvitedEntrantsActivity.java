@@ -138,7 +138,7 @@ public class InvitedEntrantsActivity extends AppCompatActivity
         }
 
         // ── Read regClose ─────────────────────────────────────────────────────
-        Timestamp regCloseTs = doc.getTimestamp("regClose");
+        Timestamp regCloseTs = doc.getTimestamp("registrationDeadline");
         regCloseDate = (regCloseTs != null) ? regCloseTs.toDate() : null;
 
         // Pass regClose to adapter so it can decide enabled/disabled per row

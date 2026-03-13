@@ -135,7 +135,8 @@ public class OrganizerEventAdapter extends
 
         void bind(Event event, OnEventClickListener listener) {
             tvTitle.setText(event.getTitle());
-            tvDate.setText(event.getStartDate().toString());
+            // Fix 1: guard null startDate
+            tvDate.setText(event.getStartDate() != null ? event.getStartDate().toString() : "Date TBD");
 
             // ── Poster thumbnail ──────────────────────────────────────────────
             if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
@@ -153,10 +154,13 @@ public class OrganizerEventAdapter extends
                 ivThumbnail.setImageBitmap(null); // shows bg_event_thumbnail placeholder
             }
 
+            // Fix 2: guard null lists
+            long waitingCount = event.getWaitingList() != null ? event.getWaitingList().size() : 0;
+            long selectedCount = event.getSelectedEntrants() != null ? event.getSelectedEntrants().size() : 0;
             tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.getWaitingList().stream().count()));
+                    .getString(R.string.waitlist_count, waitingCount));
             tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
+                    .getString(R.string.drawn_count, selectedCount));
             tvSelected.setVisibility(View.VISIBLE);
 
             // ── Calculate and apply status badge ──────────────────────────────

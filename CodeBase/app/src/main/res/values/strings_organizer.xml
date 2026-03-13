@@ -70,7 +70,7 @@
     <!-- Event detail new fields -->
     <string name="date_not_set">Date not set</string>
     <string name="max_capacity_label">Max Capacity</string>
-    <string name="winners_count_label">Winners Count</string>
+    <string name="winners_count_label">Waitlist Cap</string>
 
     <!-- Errors -->
     <string name="error_loading_event_detail">Failed to load event details</string>

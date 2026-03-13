@@ -102,11 +102,14 @@ public class EventDetailActivity extends AppCompatActivity {
                         getString(R.string.lottery_draw_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
-        findViewById(R.id.rowSendNotification).setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.send_notification_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.rowSendNotification).setOnClickListener(v -> {
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            SendNotificationFragment sheet = SendNotificationFragment.newInstance(eventId, event.getTitle());
+            sheet.show(getSupportFragmentManager(), "sendNotification");
+        });
 
         // ── EVENT DATA ────────────────────────────────────────────────────────
         findViewById(R.id.rowViewWaitingList).setOnClickListener(v ->
@@ -212,7 +215,7 @@ public class EventDetailActivity extends AppCompatActivity {
         event = doc.toObject(Event.class);
 
         // ── Poster image — stored as Base64 string in Firestore ──────────────
-        if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
+        if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
             try {
                 android.graphics.Bitmap bitmap = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                 if (bitmap != null) {
@@ -255,16 +258,16 @@ public class EventDetailActivity extends AppCompatActivity {
                 ? displayFormat.format(startDate) : getString(R.string.date_not_set));
 
         // ── Capacity fields ───────────────────────────────────────────────────
-        Long maxCapacity = (long) event.getWaitlistCap();
-        Long winnersCount = event.getMaxCapacity();
+        Long maxCapacity = event.getMaxCapacity();
+        Long waitlistCap = (long) event.getWaitlistCap();
 
         if (tvMaxCapacity != null) {
             tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
                     ? String.valueOf(maxCapacity) : "—");
         }
         if (tvWinnersCount != null) {
-            tvWinnersCount.setText(winnersCount != null
-                    ? String.valueOf(winnersCount) : "—");
+            tvWinnersCount.setText((waitlistCap != null && waitlistCap > 0)
+                    ? String.valueOf(waitlistCap) : "—");
         }
 
         // ── Arrays ────────────────────────────────────────────────────────────
@@ -383,6 +386,66 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;
         }
+    }
+
+    // ─── Send Notifications ───────────────────────────────────────────────────
+
+    /**
+     * Reads the specified list from the event document, then writes a notification
+     * document to the notifications collection for each device ID in that list.
+     * US 02.07.01 — waitingList
+     * US 02.07.02 — selectedEntrants
+     * US 02.07.03 — cancelledEntrants
+     */
+    private void sendNotifications(String listField, String title, String message) {
+        if (eventId == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+
+                    Object raw = doc.get(listField);
+                    if (!(raw instanceof java.util.List)) {
+                        Toast.makeText(this, "No entrants in this list", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    java.util.List<?> list = (java.util.List<?>) raw;
+                    if (list.isEmpty()) {
+                        Toast.makeText(this, "No entrants in this list", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Write one notification document per device ID
+                    int[] count = {0};
+                    for (Object item : list) {
+                        if (!(item instanceof String)) continue;
+                        String deviceId = (String) item;
+
+                        java.util.Map<String, Object> notif = new java.util.HashMap<>();
+                        notif.put("userId",   deviceId);
+                        notif.put("eventId",  eventId);
+                        notif.put("title",    title);
+                        notif.put("message",  message);
+                        notif.put("status",   listField);
+                        notif.put("read",     false);
+
+                        db.collection("notifications").add(notif)
+                                .addOnSuccessListener(ref -> {
+                                    count[0]++;
+                                    if (count[0] == list.size()) {
+                                        Toast.makeText(this,
+                                                "Notifications sent to " + count[0] + " entrants",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to send notifications", Toast.LENGTH_SHORT).show()
+                );
     }
 
     @Override

@@ -38,7 +38,7 @@ public class FinalEntrantListFragment extends Fragment {
     ListView listView;
 
     Event event;
-    ArrayList<Entrant> finalEntrants;
+    ArrayList<String> finalEntrants;
     Long maxCapacity;
 
     FinalEntrantListAdapter entrantAdapter;

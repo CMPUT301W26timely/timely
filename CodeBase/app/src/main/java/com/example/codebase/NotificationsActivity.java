@@ -65,7 +65,8 @@ public class NotificationsActivity extends AppCompatActivity {
                 title = "Untitled Event";
             }
 
-            Date drawDate = doc.getDate("drawDate");
+            com.google.firebase.Timestamp drawTs = doc.getTimestamp("drawDate");
+            Date drawDate = drawTs != null ? drawTs.toDate() : null;
 
             List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
             List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");

@@ -110,15 +110,19 @@ public class OrganizerActivity extends AppCompatActivity {
         eventList.clear();
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            Event event = doc.toObject(Event.class);
-            if (event != null) {
-                if (event.getId() == null || event.getId().isEmpty()) {
-                    event.setId(doc.getId());
+            try {
+                Event event = doc.toObject(Event.class);
+                if (event != null) {
+                    if (event.getId() == null || event.getId().isEmpty()) {
+                        event.setId(doc.getId());
+                    }
+                    if (event.getEventId() == null || event.getEventId().isEmpty()) {
+                        event.setEventId(doc.getId());
+                    }
+                    eventList.add(event);
                 }
-                if (event.getEventId() == null || event.getEventId().isEmpty()) {
-                    event.setEventId(doc.getId());
-                }
-                eventList.add(event);
+            } catch (Exception e) {
+                android.util.Log.e("OrganizerActivity", "Skipping bad event doc: " + doc.getId() + " — " + e.getMessage());
             }
         }
 

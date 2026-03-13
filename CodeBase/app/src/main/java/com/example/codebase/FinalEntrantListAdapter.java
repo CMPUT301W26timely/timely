@@ -12,8 +12,8 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
-public class FinalEntrantListAdapter extends ArrayAdapter<Entrant> {
-    public FinalEntrantListAdapter(Context context, ArrayList<Entrant> entrants){
+public class FinalEntrantListAdapter extends ArrayAdapter<String> {
+    public FinalEntrantListAdapter(Context context, ArrayList<String> entrants){
         super(context, 0, entrants);
     }
 
@@ -26,15 +26,14 @@ public class FinalEntrantListAdapter extends ArrayAdapter<Entrant> {
         else
             view = convertView;
 
-        Entrant entrant = getItem(position);
+        String deviceId = getItem(position);
 
         TextView entrantName = view.findViewById(R.id.entrantNameTextView);
         TextView entrantEmail = view.findViewById(R.id.entrantEmailTextView);
 
-        entrantName.setText(entrant.getName());
-        entrantName.setText(entrant.getEmail());
+        entrantName.setText(deviceId);
+        entrantEmail.setText("");
 
         return view;
-
     }
 }

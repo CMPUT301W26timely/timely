@@ -168,8 +168,12 @@ public class CreateEventActivity extends AppCompatActivity {
                 if (regOpenTs != null)
                     existing.setRegistrationOpen(regOpenTs.toDate());
 
-                if (regCloseTs != null)
+                if (regCloseTs != null) {
                     existing.setRegistrationDeadline(regCloseTs.toDate());
+                    // drawDate = registrationDeadline + 3 days
+                    Date drawDate = new Date(regCloseTs.toDate().getTime() + 3L * 24 * 60 * 60 * 1000);
+                    existing.setDrawDate(drawDate);
+                }
 
                 if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
                     existing.setPoster(new EventPoster(viewModel.posterBase64));
@@ -211,8 +215,12 @@ public class CreateEventActivity extends AppCompatActivity {
             if (regOpenTs != null)
                 event.setRegistrationOpen(regOpenTs.toDate());
 
-            if (regCloseTs != null)
+            if (regCloseTs != null) {
                 event.setRegistrationDeadline(regCloseTs.toDate());
+                // drawDate = registrationDeadline + 3 days
+                Date drawDate = new Date(regCloseTs.toDate().getTime() + 3L * 24 * 60 * 60 * 1000);
+                event.setDrawDate(drawDate);
+            }
 
 
             // Poster Image (Base64)
@@ -221,10 +229,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
             event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
             event.setStatus("published");
-            event.setWaitingList(new ArrayList<Entrant>());
-            event.setSelectedEntrants(new ArrayList<Entrant>());
-            event.setCancelledEntrants(new ArrayList<Entrant>());
-            event.setEnrolledEntrants(new ArrayList<Entrant>());
+            event.setWaitingList(new ArrayList<String>());
+            event.setSelectedEntrants(new ArrayList<String>());
+            event.setCancelledEntrants(new ArrayList<String>());
+            event.setEnrolledEntrants(new ArrayList<String>());
 
             db.collection("events").document(eventId).set(event, SetOptions.merge())
                     .addOnSuccessListener(aVoid -> {
@@ -243,8 +251,8 @@ public class CreateEventActivity extends AppCompatActivity {
     private void generateQr(String eventId) {
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(
-                "timely://event/" + eventId,
-                BarcodeFormat.QR_CODE, 600, 600
+                    "timely://event/" + eventId,
+                    BarcodeFormat.QR_CODE, 600, 600
             );
             Bitmap qrBitmap = new BarcodeEncoder().createBitmap(bitMatrix);
             viewModel.generatedQr = qrBitmap; // Store in ViewModel so Step 3 can grab it
