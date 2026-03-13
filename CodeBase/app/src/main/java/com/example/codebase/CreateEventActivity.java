@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Represents an event in the system
+ */
 public class CreateEventActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
