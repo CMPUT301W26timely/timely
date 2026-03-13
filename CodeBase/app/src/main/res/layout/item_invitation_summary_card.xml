@@ -1,60 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardInvitations"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="#E8F5E9"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/accentBorderMid">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:padding="18dp">
 
-        <ImageView
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_send"
-            app:tint="#2E7D32" />
+            android:background="@drawable/bg_role_icon_blue"
+            android:backgroundTint="@color/accentTint">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_nav_notifications"
+                app:tint="@color/primaryAccent"
+                android:contentDescription="@string/nav_notifications" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Invitations"
+                android:text="@string/notifications_invitation_title"
                 android:textSize="18sp"
+                android:fontFamily="serif"
                 android:textStyle="bold"
-                android:textColor="#2E7D32" />
+                android:textColor="@color/textPrimary" />
 
             <TextView
                 android:id="@+id/tvInvitationCountSummary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Checking for invitations..."
+                android:layout_marginTop="4dp"
+                android:text="@string/notifications_invitation_loading"
                 android:textSize="14sp"
-                android:textColor="#4CAF50" />
+                android:textColor="@color/textSecondary" />
         </LinearLayout>
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:src="@android:drawable/ic_media_next"
-            app:tint="#2E7D32" />
+            app:tint="@color/textMuted"
+            android:contentDescription="@string/decorative_image" />
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

@@ -33,7 +33,32 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
 
+        setupBottomNavigation();
         loadEvents();
+    }
+
+    private void setupBottomNavigation() {
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+            // already here
+        });
+
+        findViewById(R.id.navSearch).setOnClickListener(v ->
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> {
+            startActivity(new Intent(this, OrganizerActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        });
     }
 
     private void loadEvents() {

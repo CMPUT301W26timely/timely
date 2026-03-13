@@ -24,7 +24,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private final List<Event> events;
     private final OnEventClickListener listener;
     private final SimpleDateFormat dateFormat =
-            new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     public EventAdapter(List<Event> events, OnEventClickListener listener) {
         this.events = events;
@@ -50,15 +50,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         );
 
         holder.textViewEventLocation.setText(
-                "Location: " + (event.getLocation() == null || event.getLocation().isEmpty()
+                event.getLocation() == null || event.getLocation().isEmpty()
                         ? "Not set"
-                        : event.getLocation())
+                        : event.getLocation()
         );
 
         if (event.getStartDate() != null) {
-            holder.textViewEventDate.setText("Date: " + dateFormat.format(event.getStartDate()));
+            holder.textViewEventDate.setText(dateFormat.format(event.getStartDate()));
         } else {
-            holder.textViewEventDate.setText("Date: Not set");
+            holder.textViewEventDate.setText("Date not set");
         }
 
         holder.itemView.setOnClickListener(v -> listener.onEventClick(event));

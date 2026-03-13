@@ -22,7 +22,9 @@ import java.util.HashMap;
 public class NotificationsActivity extends AppCompatActivity {
 
     private ListView listViewNotifications;
+    private View emptyStateCard;
     private View invitationCard;
+    private TextView emptyState;
     private TextView invitationCountSummary;
 
     private final ArrayList<HashMap<String, String>> items = new ArrayList<>();
@@ -36,13 +38,19 @@ public class NotificationsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_notifications);
 
         listViewNotifications = findViewById(R.id.listViewNotifications);
+        emptyStateCard = findViewById(R.id.cardNotificationsEmptyState);
         invitationCard = findViewById(R.id.invitationSummaryInclude);
+        emptyState = findViewById(R.id.tvNotificationsEmptyState);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
+
+        listViewNotifications.setDivider(null);
+        listViewNotifications.setDividerHeight(0);
 
         invitationCard.setOnClickListener(v ->
                 startActivity(new Intent(this, InvitationsActivity.class)));
 
+        setupBottomNavigation();
         loadInvitationSummary();
         loadNotifications();
     }
@@ -116,11 +124,39 @@ public class NotificationsActivity extends AppCompatActivity {
 
         NotificationListAdapter adapter = new NotificationListAdapter(this, items);
         listViewNotifications.setAdapter(adapter);
+        boolean hasNotifications = !items.isEmpty();
+        emptyStateCard.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
+        emptyState.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
+        listViewNotifications.setVisibility(hasNotifications ? View.VISIBLE : View.GONE);
 
         listViewNotifications.setOnItemClickListener((parent, view, position, id) -> {
             Intent intent = new Intent(this, EntrantEventDetailActivity.class);
             intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventIds.get(position));
             startActivity(intent);
+        });
+    }
+
+    private void setupBottomNavigation() {
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navSearch).setOnClickListener(v ->
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> {
+            startActivity(new Intent(this, OrganizerActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            // already here
+        });
+
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
         });
     }
 
