@@ -1,6 +1,7 @@
 package com.example.codebase;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -15,13 +16,6 @@ import com.google.firebase.firestore.DocumentReference;
  * navigating to the main activity.
  */
 public class SplashActivity extends AppCompatActivity {
-    /**
-     * Initializes the splash screen, handles device ID logic, and manages navigation.
-     *
-     * @param savedInstanceState If the activity is being re-initialized after
-     *                           previously being shut down then this Bundle contains the data it most
-     *                           recently supplied in onSaveInstanceState(Bundle).
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +24,6 @@ public class SplashActivity extends AppCompatActivity {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
         TextView deviceIdText = findViewById(R.id.deviceIdText);
-        // Display a shortened version of the UUID (first 8 characters)
         String displayId = DeviceIdManager.getShortenedId(deviceId);
         deviceIdText.setText("Device ID: " + displayId + "...");
 
@@ -41,30 +34,38 @@ public class SplashActivity extends AppCompatActivity {
         userRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 if (!task.getResult().exists()) {
-                    // First launch — register this device as a new user
                     userRef.set(new User(deviceId))
-                            .addOnSuccessListener(v ->
-                                    Log.d("Firestore", "New user registered: " + deviceId))
-                            .addOnFailureListener(e ->
-                                    Log.e("Firestore", "Registration failed", e));
+                            .addOnSuccessListener(v -> {
+                                Log.d("Firestore", "New user registered: " + deviceId);
+                                launchProfileCreation();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Firestore", "Registration failed", e);
+                                navigateToMain();
+                            });
+                } else {
+                    navigateToMain();
                 }
-                // Navigate regardless — existing or new user
-                navigateToMain();
             } else {
-                // Firestore unreachable — still let them in, retry later
                 Log.e("Firestore", "Failed to check user", task.getException());
                 navigateToMain();
             }
         });
     }
 
-    /**
-     * Navigates to OrganizerActivity and finishes the splash activity.
-     */
     private void navigateToMain() {
-        // Check for unread notifications on every app launch
         SelectedNotificationChecker.checkAndShow(this);
         startActivity(new Intent(this, OrganizerActivity.class));
+        finish();
+    }
+
+    private void launchProfileCreation() {
+        SharedPreferences prefs = getSharedPreferences(WelcomeActivity.PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putBoolean(WelcomeActivity.KEY_PROFILE_PENDING, true).apply();
+
+        Intent intent = new Intent(this, ProfileSettingsActivity.class);
+        intent.putExtra(ProfileSettingsActivity.EXTRA_FIRST_RUN, true);
+        startActivity(intent);
         finish();
     }
 }

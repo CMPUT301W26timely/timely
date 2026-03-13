@@ -1,81 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Profile settings screen -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#06152B">
+    android:background="@color/pageBg"
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingHorizontal="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="32dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/textViewTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Profile Settings"
-            android:textColor="@android:color/white"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="20dp" />
+            android:text="@string/profile_settings_first_run_title"
+            android:textColor="@color/textPrimary"
+            android:textSize="32sp"
+            android:fontFamily="serif"
+            android:textStyle="bold" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/textViewSubtitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="DEVICE IDENTIFICATION"
-            android:textColor="#4EA1FF"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_settings_first_run_subtitle"
+            android:textColor="@color/textSecondary"
+            android:textSize="14sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/profile_settings_device_id_label"
+                    android:textAllCaps="true"
+                    android:textColor="@color/textMuted"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.18" />
+
+                <TextView
+                    android:id="@+id/textViewDeviceId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/textPrimary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/textViewDeviceId"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
-            android:background="#0B1E3A"
-            android:padding="12dp"
-            android:layout_marginBottom="24dp" />
-
-        <EditText
-            android:id="@+id/editTextName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Full Name"
-            android:textColorHint="#9FB3D1"
-            android:textColor="@android:color/white"
-            android:background="#0B1E3A"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="24dp"
+            android:text="@string/profile_settings_name_label"
+            android:textColor="@color/textSecondary"
+            android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/editTextEmail"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Email Address"
-            android:textColorHint="#9FB3D1"
-            android:textColor="@android:color/white"
-            android:inputType="textEmailAddress"
-            android:background="#0B1E3A"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
 
-        <EditText
-            android:id="@+id/editTextPhone"
+            <EditText
+                android:id="@+id/editTextName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/profile_settings_name_hint"
+                android:importantForAutofill="yes"
+                android:inputType="textPersonName"
+                android:minHeight="52dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp"
+                android:textColor="@color/textPrimary"
+                android:textColorHint="@color/textMuted" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Phone Number"
-            android:textColorHint="#9FB3D1"
-            android:textColor="@android:color/white"
-            android:inputType="phone"
-            android:background="#0B1E3A"
-            android:padding="16dp"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginTop="18dp"
+            android:text="@string/profile_settings_email_label"
+            android:textColor="@color/textSecondary"
+            android:textSize="12sp" />
 
-        <Button
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <EditText
+                android:id="@+id/editTextEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/profile_settings_email_hint"
+                android:importantForAutofill="yes"
+                android:inputType="textEmailAddress"
+                android:minHeight="52dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp"
+                android:textColor="@color/textPrimary"
+                android:textColorHint="@color/textMuted" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/profile_settings_phone_label"
+            android:textColor="@color/textSecondary"
+            android:textSize="12sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <EditText
+                android:id="@+id/editTextPhone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:hint="@string/profile_settings_phone_hint"
+                android:importantForAutofill="yes"
+                android:inputType="phone"
+                android:minHeight="52dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp"
+                android:textColor="@color/textPrimary"
+                android:textColorHint="@color/textMuted" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonSaveChanges"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Changes" />
+            android:layout_height="56dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/profile_settings_continue"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/primaryAccent"
+            app:cornerRadius="100dp" />
     </LinearLayout>
 </ScrollView>
