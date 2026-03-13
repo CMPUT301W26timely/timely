@@ -34,6 +34,22 @@
     <string name="notifications_empty_subtitle">Event updates and invitation responses will appear here.</string>
     <string name="notifications_invitation_title">Event Invitations</string>
     <string name="notifications_invitation_loading">Checking for invitations...</string>
+    <string name="profile_settings_first_run_title">Create Your Profile</string>
+    <string name="profile_settings_first_run_subtitle">Add your contact details before continuing into the app.</string>
+    <string name="profile_settings_edit_title">Edit Profile</string>
+    <string name="profile_settings_edit_subtitle">Keep your contact information up to date.</string>
+    <string name="profile_settings_device_id_label">Device ID</string>
+    <string name="profile_settings_device_id_value">Device ID: %1$s</string>
+    <string name="profile_settings_name_label">Name</string>
+    <string name="profile_settings_email_label">Email Address</string>
+    <string name="profile_settings_phone_label">Phone Number</string>
+    <string name="profile_settings_name_hint">Enter your full name</string>
+    <string name="profile_settings_email_hint">Enter your email address</string>
+    <string name="profile_settings_phone_hint">Enter your phone number</string>
+    <string name="profile_settings_continue">Continue</string>
+    <string name="profile_settings_save">Save Changes</string>
+    <string name="profile_settings_saved">Profile saved</string>
+    <string name="profile_settings_required">Complete your profile to continue.</string>
 
     <!-- Event Detail — Header -->
     <string name="back_button_desc">Go back</string>

@@ -1,5 +1,7 @@
 package com.example.codebase;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -16,6 +18,11 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class ProfileSettingsActivity extends AppCompatActivity {
 
+    public static final String EXTRA_FIRST_RUN = "extra_first_run";
+
+    private boolean isFirstRun;
+    private TextView textViewTitle;
+    private TextView textViewSubtitle;
     private TextView textViewDeviceId;
     private EditText editTextName;
     private EditText editTextEmail;
@@ -27,21 +34,28 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_settings);
 
+        isFirstRun = getIntent().getBooleanExtra(EXTRA_FIRST_RUN, false);
+
+        textViewTitle = findViewById(R.id.textViewTitle);
+        textViewSubtitle = findViewById(R.id.textViewSubtitle);
         textViewDeviceId = findViewById(R.id.textViewDeviceId);
         editTextName = findViewById(R.id.editTextName);
         editTextEmail = findViewById(R.id.editTextEmail);
         editTextPhone = findViewById(R.id.editTextPhone);
         buttonSaveChanges = findViewById(R.id.buttonSaveChanges);
 
-        // Show current device ID
-        textViewDeviceId.setText(DeviceIdManager.getOrCreateDeviceId(this));
+        applyMode();
+        textViewDeviceId.setText(
+                getString(
+                        R.string.profile_settings_device_id_value,
+                        DeviceIdManager.getOrCreateDeviceId(this)
+                )
+        );
 
-        // Load cached data first if available
         if (AppCache.getInstance().hasCachedUser()) {
             populateFields(AppCache.getInstance().getCachedUser());
         }
 
-        // Refresh from Firestore
         UserRepository.loadUserProfile(this, new UserRepository.UserCallback() {
             @Override
             public void onUserLoaded(User user) {
@@ -50,25 +64,31 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-                // Silent for now
+                // Leave fields empty if Firestore load fails.
             }
         });
 
         buttonSaveChanges.setOnClickListener(v -> saveProfile());
     }
 
-    /**
-     * Fill text fields with existing user data.
-     */
+    private void applyMode() {
+        if (isFirstRun) {
+            textViewTitle.setText(R.string.profile_settings_first_run_title);
+            textViewSubtitle.setText(R.string.profile_settings_first_run_subtitle);
+            buttonSaveChanges.setText(R.string.profile_settings_continue);
+        } else {
+            textViewTitle.setText(R.string.profile_settings_edit_title);
+            textViewSubtitle.setText(R.string.profile_settings_edit_subtitle);
+            buttonSaveChanges.setText(R.string.profile_settings_save);
+        }
+    }
+
     private void populateFields(User user) {
         editTextName.setText(user.getName());
         editTextEmail.setText(user.getEmail());
         editTextPhone.setText(user.getPhoneNumber());
     }
 
-    /**
-     * Validate and save profile.
-     */
     private void saveProfile() {
         String name = editTextName.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
@@ -95,10 +115,26 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                 email,
                 phone,
                 () -> {
-                    Toast.makeText(this, "Profile saved", Toast.LENGTH_SHORT).show();
+                    SharedPreferences prefs =
+                            getSharedPreferences(WelcomeActivity.PREFS_NAME, MODE_PRIVATE);
+                    prefs.edit().putBoolean(WelcomeActivity.KEY_PROFILE_PENDING, false).apply();
+
+                    Toast.makeText(this, getString(R.string.profile_settings_saved), Toast.LENGTH_SHORT).show();
+                    if (isFirstRun) {
+                        startActivity(new Intent(this, OrganizerActivity.class));
+                    }
                     finish();
                 },
                 e -> Toast.makeText(this, "Failed to save profile", Toast.LENGTH_SHORT).show()
         );
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isFirstRun) {
+            Toast.makeText(this, getString(R.string.profile_settings_required), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        super.onBackPressed();
     }
 }
