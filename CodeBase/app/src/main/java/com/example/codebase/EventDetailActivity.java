@@ -18,19 +18,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * EventDetailActivity — Event detail screen for Organizer role.
- *
- * Reads canonical event fields from Firestore:
- *   title, description, location
- *   startDate, endDate, registrationOpen, registrationDeadline, drawDate
- *   maxCapacity, waitlistCap
- *   waitingList, selectedEntrants, enrolledEntrants, cancelledEntrants
- *
- * Status badge is calculated in real time from dates + arrays.
- * Firestore status field is NOT used.
- *
- * Add to AndroidManifest.xml:
- *   <activity android:name=".EventDetailActivity" android:exported="false" />
+ * Event detail screen for organizer role.
  */
 public class EventDetailActivity extends AppCompatActivity {
 
@@ -56,13 +44,11 @@ public class EventDetailActivity extends AppCompatActivity {
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
     private Event event;
+
     private final SimpleDateFormat displayDateFormat =
             new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
     private final NumberFormat currencyFormat =
             NumberFormat.getCurrencyInstance(Locale.getDefault());
-
-    private final SimpleDateFormat displayFormat =
-            new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +58,6 @@ public class EventDetailActivity extends AppCompatActivity {
         eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
-        // ── Bind views ────────────────────────────────────────────────────────
         tvDetailTitle = findViewById(R.id.tvDetailTitle);
         tvDetailDate = findViewById(R.id.tvDetailDate);
         tvDetailLocation = findViewById(R.id.tvDetailLocation);
@@ -89,10 +74,8 @@ public class EventDetailActivity extends AppCompatActivity {
         ivHeroPoster = findViewById(R.id.ivHeroPoster);
         progressBar = findViewById(R.id.detailProgressBar);
 
-        // ── Back button ───────────────────────────────────────────────────────
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // ── Invited stat card → InvitedEntrantsActivity ───────────────────────
         findViewById(R.id.cardInvited).setOnClickListener(v -> {
             Intent intent = new Intent(this, InvitedEntrantsActivity.class);
             intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_ID, eventId);
@@ -100,7 +83,6 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ── LOTTERY MANAGEMENT ────────────────────────────────────────────────
         findViewById(R.id.rowRunLottery).setOnClickListener(v ->
                 Toast.makeText(this,
                         getString(R.string.lottery_draw_coming_soon),
@@ -112,7 +94,6 @@ public class EventDetailActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show()
         );
 
-        // ── EVENT DATA ────────────────────────────────────────────────────────
         findViewById(R.id.rowViewWaitingList).setOnClickListener(v ->
                 Toast.makeText(this,
                         getString(R.string.view_waiting_list_coming_soon),
@@ -129,7 +110,6 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // ── SETTINGS ─────────────────────────────────────────────────────────
         findViewById(R.id.rowEditEvent).setOnClickListener(v -> {
             if (event == null) {
                 Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
@@ -153,20 +133,19 @@ public class EventDetailActivity extends AppCompatActivity {
             if (event.getStartDate() != null) {
                 intent.putExtra("startDate", sdf.format(event.getStartDate()));
             }
-
-            if (event.getEndDate() != null)
+            if (event.getEndDate() != null) {
                 intent.putExtra("endDate", sdf.format(event.getEndDate()));
-
-            if (event.getRegistrationOpen() != null)
+            }
+            if (event.getRegistrationOpen() != null) {
                 intent.putExtra("registrationOpen", sdf.format(event.getRegistrationOpen()));
-
-            if (event.getRegistrationDeadline() != null)
+            }
+            if (event.getRegistrationDeadline() != null) {
                 intent.putExtra("registrationDeadline", sdf.format(event.getRegistrationDeadline()));
+            }
 
             startActivity(intent);
         });
 
-        // Cancelled stat card
         findViewById(R.id.cardCancelled).setOnClickListener(v -> {
             Intent intent = new Intent(this, CancelledEntrantsActivity.class);
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
@@ -174,7 +153,6 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // View Cancelled Users row
         findViewById(R.id.rowCancelledUsers).setOnClickListener(v -> {
             Intent intent = new Intent(this, CancelledEntrantsActivity.class);
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
@@ -184,8 +162,6 @@ public class EventDetailActivity extends AppCompatActivity {
 
         loadEventDetails();
     }
-
-    // ─── Load event from Firestore ────────────────────────────────────────────
 
     private void loadEventDetails() {
         progressBar.setVisibility(View.VISIBLE);
@@ -223,7 +199,6 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
-        // ── Poster image — stored as Base64 string in Firestore ──────────────
         if (event.getPoster() != null
                 && event.getPoster().getPosterImageBase64() != null
                 && !event.getPoster().getPosterImageBase64().isEmpty()) {
@@ -242,7 +217,6 @@ public class EventDetailActivity extends AppCompatActivity {
             ivHeroPoster.setBackgroundResource(R.drawable.bg_hero_image);
         }
 
-        // ── Basic fields ──────────────────────────────────────────────────────
         eventTitle = event.getTitle() != null
                 ? event.getTitle() : getString(R.string.untitled_event);
         String location = event.getLocation() != null ? event.getLocation() : "";
@@ -252,42 +226,26 @@ public class EventDetailActivity extends AppCompatActivity {
         tvDetailLocation.setText(location);
         tvDetailDescription.setText(description);
 
-        // ── Timestamps ────────────────────────────────────────────────────────
-        // ── Misc fields ───────────────────────────────────────────────────────
-        Boolean geoEnabled = event.isGeoEnabled(); // reserved for future use
-
-        // ── Timestamps ────────────────────────────────────────────────────────
-        Date regOpen = event.getRegistrationOpen() != null ? event.getRegistrationOpen() : null;
-        Date registrationDeadline = event.getRegistrationDeadline() != null ? event.getRegistrationDeadline() : null;
-        Date drawDate = event.getDrawDate() != null ? event.getDrawDate() : null;
-        Date startDate = event.getStartDate() != null ? event.getStartDate()  : null;
-        Date endDate = event.getEndDate() != null ? event.getEndDate() : null;
+        Date regOpen = event.getRegistrationOpen();
+        Date registrationDeadline = event.getRegistrationDeadline();
+        Date drawDate = event.getDrawDate();
+        Date startDate = event.getStartDate();
+        Date endDate = event.getEndDate();
 
         tvDetailDate.setText(formatEventDateRange(startDate, endDate));
 
-        // ── Capacity fields ───────────────────────────────────────────────────
         Long maxCapacity = event.getMaxCapacity();
         int waitlistCap = event.getWaitlistCap();
         float price = event.getPrice();
 
-        if (tvEventCost != null) {
-            tvEventCost.setText(currencyFormat.format(price));
-        }
+        tvEventCost.setText(currencyFormat.format(price));
+        tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
+                ? String.valueOf(maxCapacity)
+                : getString(R.string.not_applicable_short));
+        tvWinnersCount.setText(waitlistCap > 0
+                ? String.valueOf(waitlistCap)
+                : getString(R.string.not_applicable_short));
 
-        if (tvMaxCapacity != null) {
-            tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
-                    ? String.valueOf(maxCapacity) : "—");
-        }
-        if (tvMaxCapacity != null && (maxCapacity == null || maxCapacity <= 0)) {
-            tvMaxCapacity.setText(getString(R.string.not_applicable_short));
-        }
-        if (tvWinnersCount != null) {
-            tvWinnersCount.setText(waitlistCap > 0
-                    ? String.valueOf(waitlistCap)
-                    : getString(R.string.not_applicable_short));
-        }
-
-        // ── Arrays ────────────────────────────────────────────────────────────
         List<String> waitingList = event.getWaitingList();
         List<String> selectedEntrants = event.getSelectedEntrants();
         List<String> enrolledEntrants = event.getEnrolledEntrants();
@@ -304,7 +262,6 @@ public class EventDetailActivity extends AppCompatActivity {
         tvCancelledCount.setText(String.valueOf(cancelledCount));
         tvWaitingListRowCount.setText(String.valueOf(waitingCount));
 
-        // ── Status badge — calculated from dates + arrays ─────────────────────
         String status = calculateStatus(
                 regOpen, registrationDeadline, drawDate, startDate, endDate,
                 selectedEntrants, enrolledEntrants
@@ -312,18 +269,15 @@ public class EventDetailActivity extends AppCompatActivity {
         applyStatusBadge(status);
     }
 
-    // ─── Status calculation ───────────────────────────────────────────────────
-
     private String calculateStatus(
             Date regOpen,
             Date registrationDeadline,
             Date drawDate,
             Date startDate,
             Date endDate,
-            List<?> selectedEntrants,
-            List<?> enrolledEntrants) {
+            List<String> selectedEntrants,
+            List<String> enrolledEntrants) {
 
-        // Any null date → Draft
         if (regOpen == null || registrationDeadline == null || drawDate == null
                 || startDate == null || endDate == null) {
             return "Draft";
@@ -334,40 +288,27 @@ public class EventDetailActivity extends AppCompatActivity {
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
         if (today.before(regOpen)) {
-            // today < regOpen
             return "Registration Opening Soon";
-
         } else if (!today.before(regOpen) && !today.after(registrationDeadline)) {
-            // today >= regOpen AND today <= regClose
             return "Registration Open";
-
         } else if (today.after(registrationDeadline)
                 && today.before(drawDate)
                 && selectedEmpty) {
-            // today > regClose AND today < drawDate AND no winners yet
             return "Registration Closed / Lottery Opening Soon";
-
         } else if (today.after(drawDate)
                 && today.before(startDate)
                 && !selectedEmpty) {
-            // today > drawDate AND today < eventStart AND winners selected
             return "Lottery Closed & Event Scheduled";
-
         } else if (!today.before(startDate)
                 && !today.after(endDate)
                 && !enrolledEmpty) {
-            // today >= eventStart AND today <= eventEnd AND people enrolled
             return "In Progress";
-
         } else if (today.after(endDate)) {
             return "Event Ended";
-
         } else {
             return "Draft";
         }
     }
-
-    // ─── Apply status badge color + text ─────────────────────────────────────
 
     private String formatEventDateRange(Date startDate, Date endDate) {
         if (startDate == null) {
@@ -415,7 +356,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_red);
                 tvStatusBadge.setTextColor(0xFF8B3A3A);
                 break;
-            default: // Draft
+            default:
                 tvStatusBadge.setBackgroundResource(R.drawable.bg_pill_amber);
                 tvStatusBadge.setTextColor(0xFF8B7A2A);
                 break;

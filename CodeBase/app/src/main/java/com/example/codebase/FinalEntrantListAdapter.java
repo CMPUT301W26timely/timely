@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 
 public class FinalEntrantListAdapter extends ArrayAdapter<String> {
@@ -31,10 +33,22 @@ public class FinalEntrantListAdapter extends ArrayAdapter<String> {
         TextView entrantName = view.findViewById(R.id.entrantNameTextView);
         TextView entrantEmail = view.findViewById(R.id.entrantEmailTextView);
 
-        entrantName.setText(deviceId != null ? deviceId : "");
-        entrantEmail.setText("");
+        entrantName.setText("Loading...");
+        entrantEmail.setText(deviceId != null ? deviceId : "");
+
+        if (deviceId != null && !deviceId.isEmpty()) {
+            FirebaseFirestore.getInstance().collection("users").document(deviceId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String name = documentSnapshot.getString("name");
+                            String email = documentSnapshot.getString("email");
+                            entrantName.setText(name != null ? name : "Unknown User");
+                            entrantEmail.setText(email != null ? email : deviceId);
+                        }
+                    });
+        }
 
         return view;
-
     }
 }
