@@ -130,7 +130,7 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, BrowseEventsActivity.class)));
 
         findViewById(R.id.navSearch).setOnClickListener(v ->
-                startActivity(new Intent(this, BrowseEventsActivity.class)));
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
 
         findViewById(R.id.navNotifications).setOnClickListener(v ->
                 startActivity(new Intent(this, NotificationsActivity.class)));

@@ -17,8 +17,8 @@ import java.util.List;
  *
  * Cancel button rules (US 02.06.04):
  *   - Only shown for Pending entrants
- *   - GREYED OUT (disabled) if today < eventStartDate  → entrant still has time
- *   - ENABLED (red)         if today >= eventStartDate → time is up
+ *   - GREYED OUT (disabled) if today < registration deadline  → entrant still has time
+ *   - ENABLED (red)         if today >= registration deadline → time is up
  *
  * On cancel press → calls CancelListener.onCancelRequested() back to Activity
  * which shows confirmation dialog and updates Firestore.
@@ -38,7 +38,7 @@ public class InvitedEntrantsAdapter extends
     private final CancelListener cancelListener;
 
     // Set by Activity after loading Firestore — determines button enabled state
-    private Date regCloseDate = null;
+    private Date registrationDeadlineDate = null;
 
     public InvitedEntrantsAdapter(
             List<InvitedEntrantsActivity.InvitedEntrant> list,
@@ -47,9 +47,9 @@ public class InvitedEntrantsAdapter extends
         this.cancelListener = cancelListener;
     }
 
-    /** Called by Activity once regClose is loaded from Firestore */
-    public void setRegCloseDate(Date regCloseDate) {
-        this.regCloseDate = regCloseDate;
+    /** Called by Activity once registration deadline is loaded from Firestore */
+    public void setRegistrationDeadlineDate(Date registrationDeadlineDate) {
+        this.registrationDeadlineDate = registrationDeadlineDate;
         notifyDataSetChanged();
     }
 
@@ -68,7 +68,7 @@ public class InvitedEntrantsAdapter extends
 
     @Override
     public void onBindViewHolder(@NonNull EntrantViewHolder holder, int position) {
-        holder.bind(list.get(position), regCloseDate, cancelListener);
+        holder.bind(list.get(position), registrationDeadlineDate, cancelListener);
     }
 
     @Override
@@ -91,8 +91,8 @@ public class InvitedEntrantsAdapter extends
 
         void bind(
                 InvitedEntrantsActivity.InvitedEntrant entrant,
-                Date regCloseDate,
-                CancelListener cancelListener) {
+                 Date registrationDeadlineDate,
+                 CancelListener cancelListener) {
 
             // ── Shortened deviceId ────────────────────────────────────────────
             String id = entrant.deviceId;
@@ -127,7 +127,7 @@ public class InvitedEntrantsAdapter extends
             btnCancel.setVisibility(View.VISIBLE);
 
             Date today = new Date();
-            boolean canCancel = regCloseDate != null && today.after(regCloseDate);
+            boolean canCancel = registrationDeadlineDate != null && today.after(registrationDeadlineDate);
 
             if (canCancel) {
                 // ── Enabled: event has started, time is up ────────────────────

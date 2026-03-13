@@ -65,126 +65,161 @@
         app:backgroundTint="@color/primaryAccent"
         app:tint="@color/white" />
 
-    <!-- Bottom navigation -->
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="72dp"
         android:layout_gravity="bottom"
-        android:orientation="horizontal"
-        android:background="#FFFFFF"
-        android:elevation="4dp"
-        android:baselineAligned="false">
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="20dp"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/surface"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/border">
 
-        <!-- Explore -->
         <LinearLayout
-            android:id="@+id/navExplore"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@android:drawable/ic_menu_compass"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/nav_explore" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_explore"
-                android:textSize="12sp"
-                android:textColor="#CCCCCC" />
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/navExplore"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_explore"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_explore" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_explore"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_search"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_search" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_search"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navMyEvents"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <FrameLayout
+                    android:layout_width="48dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_role_icon_blue"
+                    android:backgroundTint="@color/accentTint">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_nav_events"
+                        app:tint="@color/primaryAccent"
+                        android:contentDescription="@string/nav_my_events" />
+                </FrameLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_my_events"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/primaryAccent"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navNotifications"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_notifications"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_notifications" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_notifications"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navProfile"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:baselineAligned="false">
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/ic_nav_profile"
+                    app:tint="@color/textDisabled"
+                    android:contentDescription="@string/nav_profile" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nav_profile"
+                    android:textSize="9sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/textDisabled"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
         </LinearLayout>
-
-        <!-- Search -->
-        <LinearLayout
-            android:id="@+id/navSearch"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@android:drawable/ic_menu_search"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/nav_search" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_search"
-                android:textSize="12sp"
-                android:textColor="#CCCCCC" />
-        </LinearLayout>
-
-        <!-- My Events -->
-        <LinearLayout
-            android:id="@+id/navMyEvents"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@android:drawable/ic_menu_agenda"
-                app:tint="#4A7A4A"
-                android:contentDescription="@string/nav_my_events" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_my_events"
-                android:textSize="12sp"
-                android:textColor="#4A7A4A" />
-        </LinearLayout>
-
-        <!-- Notifications -->
-        <LinearLayout
-            android:id="@+id/navNotifications"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@android:drawable/ic_popup_reminder"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/nav_notifications" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/nav_notifications"
-                android:textSize="12sp"
-                android:textColor="#CCCCCC" />
-        </LinearLayout>
-
-        <!-- Profile -->
-        <TextView
-            android:id="@+id/navProfile"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:drawableTop="@android:drawable/ic_menu_myplaces"
-            android:drawableTint="#CCCCCC"
-            android:drawablePadding="2dp"
-            android:text="@string/nav_profile"
-            android:textSize="12sp"
-            android:textColor="#CCCCCC" />
-
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,9 +1,8 @@
 package com.example.codebase;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 public class Event implements Serializable {
     private String id;
@@ -22,13 +21,12 @@ public class Event implements Serializable {
     private String posterUrl;
     private Long maxCapacity;
     private Long winnersCount;
-    private ArrayList<Entrant> waitingList;
-    private ArrayList<Entrant> selectedEntrants;
-    private ArrayList<Entrant> enrolledEntrants;
+    private ArrayList<String> waitingList = new ArrayList<>();
+    private ArrayList<String> selectedEntrants = new ArrayList<>();
+    private ArrayList<String> enrolledEntrants = new ArrayList<>();
     private String status;
     private boolean geoEnabled;
-    private ArrayList<Entrant>  cancelledEntrants;
-
+    private ArrayList<String> cancelledEntrants = new ArrayList<>();
     private String eventId;
 
     public String getEventId() {
@@ -37,6 +35,7 @@ public class Event implements Serializable {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+        this.id = eventId;
     }
 
     public boolean isGeoEnabled() {
@@ -61,6 +60,7 @@ public class Event implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+        this.eventId = id;
     }
 
     public String getOrganizerDeviceId() {
@@ -111,35 +111,35 @@ public class Event implements Serializable {
         this.winnersCount = winnersCount;
     }
 
-    public ArrayList<Entrant> getWaitingList() {
+    public ArrayList<String> getWaitingList() {
         return waitingList;
     }
 
-    public void setWaitingList(ArrayList<Entrant> waitingList) {
+    public void setWaitingList(ArrayList<String> waitingList) {
         this.waitingList = waitingList;
     }
 
-    public ArrayList<Entrant> getSelectedEntrants() {
+    public ArrayList<String> getSelectedEntrants() {
         return selectedEntrants;
     }
 
-    public void setSelectedEntrants(ArrayList<Entrant> selectedEntrants) {
+    public void setSelectedEntrants(ArrayList<String> selectedEntrants) {
         this.selectedEntrants = selectedEntrants;
     }
 
-    public ArrayList<Entrant> getEnrolledEntrants() {
+    public ArrayList<String> getEnrolledEntrants() {
         return enrolledEntrants;
     }
 
-    public void setEnrolledEntrants(ArrayList<Entrant> enrolledEntrants) {
+    public void setEnrolledEntrants(ArrayList<String> enrolledEntrants) {
         this.enrolledEntrants = enrolledEntrants;
     }
 
-    public ArrayList<Entrant> getCancelledEntrants() {
+    public ArrayList<String> getCancelledEntrants() {
         return cancelledEntrants;
     }
 
-    public void setCancelledEntrants(ArrayList<Entrant>  cancelledEntrants) {
+    public void setCancelledEntrants(ArrayList<String> cancelledEntrants) {
         this.cancelledEntrants = cancelledEntrants;
     }
 
@@ -215,5 +215,3 @@ public class Event implements Serializable {
         this.price = price;
     }
 }
-
-

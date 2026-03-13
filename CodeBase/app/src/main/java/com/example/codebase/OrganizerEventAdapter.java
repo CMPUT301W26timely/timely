@@ -8,8 +8,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * OrganizerEventAdapter — RecyclerView adapter for My Events screen.
@@ -115,6 +117,8 @@ public class OrganizerEventAdapter extends
     // ─── ViewHolder ───────────────────────────────────────────────────────────
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
+        private static final SimpleDateFormat DATE_FORMAT =
+                new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         private final TextView   tvTitle;
         private final TextView   tvDate;
@@ -135,7 +139,9 @@ public class OrganizerEventAdapter extends
 
         void bind(Event event, OnEventClickListener listener) {
             tvTitle.setText(event.getTitle());
-            tvDate.setText(event.getStartDate().toString());
+            tvDate.setText(event.getStartDate() != null
+                    ? DATE_FORMAT.format(event.getStartDate())
+                    : "Date: Not set");
 
             // ── Poster thumbnail ──────────────────────────────────────────────
             if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
@@ -153,10 +159,12 @@ public class OrganizerEventAdapter extends
                 ivThumbnail.setImageBitmap(null); // shows bg_event_thumbnail placeholder
             }
 
+            int waitlistCount = event.getWaitingList() != null ? event.getWaitingList().size() : 0;
+            int selectedCount = event.getSelectedEntrants() != null ? event.getSelectedEntrants().size() : 0;
             tvWaiting.setText(itemView.getContext()
-                    .getString(R.string.waitlist_count, event.getWaitingList().stream().count()));
+                    .getString(R.string.waitlist_count, waitlistCount));
             tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, event.getSelectedEntrants().stream().count()));
+                    .getString(R.string.drawn_count, selectedCount));
             tvSelected.setVisibility(View.VISIBLE);
 
             // ── Calculate and apply status badge ──────────────────────────────

@@ -128,10 +128,16 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
             return;
         }
 
-        // ── Read arrays ───────────────────────────────────────────────────────
-        List<String> selected  = toStringList(doc.get("selectedEntrants"));
-        List<String> enrolled  = toStringList(doc.get("enrolledEntrants"));
-        List<String> cancelled = toStringList(doc.get("cancelledEntrants"));
+        Event event = EventSchema.normalizeLoadedEvent(doc);
+        if (event == null) {
+            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        List<String> selected = event.getSelectedEntrants();
+        List<String> enrolled = event.getEnrolledEntrants();
+        List<String> cancelled = event.getCancelledEntrants();
 
         // ── Calculate declined ────────────────────────────────────────────────
         // Declined = cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)
@@ -200,19 +206,6 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
     }
 
     // ─── Helper ───────────────────────────────────────────────────────────────
-
-    @SuppressWarnings("unchecked")
-    private List<String> toStringList(Object obj) {
-        if (obj instanceof List) {
-            List<?> raw = (List<?>) obj;
-            List<String> result = new ArrayList<>();
-            for (Object item : raw) {
-                if (item instanceof String) result.add((String) item);
-            }
-            return result;
-        }
-        return new ArrayList<>();
-    }
 
     // ─── Model ────────────────────────────────────────────────────────────────
 

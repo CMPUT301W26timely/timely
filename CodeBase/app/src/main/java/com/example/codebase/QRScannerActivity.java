@@ -2,11 +2,7 @@ package com.example.codebase;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.OptIn;
@@ -22,7 +18,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -31,6 +26,7 @@ import com.google.mlkit.vision.common.InputImage;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QRScannerActivity extends AppCompatActivity {
 
@@ -45,7 +41,10 @@ public class QRScannerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_qr_scanner);
 
         Button cancelButton = findViewById(R.id.button_cancel);
-        PreviewView previewView = findViewById(R.id.previewView);
+        previewView = findViewById(R.id.previewView);
+        cameraExecutor = Executors.newSingleThreadExecutor();
+
+        cancelButton.setOnClickListener(v -> finish());
 
         startCamera();
     }
@@ -86,7 +85,7 @@ public class QRScannerActivity extends AppCompatActivity {
                 .document(eventId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    CreateEventViewModel event = documentSnapshot.toObject(CreateEventViewModel.class);
+                    Event event = EventSchema.normalizeLoadedEvent(documentSnapshot);
                     if (event != null) {
                         showEventDialog(eventId, event);
                     } else {
@@ -96,7 +95,7 @@ public class QRScannerActivity extends AppCompatActivity {
                 });
     }
 
-    private void showEventDialog(String eventId, CreateEventViewModel event){
+    private void showEventDialog(String eventId, Event event){
 //        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_qr_result, null);
 //        ImageView poster  = dialogView.findViewById(R.id.poster);
 //        TextView title = dialogView.findViewById(R.id.eventTitle);
@@ -139,12 +138,17 @@ public class QRScannerActivity extends AppCompatActivity {
                             });
                         }
                     }
-                });
+                    imageProxy.close();
+                })
+                .addOnFailureListener(e -> imageProxy.close())
+                .addOnCanceledListener(imageProxy::close);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cameraExecutor.shutdown();
+        if (cameraExecutor != null) {
+            cameraExecutor.shutdown();
+        }
     }
 }
