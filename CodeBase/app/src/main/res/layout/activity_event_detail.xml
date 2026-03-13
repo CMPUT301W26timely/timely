@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,10 +16,10 @@
             android:id="@+id/collapsingToolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:contentScrim="@color/pageBg"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
-            app:expandedTitleTextColor="@android:color/transparent"
             app:collapsedTitleTextColor="@color/textPrimary"
+            app:contentScrim="@color/pageBg"
+            app:expandedTitleTextColor="@android:color/transparent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:toolbarId="@+id/toolbar">
 
             <ImageView
@@ -34,8 +33,8 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_welcome_gradient"
-                android:alpha="0.3" />
+                android:alpha="0.3"
+                android:background="@drawable/bg_welcome_gradient" />
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
@@ -63,33 +62,33 @@
                 android:id="@+id/tvDetailStatusBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REGISTRATION OPEN"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"
-                android:textSize="9sp"
+                android:background="@drawable/bg_status_badge_open"
                 android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.18"
-                android:background="@drawable/bg_status_badge_open"
-                android:textColor="@color/primaryAccent" />
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="REGISTRATION OPEN"
+                android:textColor="@color/primaryAccent"
+                android:textSize="9sp" />
 
             <TextView
                 android:id="@+id/tvDetailTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Community Art Festival"
-                android:textSize="28sp"
-                android:textStyle="bold"
                 android:fontFamily="serif"
-                android:textColor="@color/textPrimary" />
+                android:text="Community Art Festival"
+                android:textColor="@color/textPrimary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
 
             <!-- Date Range -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="12dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="16dp"
@@ -103,17 +102,17 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Oct 24, 2024 - Oct 26, 2024"
-                    android:textSize="14sp"
-                    android:textColor="@color/textSecondary" />
+                    android:textColor="@color/textSecondary"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Location -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="4dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="16dp"
@@ -127,8 +126,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="St. Albert Public Library"
-                    android:textSize="14sp"
-                    android:textColor="@color/textSecondary" />
+                    android:textColor="@color/textSecondary"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <TextView
@@ -136,18 +135,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:lineSpacingExtra="6dp"
                 android:text="Join us for a day of creativity and community. This event features local artists, interactive workshops, and live performances."
-                android:textSize="15sp"
                 android:textColor="@color/textSecondary"
-                android:lineSpacingExtra="6dp" />
+                android:textSize="15sp" />
 
             <!-- Stats Grid -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:columnCount="2"
-                android:alignmentMode="alignMargins">
+                android:alignmentMode="alignMargins"
+                android:columnCount="2">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
@@ -157,28 +156,31 @@
                     app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/border">
+                    app:strokeColor="@color/border"
+                    app:strokeWidth="1dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="WAITLIST"
-                            android:textSize="9sp"
                             android:letterSpacing="0.1"
-                            android:textColor="@color/textMuted" />
+                            android:text="WAITLIST"
+                            android:textColor="@color/textMuted"
+                            android:textSize="9sp" />
+
                         <TextView
                             android:id="@+id/tvWaitingCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="128"
+                            android:textColor="@color/textPrimary"
                             android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/textPrimary" />
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -190,28 +192,32 @@
                     app:cardBackgroundColor="@color/surface"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/border">
+                    app:strokeColor="@color/border"
+                    app:strokeWidth="1dp">
+
                     <LinearLayout
+                        android:id="@+id/boxViewEnrolled"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="SELECTED"
-                            android:textSize="9sp"
                             android:letterSpacing="0.1"
-                            android:textColor="@color/textMuted" />
+                            android:text="SELECTED"
+                            android:textColor="@color/textMuted"
+                            android:textSize="9sp" />
+
                         <TextView
                             android:id="@+id/tvSelectedCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="45"
+                            android:textColor="@color/textPrimary"
                             android:textSize="24sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/textPrimary" />
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -223,12 +229,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="32dp"
+                android:letterSpacing="0.06"
                 android:text="View Waiting List"
                 android:textColor="@color/white"
                 android:textSize="12sp"
-                android:letterSpacing="0.06"
-                app:cornerRadius="100dp"
-                app:backgroundTint="@color/primaryAccent" />
+                app:backgroundTint="@color/primaryAccent"
+                app:cornerRadius="100dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewQr"
@@ -236,10 +242,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
+                android:letterSpacing="0.06"
                 android:text="View QR Code"
                 android:textColor="@color/primaryAccent"
                 android:textSize="12sp"
-                android:letterSpacing="0.06"
                 app:cornerRadius="100dp"
                 app:strokeColor="@color/primaryAccent" />
 
