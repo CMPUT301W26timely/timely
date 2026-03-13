@@ -16,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 public class EntrantEventDetailActivity extends AppCompatActivity {
@@ -28,7 +29,8 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
 
     private TextView tvTitle, tvDate, tvLocation, tvDescription;
     private ImageView ivPoster;
-    private Button btnJoin, btnLeave;
+    private Button btnJoin, btnLeave, btnDropOut;
+    private View layoutJoinLeave;
     private View progressBar;
 
     private final SimpleDateFormat displayFormat = new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
@@ -48,12 +50,15 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
         ivPoster = findViewById(R.id.ivEntrantHeroPoster);
         btnJoin = findViewById(R.id.btnJoinWaitingList);
         btnLeave = findViewById(R.id.btnLeaveWaitingList);
+        btnDropOut = findViewById(R.id.btnDropOut);
+        layoutJoinLeave = findViewById(R.id.layoutJoinLeave);
         progressBar = findViewById(R.id.entrantDetailProgressBar);
 
         findViewById(R.id.btnEntrantBack).setOnClickListener(v -> finish());
 
         btnJoin.setOnClickListener(v -> showJoinConfirmation());
         btnLeave.setOnClickListener(v -> showLeaveConfirmation());
+        btnDropOut.setOnClickListener(v -> showDropOutConfirmation());
 
         loadEventDetails();
     }
@@ -92,27 +97,43 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
     private void updateButtonStates() {
         if (event == null) return;
 
-        ArrayList<String> waitingList = event.getWaitingList();
-        boolean isWaiting = waitingList != null && waitingList.contains(deviceId);
+        ArrayList<String> enrolled = event.getEnrolledEntrants();
+        boolean isEnrolled = enrolled != null && enrolled.contains(deviceId);
 
-        // Always show both buttons side by side
-        btnJoin.setVisibility(View.VISIBLE);
-        btnLeave.setVisibility(View.VISIBLE);
-
-        if (isWaiting) {
-            // User is already in the list: disable Join, enable Leave
-            btnJoin.setEnabled(false);
-            btnJoin.setAlpha(0.5f); // Grayed out effect
-
-            btnLeave.setEnabled(true);
-            btnLeave.setAlpha(1.0f);
+        if (isEnrolled) {
+            // User has accepted invitation
+            btnDropOut.setVisibility(View.VISIBLE);
+            layoutJoinLeave.setVisibility(View.GONE);
         } else {
-            // User is not in the list: enable Join, disable Leave
-            btnJoin.setEnabled(true);
-            btnJoin.setAlpha(1.0f);
+            // User is not enrolled
+            btnDropOut.setVisibility(View.GONE);
+            layoutJoinLeave.setVisibility(View.VISIBLE);
 
-            btnLeave.setEnabled(false);
-            btnLeave.setAlpha(0.5f); // Grayed out effect
+            ArrayList<String> waitingList = event.getWaitingList();
+            boolean isWaiting = waitingList != null && waitingList.contains(deviceId);
+
+            if (isWaiting) {
+                btnJoin.setEnabled(false);
+                btnJoin.setAlpha(0.5f);
+                btnLeave.setEnabled(true);
+                btnLeave.setAlpha(1.0f);
+            } else {
+                // Check if registration is still open to allow joining
+                boolean isRegOpen = true;
+                if (event.getRegistrationDeadline() != null) {
+                    isRegOpen = new Date().before(event.getRegistrationDeadline());
+                }
+
+                if (isRegOpen) {
+                    btnJoin.setEnabled(true);
+                    btnJoin.setAlpha(1.0f);
+                } else {
+                    btnJoin.setEnabled(false);
+                    btnJoin.setAlpha(0.5f);
+                }
+                btnLeave.setEnabled(false);
+                btnLeave.setAlpha(0.5f);
+            }
         }
     }
 
@@ -131,6 +152,15 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to leave the waiting list?")
                 .setPositiveButton("Confirm", (dialog, which) -> leaveWaitingList())
                 .setNegativeButton("Stay in list", null)
+                .show();
+    }
+
+    private void showDropOutConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Drop Out of Event")
+                .setMessage("Are you sure you want to drop out of this event?")
+                .setPositiveButton("Confirm", (dialog, which) -> dropOutOfEvent())
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -159,6 +189,24 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Failed to leave", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void dropOutOfEvent() {
+        progressBar.setVisibility(View.VISIBLE);
+        // Remove from enrolledEntrants and add to cancelledEntrants
+        FirebaseFirestore.getInstance().collection("events").document(eventId)
+                .update(
+                        "enrolledEntrants", FieldValue.arrayRemove(deviceId),
+                        "cancelledEntrants", FieldValue.arrayUnion(deviceId)
+                )
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Dropped out of event.", Toast.LENGTH_SHORT).show();
+                    loadEventDetails();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Failed to drop out", Toast.LENGTH_SHORT).show();
                 });
     }
 }

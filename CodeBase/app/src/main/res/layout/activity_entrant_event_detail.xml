@@ -113,41 +113,60 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Bottom Buttons (Side by Side) -->
-    <LinearLayout
+    <!-- Bottom Buttons Container -->
+    <FrameLayout
         android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="#FFFFFF"
         android:elevation="8dp"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        style="?android:attr/buttonBarStyle"
-        android:weightSum="2">
+        android:padding="16dp">
 
+        <!-- Drop Out Button (Full Width) -->
         <Button
-            android:id="@+id/btnLeaveWaitingList"
-            android:layout_width="0dp"
+            android:id="@+id/btnDropOut"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
             android:backgroundTint="#D32F2F"
-            android:text="Leave waiting list"
+            android:text="Drop out of event"
             android:textColor="#FFFFFF"
+            android:visibility="gone"
             style="?android:attr/buttonBarButtonStyle" />
 
-        <Button
-            android:id="@+id/btnJoinWaitingList"
-            android:layout_width="0dp"
+        <!-- Side by Side Join/Leave Buttons -->
+        <LinearLayout
+            android:id="@+id/layoutJoinLeave"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:backgroundTint="#4CAF50"
-            android:text="Join waiting list"
-            android:textColor="#FFFFFF"
-            style="?android:attr/buttonBarButtonStyle" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:weightSum="2"
+            style="?android:attr/buttonBarStyle"
+            android:visibility="visible">
+
+            <Button
+                android:id="@+id/btnLeaveWaitingList"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="#D32F2F"
+                android:text="Leave waiting list"
+                android:textColor="#FFFFFF"
+                style="?android:attr/buttonBarButtonStyle" />
+
+            <Button
+                android:id="@+id/btnJoinWaitingList"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="#4CAF50"
+                android:text="Join waiting list"
+                android:textColor="#FFFFFF"
+                style="?android:attr/buttonBarButtonStyle" />
+        </LinearLayout>
+    </FrameLayout>
 
     <ProgressBar
         android:id="@+id/entrantDetailProgressBar"

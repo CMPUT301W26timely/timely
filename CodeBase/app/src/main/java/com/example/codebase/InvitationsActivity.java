@@ -69,6 +69,7 @@ public class InvitationsActivity extends AppCompatActivity {
     private void loadInvitations() {
         progressBar.setVisibility(View.VISIBLE);
 
+        // Firestore query already filters for where user is in selectedEntrants
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .whereArrayContains("selectedEntrants", deviceId)
@@ -88,10 +89,12 @@ public class InvitationsActivity extends AppCompatActivity {
             Event event = doc.toObject(Event.class);
             if (event != null) {
                 event.setId(doc.getId());
-                boolean isEnrolled = event.getEnrolledEntrants() != null && event.getEnrolledEntrants().contains(deviceId);
-                boolean isCancelled = event.getCancelledEntrants() != null && event.getCancelledEntrants().contains(deviceId);
                 
-                if (!isEnrolled && !isCancelled) {
+                // US Change: Always show if in selectedEntrants, regardless of previous rejections (cancelledEntrants).
+                // Only exclude if they have already accepted (enrolledEntrants).
+                boolean isEnrolled = event.getEnrolledEntrants() != null && event.getEnrolledEntrants().contains(deviceId);
+                
+                if (!isEnrolled) {
                     invitationList.add(event);
                 }
             }
