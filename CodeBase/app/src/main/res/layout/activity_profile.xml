@@ -29,7 +29,6 @@
                 android:fontFamily="serif"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary" />
-
         </LinearLayout>
 
         <ScrollView
@@ -72,7 +71,7 @@
                             android:fontFamily="sans-serif-medium"
                             android:textColor="@color/textPrimary" />
 
-                        <!-- Device ID Field -->
+                        <!-- Device ID Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -98,8 +97,46 @@
                                 android:background="?attr/selectableItemBackgroundBorderless"
                                 app:tint="@color/textMuted"
                                 android:contentDescription="Toggle Device ID visibility" />
-
                         </LinearLayout>
+
+                        <!-- Profile info -->
+                        <TextView
+                            android:id="@+id/tvName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No name set"
+                            android:textSize="16sp"
+                            android:textColor="@color/textPrimary"
+                            android:layout_marginTop="16dp" />
+
+                        <TextView
+                            android:id="@+id/tvEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No email set"
+                            android:textSize="14sp"
+                            android:textColor="@color/textSecondary"
+                            android:layout_marginTop="8dp" />
+
+                        <TextView
+                            android:id="@+id/tvPhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No phone number set"
+                            android:textSize="14sp"
+                            android:textColor="@color/textSecondary"
+                            android:layout_marginTop="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEditProfile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Edit Profile"
+                            android:textAllCaps="false"
+                            android:textColor="@color/white"
+                            app:backgroundTint="@color/primaryAccent"
+                            app:cornerRadius="100dp" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -142,7 +179,6 @@
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
-            <!-- Explore -->
             <LinearLayout
                 android:id="@+id/navExplore"
                 android:layout_width="0dp"
@@ -169,7 +205,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- Search -->
             <LinearLayout
                 android:id="@+id/navSearch"
                 android:layout_width="0dp"
@@ -196,7 +231,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- My Events -->
             <LinearLayout
                 android:id="@+id/navMyEvents"
                 android:layout_width="0dp"
@@ -223,7 +257,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- Notifications -->
             <LinearLayout
                 android:id="@+id/navNotifications"
                 android:layout_width="0dp"
@@ -250,7 +283,6 @@
                     android:layout_marginTop="2dp" />
             </LinearLayout>
 
-            <!-- Profile (Active) -->
             <LinearLayout
                 android:id="@+id/navProfile"
                 android:layout_width="0dp"

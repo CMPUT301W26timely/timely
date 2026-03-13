@@ -1,111 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
+    android:foreground="?attr/selectableItemBackground"
+    card_view:cardBackgroundColor="@android:color/white"
+    card_view:cardCornerRadius="8dp"
+    card_view:cardElevation="4dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Poster Image -->
-        <ImageView
-            android:id="@+id/image_poster"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Event Title -->
         <TextView
-            android:id="@+id/text_event_title"
-            android:layout_width="0dp"
+            android:id="@+id/textViewEventName"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="32dp"
-            android:text="Event Title"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            app:layout_constraintStart_toEndOf="@id/image_poster"
-            app:layout_constraintTop_toTopOf="@id/image_poster"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textSize="18sp"
+            android:textColor="@android:color/black" />
 
-        <!-- Date and Time -->
         <TextView
-            android:id="@+id/text_event_date"
-            android:layout_width="0dp"
+            android:id="@+id/textViewEventDate"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/textViewEventLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Jan 01, 2024 • 10:00 AM"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            app:layout_constraintStart_toEndOf="@id/image_poster"
-            app:layout_constraintTop_toBottomOf="@id/text_event_title"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Status Badge -->
-        <TextView
-            android:id="@+id/text_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="6dp"
-            android:text="Open"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
-            app:layout_constraintStart_toEndOf="@id/image_poster"
-            app:layout_constraintTop_toBottomOf="@id/text_event_date" />
-
-        <!-- Three dot menu -->
-
-        <!-- Divider -->
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="12dp"
-            android:background="?attr/colorOutline"
-            android:alpha="0.3"
-            app:layout_constraintTop_toBottomOf="@id/image_poster"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Waitlist count -->
-        <TextView
-            android:id="@+id/text_event_waitlist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:drawablePadding="4dp"
-            android:text="Waitlist: 0"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider" />
-
-        <!-- Lottery / extra info -->
-        <TextView
-            android:id="@+id/text_event_lottery"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Opens in 2 days"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</com.google.android.material.card.MaterialCardView>
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -29,6 +29,16 @@ public class Event implements Serializable {
     private boolean geoEnabled;
     private ArrayList<Entrant>  cancelledEntrants;
 
+    private String eventId;
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
     public boolean isGeoEnabled() {
         return geoEnabled;
     }
