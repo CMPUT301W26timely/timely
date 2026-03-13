@@ -14,7 +14,6 @@ import java.util.Locale;
 
 /**
  * Adapter for displaying events in a RecyclerView.
- * Uses the team's merged Event model: title, startDate, location.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
 
@@ -24,8 +23,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     private final List<Event> events;
     private final OnEventClickListener listener;
-
-    // Formats Date objects into a readable string
     private final SimpleDateFormat dateFormat =
             new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -46,20 +43,24 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
 
-        // Show event title
-        holder.textViewEventName.setText(event.getTitle());
+        holder.textViewEventName.setText(
+                event.getTitle() == null || event.getTitle().isEmpty()
+                        ? "Untitled Event"
+                        : event.getTitle()
+        );
 
-        // Show event location
-        holder.textViewEventLocation.setText("Location: " + event.getLocation());
+        holder.textViewEventLocation.setText(
+                "Location: " + (event.getLocation() == null || event.getLocation().isEmpty()
+                        ? "Not set"
+                        : event.getLocation())
+        );
 
-        // Show event start date if available
         if (event.getStartDate() != null) {
             holder.textViewEventDate.setText("Date: " + dateFormat.format(event.getStartDate()));
         } else {
             holder.textViewEventDate.setText("Date: Not set");
         }
 
-        // Click item to open event details
         holder.itemView.setOnClickListener(v -> listener.onEventClick(event));
     }
 

@@ -13,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/**
+ * Entrant browse events screen.
+ */
 public class BrowseEventsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewEvents;
@@ -28,43 +31,25 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
 
-        // Show cached data immediately if available
-        if (AppCache.getInstance().hasCachedEvents()) {
-            showEvents(AppCache.getInstance().getCachedEvents());
-            refreshEventsInBackground();
-        } else {
-            loadEventsFromFirestore();
-        }
+        loadEvents();
     }
 
-    private void loadEventsFromFirestore() {
+    private void loadEvents() {
         EventRepository.loadActiveEvents(new EventRepository.EventsCallback() {
             @Override
             public void onEventsLoaded(List<Event> events) {
-                Log.d("BrowseEvents", "Loaded events count = " + events.size());
                 showEvents(events);
             }
 
             @Override
             public void onError(Exception e) {
-                Log.e("BrowseEvents", "Failed to load events", e);
+                Log.e("BrowseEventsActivity", "Failed to load events", e);
                 Toast.makeText(BrowseEventsActivity.this,
                         "Failed to load events: " + e.getMessage(),
                         Toast.LENGTH_LONG).show();
-            }
-        });
-    }
 
-    private void refreshEventsInBackground() {
-        EventRepository.loadActiveEvents(new EventRepository.EventsCallback() {
-            @Override
-            public void onEventsLoaded(List<Event> events) {
-                showEvents(events);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("BrowseEvents", "Background refresh failed", e);
+                textViewEmptyState.setVisibility(View.VISIBLE);
+                recyclerViewEvents.setVisibility(View.GONE);
             }
         });
     }
@@ -73,17 +58,18 @@ public class BrowseEventsActivity extends AppCompatActivity {
         if (events == null || events.isEmpty()) {
             textViewEmptyState.setVisibility(View.VISIBLE);
             recyclerViewEvents.setVisibility(View.GONE);
-        } else {
-            textViewEmptyState.setVisibility(View.GONE);
-            recyclerViewEvents.setVisibility(View.VISIBLE);
-
-            EventAdapter adapter = new EventAdapter(events, event -> {
-                Intent intent = new Intent(BrowseEventsActivity.this, EventDetailsActivity.class);
-                intent.putExtra("eventId", event.getEventId());
-                startActivity(intent);
-            });
-
-            recyclerViewEvents.setAdapter(adapter);
+            return;
         }
+
+        textViewEmptyState.setVisibility(View.GONE);
+        recyclerViewEvents.setVisibility(View.VISIBLE);
+
+        EventAdapter adapter = new EventAdapter(events, event -> {
+            Intent intent = new Intent(BrowseEventsActivity.this, EventDetailsActivity.class);
+            intent.putExtra("eventId", event.getEventId());
+            startActivity(intent);
+        });
+
+        recyclerViewEvents.setAdapter(adapter);
     }
 }

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,7 +24,9 @@ public class EventRepository {
     }
 
     /**
-     * Load all active events from Firestore.
+     * Load active events from Firestore.
+     * For checkpoint, an event is treated as active if registration deadline
+     * has not passed, or if no registration deadline is set.
      */
     public static void loadActiveEvents(@NonNull EventsCallback callback) {
         AppDatabase.getInstance()
@@ -33,26 +36,44 @@ public class EventRepository {
                     List<Event> events = new ArrayList<>();
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Event event = doc.toObject(Event.class);
-                        if (event.getEventId() == null || event.getEventId().isEmpty()) {
-                            event.setEventId(doc.getId());
+                        try {
+                            Event event = doc.toObject(Event.class);
+
+                            if (event == null) continue;
+
+                            if (event.getEventId() == null || event.getEventId().isEmpty()) {
+                                event.setEventId(doc.getId());
+                            }
+
+                            if (event.getId() == null || event.getId().isEmpty()) {
+                                event.setId(doc.getId());
+                            }
+
+                            if (isEventActive(event)) {
+                                events.add(event);
+                            }
+
+                        } catch (Exception ignored) {
+                            // Skip malformed event docs instead of crashing the app
                         }
-                        events.add(event);
                     }
 
-                    // Save events into memory cache
                     AppCache.getInstance().setCachedEvents(events);
-
                     callback.onEventsLoaded(events);
                 })
                 .addOnFailureListener(callback::onError);
+    }
+
+    private static boolean isEventActive(Event event) {
+        Date deadline = event.getRegistrationDeadline();
+        if (deadline == null) return true;
+        return new Date().before(deadline);
     }
 
     /**
      * Load one event by ID.
      */
     public static void loadEventById(String eventId, @NonNull EventDetailsCallback callback) {
-        // Check cache first
         for (Event event : AppCache.getInstance().getCachedEvents()) {
             if (eventId.equals(event.getEventId())) {
                 callback.onEventLoaded(event);
@@ -60,18 +81,26 @@ public class EventRepository {
             }
         }
 
-        // Fallback to Firestore
         AppDatabase.getInstance()
                 .eventsRef
                 .document(eventId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        Event event = documentSnapshot.toObject(Event.class);
-                        if (event != null && (event.getEventId() == null || event.getEventId().isEmpty())) {
-                            event.setEventId(documentSnapshot.getId());
+                        try {
+                            Event event = documentSnapshot.toObject(Event.class);
+                            if (event != null) {
+                                if (event.getEventId() == null || event.getEventId().isEmpty()) {
+                                    event.setEventId(documentSnapshot.getId());
+                                }
+                                if (event.getId() == null || event.getId().isEmpty()) {
+                                    event.setId(documentSnapshot.getId());
+                                }
+                            }
+                            callback.onEventLoaded(event);
+                        } catch (Exception e) {
+                            callback.onError(e);
                         }
-                        callback.onEventLoaded(event);
                     } else {
                         callback.onError(new Exception("Event not found"));
                     }

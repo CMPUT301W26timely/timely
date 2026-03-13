@@ -6,6 +6,9 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Temporary home screen used to reach entrant stories quickly.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private Button buttonBrowseEvents;
@@ -18,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
 
         UserRepository.syncRole(this);
 
+        // Check unread chosen/not chosen notifications when app opens
+        SelectedNotificationChecker.checkAndShow(this);
+
         buttonBrowseEvents = findViewById(R.id.buttonBrowseEvents);
         buttonOpenProfile = findViewById(R.id.buttonOpenProfile);
 
@@ -25,6 +31,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, BrowseEventsActivity.class)));
 
         buttonOpenProfile.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, ProfileSettingsActivity.class)));
+                startActivity(new Intent(MainActivity.this, ProfileActivity.class)));
     }
 }
