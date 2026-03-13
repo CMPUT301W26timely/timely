@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,17 +26,28 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class CreateEventFragment extends Fragment {
-    
+
     private CreateEventViewModel viewModel;
     private FrameLayout posterUploadArea;
     private ImageView ivPosterPreview;
-    
+
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -49,7 +61,7 @@ public class CreateEventFragment extends Fragment {
                             } else {
                                 bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), imageUri);
                             }
-                            
+
                             // 1. Resize the image to prevent breaking Firestore 1MB limit
                             int MAX_DIMENSION = 800;
                             int width = bitmap.getWidth();

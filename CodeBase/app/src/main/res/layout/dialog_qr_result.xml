@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ImageView
+        android:id="@+id/poster"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/eventTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:fontFamily="serif" />
+
+    <Button
+        android:id="@+id/joinWaitingListButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Join Waiting List" />
+
+    <Button
+        android:id="@+id/viewEventButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View Event" />
+
+
+</LinearLayout>

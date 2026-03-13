@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -24,15 +24,20 @@ import java.util.Locale;
 
 /**
  * OrganizerActivity — "My Events" screen for Organizer role.
+ *
+ * Add to AndroidManifest.xml:
+ *   <activity android:name=".OrganizerActivity" android:exported="false" />
+ *
+ * Route here from MainActivity when role = ORGANIZER.
  */
 public class OrganizerActivity extends AppCompatActivity {
 
-    private RecyclerView                 rvEvents;
-    private View                         tvNoEvents;
-    private ExtendedFloatingActionButton fabCreate;
-    private OrganizerEventAdapter        adapter;
-    private List<OrganizerEvent>         eventList = new ArrayList<>();
-    private String                       deviceId;
+    private RecyclerView          rvEvents;
+    private TextView              tvNoEvents;
+    private FloatingActionButton  fabCreate;
+    private OrganizerEventAdapter adapter;
+    private List<Event>  eventList = new ArrayList<>();
+    private String                deviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +46,22 @@ public class OrganizerActivity extends AppCompatActivity {
 
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
+        // Back button → WelcomeActivity
+        findViewById(R.id.btnBackOrganizer).setOnClickListener(v -> {
+            Intent intent = new Intent(this, WelcomeActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
         rvEvents   = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
         fabCreate  = findViewById(R.id.fabCreateEvent);
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.id);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.title);
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID,    event.getId());
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
             startActivity(intent);
         });
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
@@ -58,42 +71,23 @@ public class OrganizerActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CreateEventActivity.class))
         );
 
-        setupBottomNavigation();
+        findViewById(R.id.navProfile).setOnClickListener(v ->
+                startActivity(new Intent(this, ProfileActivity.class))
+        );
+
+        loadOrganizerEvents();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrganizerEvents();
-    }
-
-    private void setupBottomNavigation() {
-        findViewById(R.id.navProfile).setOnClickListener(v -> {
-            startActivity(new Intent(this, ProfileActivity.class));
-            finish();
-        });
-        
-        findViewById(R.id.navMyEvents).setOnClickListener(v -> {
-            // Already here
-        });
-
-        findViewById(R.id.navExplore).setOnClickListener(v -> {
-             Toast.makeText(this, "Explore coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-            Toast.makeText(this, "Search coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        findViewById(R.id.navNotifications).setOnClickListener(v -> {
-            Toast.makeText(this, "Notifications coming soon", Toast.LENGTH_SHORT).show();
-        });
+        loadOrganizerEvents(); // refresh list when returning from CreateEventActivity
     }
 
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .whereEqualTo("organizerId", deviceId) 
+                .whereEqualTo("organizerDeviceId", deviceId)
                 .get()
                 .addOnSuccessListener(this::populateList)
                 .addOnFailureListener(e ->
@@ -110,38 +104,7 @@ public class OrganizerActivity extends AppCompatActivity {
                 new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            OrganizerEvent event = new OrganizerEvent();
-            event.id    = doc.getId();
-            
-            event.title = doc.getString("name") != null ? doc.getString("name") :
-                          (doc.getString("title") != null ? doc.getString("title") : "Untitled Event");
-                          
-            event.location = doc.getString("location") != null ? doc.getString("location") : "Location TBD";
-            event.status = doc.getString("status") != null ? doc.getString("status") : "draft";
-
-            Timestamp regDeadlineTs = doc.getTimestamp("regClose");
-            Timestamp drawDateTs    = doc.getTimestamp("drawDate"); // May not exist
-            Timestamp startDateTs   = doc.getTimestamp("eventStart");
-            Timestamp endDateTs     = doc.getTimestamp("eventEnd");
-
-            event.registrationDeadline = regDeadlineTs != null ? regDeadlineTs.toDate() : null;
-            event.drawDate             = drawDateTs    != null ? drawDateTs.toDate()     : null;
-            event.startDate            = startDateTs   != null ? startDateTs.toDate()    : null;
-            event.endDate              = endDateTs     != null ? endDateTs.toDate()      : null;
-
-            event.displayDate = event.startDate != null
-                    ? displayFormat.format(event.startDate) : "Date not set";
-
-            List<?> waitingList      = (List<?>) doc.get("waitingList");
-            List<?> selectedEntrants = (List<?>) doc.get("selectedEntrants");
-            List<?> enrolledEntrants = (List<?>) doc.get("enrolledEntrants");
-
-            event.waitingCount      = waitingList      != null ? waitingList.size()      : 0;
-            event.selectedCount     = selectedEntrants != null ? selectedEntrants.size() : 0;
-            event.selectedEntrants  = selectedEntrants;
-            event.enrolledEntrants  = enrolledEntrants;
-
-            eventList.add(event);
+            eventList.add(doc.toObject(Event.class));
         }
 
         adapter.notifyDataSetChanged();
@@ -149,19 +112,5 @@ public class OrganizerActivity extends AppCompatActivity {
         rvEvents.setVisibility(eventList.isEmpty()   ? View.GONE    : View.VISIBLE);
     }
 
-    public static class OrganizerEvent {
-        public String id;
-        public String title;
-        public String location;
-        public String status; // "published" or "draft"
-        public String displayDate;
-        public Date registrationDeadline;
-        public Date drawDate;
-        public Date startDate;
-        public Date endDate;
-        public List<?> selectedEntrants;
-        public List<?> enrolledEntrants;
-        public int waitingCount;
-        public int selectedCount;
-    }
+    // ─── Event model ──────────────────────────────────────────────────────────
 }

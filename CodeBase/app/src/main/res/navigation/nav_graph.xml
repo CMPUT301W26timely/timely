@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/CreateEventFragment">
 
     <fragment
         android:id="@+id/FirstFragment"
@@ -24,6 +24,12 @@
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/CreateEventFragment"
+        android:name="com.example.codebase.CreateEventFragment"
+        android:label="Create Event"
+        tools:layout="@layout/fragment_create_event">
     </fragment>
     <fragment
         android:id="@+id/finalEntrantListFragment2"
