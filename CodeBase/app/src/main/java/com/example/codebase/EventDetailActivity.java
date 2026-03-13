@@ -88,11 +88,14 @@ public class EventDetailActivity extends AppCompatActivity {
                         getString(R.string.lottery_draw_coming_soon),
                         Toast.LENGTH_SHORT).show()
         );
-        findViewById(R.id.rowSendNotification).setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.send_notification_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.rowSendNotification).setOnClickListener(v ->{
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            SendNotificationFragment sheet = SendNotificationFragment.newInstance(eventId, event.getTitle());
+            sheet.show(getSupportFragmentManager(), "sendNotification");
+        });
 
         findViewById(R.id.rowViewWaitingList).setOnClickListener(v ->
                 Toast.makeText(this,

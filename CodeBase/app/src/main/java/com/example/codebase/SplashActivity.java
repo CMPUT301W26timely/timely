@@ -62,6 +62,8 @@ public class SplashActivity extends AppCompatActivity {
      * Navigates to OrganizerActivity and finishes the splash activity.
      */
     private void navigateToMain() {
+        // Check for unread notifications on every app launch
+        SelectedNotificationChecker.checkAndShow(this);
         startActivity(new Intent(this, OrganizerActivity.class));
         finish();
     }

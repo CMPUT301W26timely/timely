@@ -30,7 +30,8 @@ public class SelectedNotificationChecker {
 
         AppDatabase.getInstance()
                 .notificationsRef
-                .whereEqualTo("userId", deviceId)
+                .document(deviceId)
+                .collection("messages")
                 .whereEqualTo("read", false)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -45,7 +46,7 @@ public class SelectedNotificationChecker {
     }
 
     private static void showNotification(Context context, AppNotification appNotification) {
-        Intent intent = new Intent(context, EventDetailsActivity.class);
+        Intent intent = new Intent(context, EventDetailActivity.class);
         intent.putExtra("eventId", appNotification.getEventId());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
