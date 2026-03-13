@@ -9,24 +9,69 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * EventRepository loads event data from Firestore.
+ * Repository class responsible for loading {@link Event} data from Firestore.
+ *
+ * <p>All queries are executed against {@link AppDatabase#eventsRef}. Successfully loaded
+ * event lists are cached in {@link AppCache} so that subsequent lookups by ID can be
+ * served without a network round-trip.
+ *
+ * <p>Malformed Firestore documents are silently skipped to prevent a single bad record
+ * from crashing the app.
  */
 public class EventRepository {
 
+    /**
+     * Callback interface for operations that return a collection of {@link Event} objects.
+     */
     public interface EventsCallback {
+        /**
+         * Called when the event list has been successfully loaded.
+         *
+         * @param events The list of loaded {@link Event} objects; never {@code null},
+         *               but may be empty.
+         */
         void onEventsLoaded(List<Event> events);
-        void onError(Exception e);
-    }
 
-    public interface EventDetailsCallback {
-        void onEventLoaded(Event event);
+        /**
+         * Called when the load operation fails.
+         *
+         * @param e The exception describing the failure.
+         */
         void onError(Exception e);
     }
 
     /**
-     * Load active events from Firestore.
-     * For checkpoint, an event is treated as active if registration deadline
-     * has not passed, or if no registration deadline is set.
+     * Callback interface for operations that return a single {@link Event}.
+     */
+    public interface EventDetailsCallback {
+        /**
+         * Called when the requested {@link Event} has been successfully loaded.
+         *
+         * @param event The loaded {@link Event}; may be {@code null} if
+         *              {@link EventSchema#normalizeLoadedEvent} returns {@code null}.
+         */
+        void onEventLoaded(Event event);
+
+        /**
+         * Called when the load operation fails or the event document does not exist.
+         *
+         * @param e The exception describing the failure.
+         */
+        void onError(Exception e);
+    }
+
+    /**
+     * Loads all active events from Firestore and delivers them via {@code callback}.
+     *
+     * <p>An event is considered active if its registration deadline is {@code null}
+     * (no deadline set) or has not yet passed at the time of the call. Each Firestore
+     * document is normalised via {@link EventSchema#normalizeLoadedEvent}; documents
+     * that produce a {@code null} result or throw an exception are skipped.
+     *
+     * <p>The resulting list is stored in {@link AppCache} before being delivered to
+     * {@link EventsCallback#onEventsLoaded(List)}.
+     *
+     * @param callback The {@link EventsCallback} to receive the loaded events or an error.
      */
     public static void loadActiveEvents(@NonNull EventsCallback callback) {
         AppDatabase.getInstance()
@@ -46,7 +91,7 @@ public class EventRepository {
                             }
 
                         } catch (Exception ignored) {
-                            // Skip malformed event docs instead of crashing the app
+                            // Skip malformed event docs instead of crashing the app.
                         }
                     }
 
@@ -56,6 +101,13 @@ public class EventRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    /**
+     * Determines whether an event is currently active based on its registration deadline.
+     *
+     * @param event The {@link Event} to evaluate.
+     * @return {@code true} if the registration deadline is {@code null} or is in the
+     *         future relative to the current time; {@code false} otherwise.
+     */
     private static boolean isEventActive(Event event) {
         Date deadline = event.getRegistrationDeadline();
         if (deadline == null) return true;
@@ -63,7 +115,21 @@ public class EventRepository {
     }
 
     /**
-     * Load one event by ID.
+     * Loads a single {@link Event} by its Firestore document ID.
+     *
+     * <p>The {@link AppCache} is checked first; if a matching event is found it is
+     * returned immediately without a network call. Otherwise, the event document is
+     * fetched from Firestore and normalised via {@link EventSchema#normalizeLoadedEvent}.
+     *
+     * <p>Calls {@link EventDetailsCallback#onError(Exception)} if:
+     * <ul>
+     *   <li>The document does not exist in Firestore.</li>
+     *   <li>Normalisation throws an exception.</li>
+     *   <li>The Firestore query itself fails.</li>
+     * </ul>
+     *
+     * @param eventId  The Firestore document ID of the event to load.
+     * @param callback The {@link EventDetailsCallback} to receive the loaded event or an error.
      */
     public static void loadEventById(String eventId, @NonNull EventDetailsCallback callback) {
         for (Event event : AppCache.getInstance().getCachedEvents()) {

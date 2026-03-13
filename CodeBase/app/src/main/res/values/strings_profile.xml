@@ -2,8 +2,25 @@
 <resources>
     <string name="profile_title">Profile</string>
     <string name="switch_to_admin">Switch to Admin</string>
-    <string name="switch_to_user">Switch to User</string>
+    <string name="switch_to_user">Switch to Entrant</string>
     <string name="user_role_label">Current Role: %s</string>
     <string name="device_id_label">Device ID: %s</string>
     <string name="device_id_masked">Device ID: ••••••••</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_entrant">Entrant</string>
+    <string name="profile_status_complete">Complete</string>
+    <string name="profile_status_incomplete">Needs attention</string>
+    <string name="profile_status_complete_message">You are ready to join events and receive updates.</string>
+    <string name="profile_status_incomplete_message">Add your name and email so organizers can contact you.</string>
+    <string name="profile_device_title">Device-linked account</string>
+    <string name="profile_contact_title">Contact Details</string>
+    <string name="profile_name_label">Full Name</string>
+    <string name="profile_email_label">Email Address</string>
+    <string name="profile_phone_label">Phone Number</string>
+    <string name="profile_edit_button">Edit Details</string>
+    <string name="profile_placeholder_name">No name set</string>
+    <string name="profile_placeholder_email">No email set</string>
+    <string name="profile_placeholder_phone">No phone number set</string>
+    <string name="profile_load_failed">Failed to load profile</string>
+    <string name="profile_toggle_device_id">Toggle device ID visibility</string>
 </resources>

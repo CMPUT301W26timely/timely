@@ -7,22 +7,48 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * RoleCheckActivity — Invisible entry point. Registered as MAIN/LAUNCHER.
+ * Invisible entry point activity, registered as {@code MAIN/LAUNCHER}.
  *
- * Runs on every launch. Always shows WelcomeActivity for role selection.
- * Passes a flag (is_registered) to WelcomeActivity so it knows whether
- * to route through SplashActivity (first launch) or directly to
- * MainActivity (subsequent launches).
+ * <p>Executes on every application launch without rendering any UI
+ * (themed with {@code Theme.CodeBase.NoDisplay}). Reads the device's
+ * registration state from {@link SharedPreferences} and forwards it to
+ * {@link WelcomeActivity} via an {@link Intent} extra, allowing
+ * {@link WelcomeActivity} to determine the correct post-role-selection route.
  *
- * Flow:
- *   1st launch:  RoleCheckActivity → WelcomeActivity → SplashActivity → MainActivity
- *   2nd+ launch: RoleCheckActivity → WelcomeActivity → MainActivity
+ * <p>Launch flows:
+ * <ul>
+ *   <li><b>First launch:</b> {@code RoleCheckActivity} → {@link WelcomeActivity}
+ *       → {@link SplashActivity} → {@link MainActivity}</li>
+ *   <li><b>Subsequent launches:</b> {@code RoleCheckActivity} → {@link WelcomeActivity}
+ *       → {@link MainActivity}</li>
+ * </ul>
  */
 public class RoleCheckActivity extends AppCompatActivity {
 
-    public static final String PREFS_NAME     = "event_lottery_prefs";
+    /**
+     * Name of the {@link SharedPreferences} file shared across the application
+     * for storing session and registration state.
+     */
+    public static final String PREFS_NAME = "event_lottery_prefs";
+
+    /**
+     * {@link SharedPreferences} key whose boolean value indicates whether the device
+     * has completed first-run registration.
+     * <ul>
+     *   <li>{@code false} (default) — first launch; onboarding flow will be triggered.</li>
+     *   <li>{@code true} — returning user; routed directly to the main screen.</li>
+     * </ul>
+     */
     public static final String KEY_REGISTERED = "is_registered";
 
+    /**
+     * Reads registration state and immediately delegates to {@link WelcomeActivity}.
+     *
+     * <p>No content view is set; this activity is intentionally invisible. It finishes
+     * itself after starting {@link WelcomeActivity} so it is removed from the back stack.
+     *
+     * @param savedInstanceState Unused. No UI state is retained by this activity.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

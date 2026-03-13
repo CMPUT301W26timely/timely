@@ -35,20 +35,33 @@
     <string name="notifications_invitation_title">Event Invitations</string>
     <string name="notifications_invitation_loading">Checking for invitations...</string>
     <string name="profile_settings_first_run_title">Create Your Profile</string>
-    <string name="profile_settings_first_run_subtitle">Add your contact details before continuing into the app.</string>
+    <string name="profile_settings_first_run_subtitle">Add your name and contact details so organizers can reach you if you are selected.</string>
     <string name="profile_settings_edit_title">Edit Profile</string>
-    <string name="profile_settings_edit_subtitle">Keep your contact information up to date.</string>
+    <string name="profile_settings_edit_subtitle">Keep your saved entrant details current for future event invitations.</string>
     <string name="profile_settings_device_id_label">Device ID</string>
-    <string name="profile_settings_device_id_value">Device ID: %1$s</string>
+    <string name="profile_settings_device_id_value">%1$s</string>
+    <string name="profile_settings_card_title">This profile follows your device.</string>
+    <string name="profile_settings_card_subtitle">Name and email are required to participate. Phone number is optional, but helpful if organizers need to reach you quickly.</string>
+    <string name="profile_settings_mode_required">Required</string>
+    <string name="profile_settings_mode_editable">Editable anytime</string>
     <string name="profile_settings_name_label">Name</string>
     <string name="profile_settings_email_label">Email Address</string>
     <string name="profile_settings_phone_label">Phone Number</string>
     <string name="profile_settings_name_hint">Enter your full name</string>
     <string name="profile_settings_email_hint">Enter your email address</string>
     <string name="profile_settings_phone_hint">Enter your phone number</string>
+    <string name="profile_settings_name_helper">Use the name organizers should see on your profile.</string>
+    <string name="profile_settings_email_helper">This is the main contact for event invites and updates.</string>
+    <string name="profile_settings_phone_helper">Optional. Add a phone number for quicker follow-up.</string>
+    <string name="profile_settings_name_required">Name is required.</string>
+    <string name="profile_settings_email_required">Email is required.</string>
+    <string name="profile_settings_email_invalid">Enter a valid email address.</string>
+    <string name="profile_settings_phone_invalid">Enter a valid phone number or leave it blank.</string>
     <string name="profile_settings_continue">Continue</string>
     <string name="profile_settings_save">Save Changes</string>
-    <string name="profile_settings_saved">Profile saved</string>
+    <string name="profile_settings_saving">Saving...</string>
+    <string name="profile_settings_saved">Profile saved successfully</string>
+    <string name="profile_settings_save_failed">Failed to save profile. Please try again.</string>
     <string name="profile_settings_required">Complete your profile to continue.</string>
 
     <!-- Event Detail — Header -->
