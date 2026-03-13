@@ -24,9 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 public class CreateEventActivity extends AppCompatActivity {
 
@@ -53,10 +51,10 @@ public class CreateEventActivity extends AppCompatActivity {
             viewModel.waitlistLimit = getIntent().getIntExtra("waitlistCap", -1);
             viewModel.capacity = getIntent().getIntExtra("capacity", 0);
             viewModel.posterBase64 = getIntent().getStringExtra("posterBase64") != null ? getIntent().getStringExtra("posterBase64") : "";
-            viewModel.eventStart = getIntent().getStringExtra("eventStart") != null ? getIntent().getStringExtra("eventStart") : "";
-            viewModel.eventEnd = getIntent().getStringExtra("eventEnd") != null ? getIntent().getStringExtra("eventEnd") : "";
-            viewModel.regOpen = getIntent().getStringExtra("regOpen") != null ? getIntent().getStringExtra("regOpen") : "";
-            viewModel.regClose = getIntent().getStringExtra("regClose") != null ? getIntent().getStringExtra("regClose") : "";
+            viewModel.startDate = readStringExtra("startDate", "eventStart");
+            viewModel.endDate = readStringExtra("endDate", "eventEnd");
+            viewModel.registrationOpen = readStringExtra("registrationOpen", "regOpen");
+            viewModel.registrationDeadline = readStringExtra("registrationDeadline", "regClose");
         }
 
 
@@ -128,6 +126,27 @@ public class CreateEventActivity extends AppCompatActivity {
         }
     }
 
+    private String readStringExtra(String primaryKey, String legacyKey) {
+        String value = getIntent().getStringExtra(primaryKey);
+        if (value == null) {
+            value = getIntent().getStringExtra(legacyKey);
+        }
+        return value != null ? value : "";
+    }
+
+    private void applyScheduleFields(Event event) {
+        Timestamp startTs = parseDate(viewModel.startDate);
+        Timestamp endTs = parseDate(viewModel.endDate);
+        Timestamp registrationOpenTs = parseDate(viewModel.registrationOpen);
+        Timestamp registrationDeadlineTs = parseDate(viewModel.registrationDeadline);
+
+        event.setStartDate(startTs != null ? startTs.toDate() : null);
+        event.setEndDate(endTs != null ? endTs.toDate() : null);
+        event.setRegistrationOpen(registrationOpenTs != null ? registrationOpenTs.toDate() : null);
+        event.setRegistrationDeadline(registrationDeadlineTs != null ? registrationDeadlineTs.toDate() : null);
+        event.setDrawDate(EventSchema.calculateDrawDate(event.getRegistrationDeadline()));
+    }
+
     private void publishEvent() {
         // Basic Validation
         if (viewModel.name.trim().isEmpty() || viewModel.capacity <= 0) {
@@ -145,31 +164,23 @@ public class CreateEventActivity extends AppCompatActivity {
 
         if (viewModel.isEditMode){
             db.collection("events").document(eventId).get().addOnSuccessListener(doc -> {
-                Event existing = doc.toObject(Event.class);
+                Event existing = EventSchema.normalizeLoadedEvent(doc);
+                if (existing == null) {
+                    btnContinue.setEnabled(true);
+                    btnContinue.setText("SAVE CHANGES");
+                    Toast.makeText(this, "Failed to load event", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 existing.setTitle(viewModel.name);
                 existing.setDescription(viewModel.description);
                 existing.setLocation(viewModel.location);
                 existing.setPrice((float) viewModel.price);
                 existing.setMaxCapacity((long) viewModel.capacity);
+                existing.setWinnersCount((long) viewModel.capacity);
                 existing.setWaitlistCap(viewModel.waitlistLimit);
                 existing.setGeoEnabled(viewModel.geoRequired);
-
-                Timestamp startTs    = parseDate(viewModel.eventStart);
-                Timestamp endTs      = parseDate(viewModel.eventEnd);
-                Timestamp regOpenTs  = parseDate(viewModel.regOpen);
-                Timestamp regCloseTs = parseDate(viewModel.regClose);
-                if (startTs != null)
-                    existing.setStartDate(startTs.toDate());
-
-                if (endTs != null)
-                    existing.setEndDate(endTs.toDate());
-
-                if (regOpenTs != null)
-                    existing.setRegistrationOpen(regOpenTs.toDate());
-
-                if (regCloseTs != null)
-                    existing.setRegistrationDeadline(regCloseTs.toDate());
+                applyScheduleFields(existing);
 
                 if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
                     existing.setPoster(new EventPoster(viewModel.posterBase64));
@@ -189,30 +200,15 @@ public class CreateEventActivity extends AppCompatActivity {
         } else {
             Event event = new Event();
             event.setId(eventId);
-
             event.setTitle(viewModel.name);
             event.setDescription(viewModel.description);
             event.setLocation(viewModel.location);
             event.setPrice((float) viewModel.price);
             event.setMaxCapacity((long) viewModel.capacity);
+            event.setWinnersCount((long) viewModel.capacity);
             event.setWaitlistCap(viewModel.waitlistLimit);
             event.setGeoEnabled(viewModel.geoRequired);
-
-            Timestamp startTs    = parseDate(viewModel.eventStart);
-            Timestamp endTs      = parseDate(viewModel.eventEnd);
-            Timestamp regOpenTs  = parseDate(viewModel.regOpen);
-            Timestamp regCloseTs = parseDate(viewModel.regClose);
-            if (startTs != null)
-                event.setStartDate(startTs.toDate());
-
-            if (endTs != null)
-                event.setEndDate(endTs.toDate());
-
-            if (regOpenTs != null)
-                event.setRegistrationOpen(regOpenTs.toDate());
-
-            if (regCloseTs != null)
-                event.setRegistrationDeadline(regCloseTs.toDate());
+            applyScheduleFields(event);
 
 
             // Poster Image (Base64)
@@ -221,10 +217,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
             event.setOrganizerDeviceId(DeviceIdManager.getOrCreateDeviceId(this));
             event.setStatus("published");
-            event.setWaitingList(new ArrayList<Entrant>());
-            event.setSelectedEntrants(new ArrayList<Entrant>());
-            event.setCancelledEntrants(new ArrayList<Entrant>());
-            event.setEnrolledEntrants(new ArrayList<Entrant>());
+            event.setWaitingList(new ArrayList<>());
+            event.setSelectedEntrants(new ArrayList<>());
+            event.setCancelledEntrants(new ArrayList<>());
+            event.setEnrolledEntrants(new ArrayList<>());
 
             db.collection("events").document(eventId).set(event, SetOptions.merge())
                     .addOnSuccessListener(aVoid -> {

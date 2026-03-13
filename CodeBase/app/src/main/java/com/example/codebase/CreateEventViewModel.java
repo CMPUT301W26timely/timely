@@ -12,10 +12,10 @@ public class CreateEventViewModel extends ViewModel {
     public double price = 0.0;
 
     // Step 1: Schedule (Storing as strings for simplicity from the EditTexts)
-    public String eventStart = "";
-    public String eventEnd = "";
-    public String regOpen = "";
-    public String regClose = "";
+    public String startDate = "";
+    public String endDate = "";
+    public String registrationOpen = "";
+    public String registrationDeadline = "";
     public int capacity = 0;
 
     // Step 2: Settings

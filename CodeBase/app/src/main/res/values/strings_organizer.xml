@@ -69,8 +69,11 @@
 
     <!-- Event detail new fields -->
     <string name="date_not_set">Date not set</string>
+    <string name="cost_label">Cost</string>
     <string name="max_capacity_label">Max Capacity</string>
     <string name="winners_count_label">Winners Count</string>
+    <string name="waitlist_capacity_label">Waitlist Capacity</string>
+    <string name="not_applicable_short">N/A</string>
 
     <!-- Errors -->
     <string name="error_loading_event_detail">Failed to load event details</string>

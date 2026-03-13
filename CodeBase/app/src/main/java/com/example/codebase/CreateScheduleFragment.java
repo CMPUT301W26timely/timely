@@ -35,17 +35,17 @@ public class CreateScheduleFragment extends Fragment {
         EditText etCapacity = view.findViewById(R.id.etCapacity);
 
         // Pre-fill fields on navigation back
-        etEventStart.setText(viewModel.eventStart);
-        etEventEnd.setText(viewModel.eventEnd);
-        etRegOpen.setText(viewModel.regOpen);
-        etRegClose.setText(viewModel.regClose);
+        etEventStart.setText(viewModel.startDate);
+        etEventEnd.setText(viewModel.endDate);
+        etRegOpen.setText(viewModel.registrationOpen);
+        etRegClose.setText(viewModel.registrationDeadline);
         if (viewModel.capacity > 0) etCapacity.setText(String.valueOf(viewModel.capacity));
 
         // Use proper Calendar pickers
-        setupDatePicker(etEventStart, "Select Event Start Date", date -> viewModel.eventStart = date);
-        setupDatePicker(etEventEnd, "Select Event End Date", date -> viewModel.eventEnd = date);
-        setupDatePicker(etRegOpen, "Select Registration Open Date", date -> viewModel.regOpen = date);
-        setupDatePicker(etRegClose, "Select Registration Close Date", date -> viewModel.regClose = date);
+        setupDatePicker(etEventStart, "Select Event Start Date", date -> viewModel.startDate = date);
+        setupDatePicker(etEventEnd, "Select Event End Date", date -> viewModel.endDate = date);
+        setupDatePicker(etRegOpen, "Select Registration Open Date", date -> viewModel.registrationOpen = date);
+        setupDatePicker(etRegClose, "Select Registration Close Date", date -> viewModel.registrationDeadline = date);
 
         etCapacity.addTextChangedListener(new CreateEventFragment.SimpleTextWatcher() {
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {

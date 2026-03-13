@@ -83,8 +83,7 @@ public class OrganizerActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.navSearch).setOnClickListener(v -> {
-            startActivity(new Intent(this, BrowseEventsActivity.class));
-            finish();
+            Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
         });
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {
@@ -110,14 +109,8 @@ public class OrganizerActivity extends AppCompatActivity {
         eventList.clear();
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
-            Event event = doc.toObject(Event.class);
+            Event event = EventSchema.normalizeLoadedEvent(doc);
             if (event != null) {
-                if (event.getId() == null || event.getId().isEmpty()) {
-                    event.setId(doc.getId());
-                }
-                if (event.getEventId() == null || event.getEventId().isEmpty()) {
-                    event.setEventId(doc.getId());
-                }
                 eventList.add(event);
             }
         }

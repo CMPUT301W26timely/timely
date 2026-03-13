@@ -7,14 +7,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -22,11 +20,11 @@ import java.util.Locale;
 /**
  * EventDetailActivity — Event detail screen for Organizer role.
  *
- * Reads from Firestore:
+ * Reads canonical event fields from Firestore:
  *   title, description, location
- *   eventStart, eventEnd, regClose (Timestamps); drawDate = regClose + 3 days (calculated)
- *   maxCapacity, winnersCount
- *   waitingList, selectedEntrants, enrolledEntrants, cancelledEntrants (arrays)
+ *   startDate, endDate, registrationOpen, registrationDeadline, drawDate
+ *   maxCapacity, waitlistCap
+ *   waitingList, selectedEntrants, enrolledEntrants, cancelledEntrants
  *
  * Status badge is calculated in real time from dates + arrays.
  * Firestore status field is NOT used.
@@ -54,9 +52,14 @@ public class EventDetailActivity extends AppCompatActivity {
     private TextView tvWaitingListRowCount;
     private TextView tvMaxCapacity;
     private TextView tvWinnersCount;
+    private TextView tvEventCost;
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
     private Event event;
+    private final SimpleDateFormat displayDateFormat =
+            new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+    private final NumberFormat currencyFormat =
+            NumberFormat.getCurrencyInstance(Locale.getDefault());
 
     private final SimpleDateFormat displayFormat =
             new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
@@ -82,6 +85,7 @@ public class EventDetailActivity extends AppCompatActivity {
         tvWaitingListRowCount = findViewById(R.id.tvWaitingListRowCount);
         tvMaxCapacity = findViewById(R.id.tvMaxCapacity);
         tvWinnersCount = findViewById(R.id.tvWinnersCount);
+        tvEventCost = findViewById(R.id.tvEventCost);
         ivHeroPoster = findViewById(R.id.ivHeroPoster);
         progressBar = findViewById(R.id.detailProgressBar);
 
@@ -146,17 +150,18 @@ public class EventDetailActivity extends AppCompatActivity {
             intent.putExtra("capacity", event.getMaxCapacity() != null ? event.getMaxCapacity().intValue() : 0);
             intent.putExtra("posterBase64", event.getPoster() != null ? event.getPoster().getPosterImageBase64() : "");
 
-            if (event.getStartDate() != null)
-                intent.putExtra("eventStart", sdf.format(event.getStartDate()));
+            if (event.getStartDate() != null) {
+                intent.putExtra("startDate", sdf.format(event.getStartDate()));
+            }
 
             if (event.getEndDate() != null)
-                intent.putExtra("eventEnd", sdf.format(event.getEndDate()));
+                intent.putExtra("endDate", sdf.format(event.getEndDate()));
 
             if (event.getRegistrationOpen() != null)
-                intent.putExtra("regOpen", sdf.format(event.getRegistrationOpen()));
+                intent.putExtra("registrationOpen", sdf.format(event.getRegistrationOpen()));
 
             if (event.getRegistrationDeadline() != null)
-                intent.putExtra("regClose", sdf.format(event.getRegistrationDeadline()));
+                intent.putExtra("registrationDeadline", sdf.format(event.getRegistrationDeadline()));
 
             startActivity(intent);
         });
@@ -209,10 +214,19 @@ public class EventDetailActivity extends AppCompatActivity {
             return;
         }
 
-        event = doc.toObject(Event.class);
+        event = EventSchema.normalizeLoadedEvent(doc);
+        if (event == null) {
+            Toast.makeText(this,
+                    getString(R.string.error_event_not_found),
+                    Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // ── Poster image — stored as Base64 string in Firestore ──────────────
-        if (event.getPoster().getPosterImageBase64() != null && !event.getPoster().getPosterImageBase64().isEmpty()) {
+        if (event.getPoster() != null
+                && event.getPoster().getPosterImageBase64() != null
+                && !event.getPoster().getPosterImageBase64().isEmpty()) {
             try {
                 android.graphics.Bitmap bitmap = EventPoster.decodeImage(event.getPoster().getPosterImageBase64());
                 if (bitmap != null) {
@@ -245,33 +259,39 @@ public class EventDetailActivity extends AppCompatActivity {
         // ── Timestamps ────────────────────────────────────────────────────────
         Date regOpen = event.getRegistrationOpen() != null ? event.getRegistrationOpen() : null;
         Date registrationDeadline = event.getRegistrationDeadline() != null ? event.getRegistrationDeadline() : null;
-        // drawDate = regClose + 3 days (calculated, not stored in Firestore)
         Date drawDate = event.getDrawDate() != null ? event.getDrawDate() : null;
         Date startDate = event.getStartDate() != null ? event.getStartDate()  : null;
         Date endDate = event.getEndDate() != null ? event.getEndDate() : null;
 
-        // Display startDate on hero area
-        tvDetailDate.setText(startDate != null
-                ? displayFormat.format(startDate) : getString(R.string.date_not_set));
+        tvDetailDate.setText(formatEventDateRange(startDate, endDate));
 
         // ── Capacity fields ───────────────────────────────────────────────────
-        Long maxCapacity = (long) event.getWaitlistCap();
-        Long winnersCount = event.getMaxCapacity();
+        Long maxCapacity = event.getMaxCapacity();
+        int waitlistCap = event.getWaitlistCap();
+        float price = event.getPrice();
+
+        if (tvEventCost != null) {
+            tvEventCost.setText(currencyFormat.format(price));
+        }
 
         if (tvMaxCapacity != null) {
             tvMaxCapacity.setText((maxCapacity != null && maxCapacity > 0)
                     ? String.valueOf(maxCapacity) : "—");
         }
+        if (tvMaxCapacity != null && (maxCapacity == null || maxCapacity <= 0)) {
+            tvMaxCapacity.setText(getString(R.string.not_applicable_short));
+        }
         if (tvWinnersCount != null) {
-            tvWinnersCount.setText(winnersCount != null
-                    ? String.valueOf(winnersCount) : "—");
+            tvWinnersCount.setText(waitlistCap > 0
+                    ? String.valueOf(waitlistCap)
+                    : getString(R.string.not_applicable_short));
         }
 
         // ── Arrays ────────────────────────────────────────────────────────────
-        ArrayList<?> waitingList = (ArrayList<?>) event.getWaitingList();
-        ArrayList<?> selectedEntrants = (ArrayList<?>) event.getSelectedEntrants();
-        ArrayList<?> enrolledEntrants = (ArrayList<?>) event.getEnrolledEntrants();
-        ArrayList<?> cancelledEntrants = (ArrayList<?>) event.getCancelledEntrants();
+        List<String> waitingList = event.getWaitingList();
+        List<String> selectedEntrants = event.getSelectedEntrants();
+        List<String> enrolledEntrants = event.getEnrolledEntrants();
+        List<String> cancelledEntrants = event.getCancelledEntrants();
 
         int waitingCount = waitingList != null ? waitingList.size() : 0;
         int invitedCount = selectedEntrants != null ? selectedEntrants.size() : 0;
@@ -348,6 +368,23 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     // ─── Apply status badge color + text ─────────────────────────────────────
+
+    private String formatEventDateRange(Date startDate, Date endDate) {
+        if (startDate == null) {
+            return getString(R.string.date_not_set);
+        }
+
+        if (endDate == null) {
+            return displayDateFormat.format(startDate);
+        }
+
+        String startText = displayDateFormat.format(startDate);
+        String endText = displayDateFormat.format(endDate);
+        if (startText.equals(endText)) {
+            return startText;
+        }
+        return startText + " - " + endText;
+    }
 
     private void applyStatusBadge(String status) {
         tvStatusBadge.setText(status);

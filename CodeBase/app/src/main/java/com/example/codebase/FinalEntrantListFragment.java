@@ -19,7 +19,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 //User story 02.06.03
 public class FinalEntrantListFragment extends Fragment {
@@ -38,7 +37,7 @@ public class FinalEntrantListFragment extends Fragment {
     ListView listView;
 
     Event event;
-    ArrayList<Entrant> finalEntrants;
+    ArrayList<String> finalEntrants;
     Long maxCapacity;
 
     FinalEntrantListAdapter entrantAdapter;
@@ -70,7 +69,10 @@ public class FinalEntrantListFragment extends Fragment {
         entrantAdapter = new FinalEntrantListAdapter(view.getContext(), finalEntrants);
         listView.setAdapter(entrantAdapter);
 
-        int percentageCap = (int)(finalEntrants.size()/maxCapacity*100);
+        int percentageCap = 0;
+        if (maxCapacity != null && maxCapacity > 0) {
+            percentageCap = (int) ((finalEntrants.size() * 100L) / maxCapacity);
+        }
         String capacityString = finalEntrants.size()+"/"+maxCapacity;
         String percentageString = Integer.toString(percentageCap)+"%";
 

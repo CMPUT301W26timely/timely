@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -26,7 +25,7 @@ import java.util.Map;
  *   All / Pending / Accepted / Declined
  *
  * US 02.06.04 — Cancel entrant (organizer action):
- *   Cancel button is only enabled once today >= eventStartDate.
+ *   Cancel button is only enabled once the registration deadline has passed.
  *   On confirm → remove from selectedEntrants, add to cancelledEntrants.
  *
  * Logic:
@@ -61,8 +60,8 @@ public class InvitedEntrantsActivity extends AppCompatActivity
     private String eventId;
     private String eventTitle;
 
-    // regClose loaded from Firestore — used to enable/disable cancel button
-    private Date regCloseDate = null;
+    // registration deadline loaded from Firestore — used to enable/disable cancel button
+    private Date registrationDeadlineDate = null;
 
     // Full lists
     private List<InvitedEntrant> allList     = new ArrayList<>();
@@ -137,17 +136,19 @@ public class InvitedEntrantsActivity extends AppCompatActivity
             return;
         }
 
-        // ── Read regClose ─────────────────────────────────────────────────────
-        Timestamp regCloseTs = doc.getTimestamp("regClose");
-        regCloseDate = (regCloseTs != null) ? regCloseTs.toDate() : null;
+        Event event = EventSchema.normalizeLoadedEvent(doc);
+        if (event == null) {
+            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-        // Pass regClose to adapter so it can decide enabled/disabled per row
-        adapter.setRegCloseDate(regCloseDate);
+        registrationDeadlineDate = event.getRegistrationDeadline();
+        adapter.setRegistrationDeadlineDate(registrationDeadlineDate);
 
-        // ── Read arrays ───────────────────────────────────────────────────────
-        List<String> selected  = toStringList(doc.get("selectedEntrants"));
-        List<String> enrolled  = toStringList(doc.get("enrolledEntrants"));
-        List<String> cancelled = toStringList(doc.get("cancelledEntrants"));
+        List<String> selected = event.getSelectedEntrants();
+        List<String> enrolled = event.getEnrolledEntrants();
+        List<String> cancelled = event.getCancelledEntrants();
 
         // ── Calculate groups ──────────────────────────────────────────────────
 
@@ -285,19 +286,6 @@ public class InvitedEntrantsActivity extends AppCompatActivity
     }
 
     // ─── Helper ───────────────────────────────────────────────────────────────
-
-    @SuppressWarnings("unchecked")
-    private List<String> toStringList(Object obj) {
-        if (obj instanceof List) {
-            List<?> raw = (List<?>) obj;
-            List<String> result = new ArrayList<>();
-            for (Object item : raw) {
-                if (item instanceof String) result.add((String) item);
-            }
-            return result;
-        }
-        return new ArrayList<>();
-    }
 
     // ─── Model ────────────────────────────────────────────────────────────────
 

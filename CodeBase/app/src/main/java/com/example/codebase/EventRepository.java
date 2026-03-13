@@ -37,17 +37,9 @@ public class EventRepository {
 
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         try {
-                            Event event = doc.toObject(Event.class);
+                            Event event = EventSchema.normalizeLoadedEvent(doc);
 
                             if (event == null) continue;
-
-                            if (event.getEventId() == null || event.getEventId().isEmpty()) {
-                                event.setEventId(doc.getId());
-                            }
-
-                            if (event.getId() == null || event.getId().isEmpty()) {
-                                event.setId(doc.getId());
-                            }
 
                             if (isEventActive(event)) {
                                 events.add(event);
@@ -88,15 +80,7 @@ public class EventRepository {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         try {
-                            Event event = documentSnapshot.toObject(Event.class);
-                            if (event != null) {
-                                if (event.getEventId() == null || event.getEventId().isEmpty()) {
-                                    event.setEventId(documentSnapshot.getId());
-                                }
-                                if (event.getId() == null || event.getId().isEmpty()) {
-                                    event.setId(documentSnapshot.getId());
-                                }
-                            }
+                            Event event = EventSchema.normalizeLoadedEvent(documentSnapshot);
                             callback.onEventLoaded(event);
                         } catch (Exception e) {
                             callback.onError(e);
