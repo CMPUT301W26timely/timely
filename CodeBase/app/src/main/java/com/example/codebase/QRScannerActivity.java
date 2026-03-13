@@ -31,6 +31,7 @@ import com.google.mlkit.vision.common.InputImage;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class QRScannerActivity extends AppCompatActivity {
 
@@ -45,7 +46,8 @@ public class QRScannerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_qr_scanner);
 
         Button cancelButton = findViewById(R.id.button_cancel);
-        PreviewView previewView = findViewById(R.id.previewView);
+        previewView = findViewById(R.id.previewView);
+        cameraExecutor = Executors.newSingleThreadExecutor();
 
         startCamera();
     }
