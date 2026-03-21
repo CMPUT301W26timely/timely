@@ -33,7 +33,7 @@
     </fragment>
     <fragment
         android:id="@+id/finalEntrantListFragment2"
-        android:name="com.example.codebase.FinalEntrantListFragment"
+        android:name="com.example.codebase.FinalEntrantListActivity"
         android:label="FinalEntrantListFragment" >
         <action
             android:id="@+id/action_finalEntrantListFragment2_to_eventDetailActivity2"

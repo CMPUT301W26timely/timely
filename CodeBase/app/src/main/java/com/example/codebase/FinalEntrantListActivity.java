@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
@@ -36,27 +37,10 @@ import java.util.ArrayList;
  * <p>If {@code maxCapacity} is {@code null} or {@code 0}, it is clamped to {@code 1}
  * to prevent division by zero during percentage calculation.</p>
  */
-public class FinalEntrantListFragment extends Fragment {
+public class FinalEntrantListActivity extends AppCompatActivity {
 
-    /**
-     * Callback interface that the hosting {@link android.app.Activity} must implement
-     * to provide the {@link Event} whose final entrant list this fragment displays.
-     *
-     * <p>This interface is resolved in {@link #onAttach(Context)} and a
-     * {@link RuntimeException} is thrown if the host does not implement it.</p>
-     */
-    interface FinalEntrantListListener {
 
-        /**
-         * Returns the {@link Event} whose enrolled entrant list should be displayed.
-         *
-         * @return the current {@link Event}; must not be {@code null}
-         */
-        Event getEvent();
-    }
 
-    /** The hosting {@link android.app.Activity} cast to {@link FinalEntrantListListener}. */
-    private FinalEntrantListListener listener;
 
     /** Displays the enrolled entrant count as {@code enrolled/maxCapacity}. */
     TextView capacityText;
@@ -92,25 +76,6 @@ public class FinalEntrantListFragment extends Fragment {
     FinalEntrantListAdapter entrantAdapter;
 
     /**
-     * Verifies that the hosting {@link android.app.Activity} implements
-     * {@link FinalEntrantListListener} and retains a reference to it.
-     *
-     * @param context the hosting {@link Context}; must implement {@link FinalEntrantListListener}
-     * @throws RuntimeException if {@code context} does not implement
-     *                          {@link FinalEntrantListListener}
-     */
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof FinalEntrantListListener)
-            listener = (FinalEntrantListListener) context;
-        else
-            throw new RuntimeException(context + " Must implement FinalEntrantListListener");
-    }
-
-    /**
-     * Inflates the fragment layout, retrieves event data from the host via
-     * {@link FinalEntrantListListener#getEvent()}, and initializes all views.
      *
      * <p>Initialization steps performed in order:</p>
      * <ol>
@@ -126,33 +91,32 @@ public class FinalEntrantListFragment extends Fragment {
      *         entrant list on both text change and query submission.</li>
      * </ol>
      *
-     * @param inflater           the {@link LayoutInflater} used to inflate the fragment's view
-     * @param container          the parent {@link ViewGroup} the fragment UI will be attached to,
-     *                           or {@code null} if there is no parent
      * @param savedInstanceState a {@link Bundle} containing the fragment's previously saved state,
      *                           or {@code null} if this is a fresh creation
      * @return the fully inflated and configured {@link View} for this fragment
      */
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.final_entrant_list_fragment, container, false);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.final_entrant_list_activity);
 
-        capacityText = view.findViewById(R.id.capacityValueText);
-        percentageCapacityText = view.findViewById(R.id.percentageCapacityText);
-        progressBar = view.findViewById(R.id.capacityProgressBar);
-        searchView = view.findViewById(R.id.entrantSearchView);
-        listView = view.findViewById(R.id.entrantList);
+        capacityText = findViewById(R.id.capacityValueText);
+        percentageCapacityText = findViewById(R.id.percentageCapacityText);
+        progressBar = findViewById(R.id.capacityProgressBar);
+        searchView = findViewById(R.id.entrantSearchView);
+        listView = findViewById(R.id.entrantList);
 
-        event = listener.getEvent();
+        findViewById(R.id.btnBackCancelled).setOnClickListener(v -> finish());
+
+        event = (Event) getIntent().getSerializableExtra("EXTRA_EVENT");
         finalEntrants = event.getEnrolledEntrants();
         if (finalEntrants == null) finalEntrants = new ArrayList<>();
 
         maxCapacity = event.getMaxCapacity();
         if (maxCapacity == null || maxCapacity == 0) maxCapacity = 1L; // Avoid division by zero
 
-        entrantAdapter = new FinalEntrantListAdapter(view.getContext(), finalEntrants);
+        entrantAdapter = new FinalEntrantListAdapter(this, finalEntrants);
         listView.setAdapter(entrantAdapter);
 
         int count = finalEntrants.size();
@@ -181,6 +145,5 @@ public class FinalEntrantListFragment extends Fragment {
             }
         });
 
-        return view;
     }
 }
