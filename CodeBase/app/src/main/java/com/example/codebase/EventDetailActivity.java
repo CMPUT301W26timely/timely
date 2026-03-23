@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -122,6 +123,16 @@ public class EventDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this, InvitedEntrantsActivity.class);
             intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_ID, eventId);
             intent.putExtra(InvitedEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+            startActivity(intent);
+        });
+
+        findViewById(R.id.cardEnrolled).setOnClickListener(v -> {
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(this, FinalEntrantListActivity.class);
+            intent.putExtra("EXTRA_EVENT", (Serializable) event);
             startActivity(intent);
         });
 
@@ -498,4 +509,5 @@ public class EventDetailActivity extends AppCompatActivity {
             loadEventDetails();
         }
     }
+
 }

@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0EDE8">
+    android:background="#F0EDE8"
+    android:id="@+id/eventDetailActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -344,6 +345,7 @@
 
             <!-- Enrolled -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardEnrolled"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_columnWeight="1"
@@ -400,40 +402,45 @@
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp">
+
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="190dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
                     android:gravity="center_vertical"
+                    android:orientation="vertical"
                     android:padding="12dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/stat_cancelled"
-                            android:textSize="11sp"
+                            android:textAllCaps="true"
                             android:textColor="#AAAAAA"
-                            android:textAllCaps="true" />
+                            android:textSize="11sp" />
+
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
+                            android:contentDescription="@string/decorative_image"
                             android:src="@android:drawable/ic_delete"
-                            app:tint="#CC3333"
-                            android:contentDescription="@string/decorative_image" />
+                            app:tint="#CC3333" />
                     </LinearLayout>
+
                     <TextView
                         android:id="@+id/tvCancelledCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0"
+                        android:textColor="#111111"
                         android:textSize="26sp"
-                        android:textStyle="bold"
-                        android:textColor="#111111" />
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -762,4 +769,7 @@
 
     </LinearLayout>
 
+
 </ScrollView>
+
+
