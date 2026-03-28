@@ -1,6 +1,8 @@
 package com.example.codebase;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
@@ -61,6 +63,8 @@ public class QRScannerActivity extends AppCompatActivity {
      */
     private static final int CAMERA_PERMISSION_REQUEST = 100;
 
+    private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.CAMERA};
+
     /** Displays the live camera feed to the user. */
     private PreviewView previewView;
 
@@ -94,7 +98,30 @@ public class QRScannerActivity extends AppCompatActivity {
 
         cancelButton.setOnClickListener(v -> finish());
 
-        startCamera();
+        if (hasCameraPermission()) {
+            startCamera();
+        } else {
+            requestPermissions(REQUIRED_PERMISSIONS, CAMERA_PERMISSION_REQUEST);
+        }
+    }
+
+    private boolean hasCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            } else {
+                Toast.makeText(this, "Camera permission is required to scan QR codes",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
     }
 
     /**

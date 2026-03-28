@@ -94,6 +94,11 @@ public class BrowseEventsActivity extends AppCompatActivity {
             startActivity(new Intent(this, ProfileActivity.class));
             finish();
         });
+
+        findViewById(R.id.fabCamera).setOnClickListener(v -> {
+            startActivity(new Intent(this, QRScannerActivity.class));
+            finish();
+        });
     }
 
     /**
