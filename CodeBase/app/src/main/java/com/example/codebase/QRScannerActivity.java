@@ -260,8 +260,12 @@ public class QRScannerActivity extends AppCompatActivity {
                         if (rawValue != null && !qrIdentified) {
                             qrIdentified = true;
                             runOnUiThread(() -> {
-                                Intent intent = new Intent(this, WelcomeActivity.class);
-                                intent.putExtra("qr_result", rawValue);
+                                String eventId = rawValue;
+                                if (rawValue.startsWith("timely://event/")) {
+                                    eventId = rawValue.replace("timely://event/", "");
+                                }
+                                Intent intent = new Intent(this, EntrantEventDetailActivity.class);
+                                intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventId);
                                 startActivity(intent);
                                 finish();
                             });
