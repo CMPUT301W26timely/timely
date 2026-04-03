@@ -2,18 +2,25 @@ package com.example.codebase;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -40,7 +47,8 @@ import java.util.Locale;
  * @see EventSchema
  * @see EventPoster
  */
-public class EventDetailActivity extends AppCompatActivity {
+public class EventDetailActivity extends AppCompatActivity
+        implements OrganizerCommentAdapter.OnDeleteClickListener {
 
     /** Intent extra key for the Firestore event document ID. */
     public static final String EXTRA_EVENT_ID    = "event_id";
@@ -75,6 +83,32 @@ public class EventDetailActivity extends AppCompatActivity {
     /** Most recently loaded event; {@code null} until the first Firestore load completes. */
     private Event event;
 
+    // ── Comment fields ─────────────────────────────────────────────────────────
+
+    /** Device ID of the current organizer, used as the comment author ID. */
+    private String deviceId;
+
+    /** Display name of the organizer fetched from their Firestore profile. */
+    private String organizerName = "Organizer";
+
+    /** RecyclerView that lists all comments on this event. */
+    private RecyclerView rvComments;
+
+    /** Input field where the organizer types a new comment. */
+    private EditText etNewComment;
+
+    /** Shows a spinner while comments are being loaded from Firestore. */
+    private View commentsProgressBar;
+
+    /** Shown when there are no comments yet. */
+    private TextView tvNoComments;
+
+    /** Live list of {@link Comment} objects backing {@link #commentAdapter}. */
+    private final List<Comment> commentList = new ArrayList<>();
+
+    /** Adapter binding {@link #commentList} to {@link #rvComments}. */
+    private OrganizerCommentAdapter commentAdapter;
+
     /** Formats dates as {@code "MMM dd, yyyy"} for the date range display. */
     private final SimpleDateFormat displayDateFormat =
             new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
@@ -100,6 +134,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
+        deviceId   = DeviceIdManager.getOrCreateDeviceId(this);
 
         tvDetailTitle         = findViewById(R.id.tvDetailTitle);
         tvDetailDate          = findViewById(R.id.tvDetailDate);
@@ -116,6 +151,19 @@ public class EventDetailActivity extends AppCompatActivity {
         tvEventCost           = findViewById(R.id.tvEventCost);
         ivHeroPoster          = findViewById(R.id.ivHeroPoster);
         progressBar           = findViewById(R.id.detailProgressBar);
+
+        // ── Bind comment views ─────────────────────────────────────────────────
+        rvComments          = findViewById(R.id.rvComments);
+        etNewComment        = findViewById(R.id.etNewComment);
+        etNewComment.setHintTextColor(android.graphics.Color.parseColor("#AAAAAA"));
+        commentsProgressBar = findViewById(R.id.commentsProgressBar);
+        tvNoComments        = findViewById(R.id.tvNoComments);
+
+        // ── Set up comments RecyclerView ───────────────────────────────────────
+        commentAdapter = new OrganizerCommentAdapter(commentList, this);
+        rvComments.setLayoutManager(new LinearLayoutManager(this));
+        rvComments.setAdapter(commentAdapter);
+        rvComments.setNestedScrollingEnabled(false);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -215,6 +263,11 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         loadEventDetails();
+
+        // ── Wire comment post button and load comments ──────────────────────────
+        findViewById(R.id.btnPostComment).setOnClickListener(v -> postComment());
+        loadOrganizerName();
+        loadComments();
     }
 
     /**
@@ -508,6 +561,132 @@ public class EventDetailActivity extends AppCompatActivity {
         if (eventId != null) {
             loadEventDetails();
         }
+    }
+
+    // ── Comments (US 02.08.02) ─────────────────────────────────────────────────
+
+    /**
+     * Fetches the organizer's display name from their Firestore user document
+     * ({@code users/{deviceId}}) so that it can be attached to new comments.
+     * Falls back to {@code "Organizer"} if the name field is blank.
+     */
+    private void loadOrganizerName() {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(deviceId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String name = doc.getString("name");
+                        if (name != null && !name.trim().isEmpty()) {
+                            organizerName = name.trim();
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Loads all comments for this event from the Firestore sub-collection
+     * {@code events/{eventId}/comments}, ordered by timestamp ascending.
+     * Clears and repopulates {@link #commentList}, then notifies the adapter.
+     * Shows {@link #tvNoComments} when the list is empty.
+     */
+    private void loadComments() {
+        commentsProgressBar.setVisibility(View.VISIBLE);
+        tvNoComments.setVisibility(View.GONE);
+
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .collection("comments")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    commentsProgressBar.setVisibility(View.GONE);
+                    commentList.clear();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Comment comment = doc.toObject(Comment.class);
+                        if (comment != null) {
+                            comment.setCommentId(doc.getId());
+                            commentList.add(comment);
+                        }
+                    }
+
+                    commentAdapter.notifyDataSetChanged();
+                    tvNoComments.setVisibility(commentList.isEmpty() ? View.VISIBLE : View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    commentsProgressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Failed to load comments", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    /**
+     * Posts a new comment from the organizer to Firestore.
+     * Validates the input, writes a {@link Comment} doc to
+     * {@code events/{eventId}/comments}, then reloads the list on success.
+     */
+    private void postComment() {
+        String text = etNewComment.getText().toString().trim();
+        if (TextUtils.isEmpty(text)) {
+            etNewComment.setError("Comment cannot be empty");
+            return;
+        }
+
+        Comment comment = new Comment(deviceId, organizerName, text);
+
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .collection("comments")
+                .add(comment)
+                .addOnSuccessListener(docRef -> {
+                    etNewComment.setText("");
+                    loadComments();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    /**
+     * Handles the delete button tap on a comment row (US 02.08.01).
+     * Shows a confirmation dialog, then deletes the Firestore document and
+     * removes the item from the list with a smooth adapter animation.
+     *
+     * @param comment  The {@link Comment} to delete.
+     * @param position The adapter position of the item being deleted.
+     */
+    @Override
+    public void onDeleteClick(Comment comment, int position) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Comment")
+                .setMessage("Are you sure you want to delete this comment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    FirebaseFirestore.getInstance()
+                            .collection("events")
+                            .document(eventId)
+                            .collection("comments")
+                            .document(comment.getCommentId())
+                            .delete()
+                            .addOnSuccessListener(aVoid -> {
+                                if (position < commentList.size()) {
+                                    commentList.remove(position);
+                                    commentAdapter.notifyItemRemoved(position);
+                                    commentAdapter.notifyItemRangeChanged(
+                                            position, commentList.size());
+                                }
+                                tvNoComments.setVisibility(
+                                        commentList.isEmpty() ? View.VISIBLE : View.GONE);
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Failed to delete comment",
+                                            Toast.LENGTH_SHORT).show()
+                            );
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
 }
