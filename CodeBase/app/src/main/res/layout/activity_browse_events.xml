@@ -209,4 +209,19 @@
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabCamera"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="100dp"
+        app:icon="@android:drawable/ic_menu_camera"
+        app:iconTint="@color/primaryAccent"
+        app:iconSize="22dp"
+        app:backgroundTint="@color/surface"
+        app:strokeColor="@color/border"
+        app:strokeWidth="1dp" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -91,6 +91,10 @@
             android:name=".ProfileSettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".QRScannerActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -102,8 +106,5 @@
         </provider>
 
     </application>
-
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" />
 
 </manifest>
