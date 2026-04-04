@@ -8,10 +8,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -47,8 +44,7 @@ import java.util.Locale;
  * @see EventSchema
  * @see EventPoster
  */
-public class EventDetailActivity extends AppCompatActivity
-        implements OrganizerCommentAdapter.OnDeleteClickListener {
+public class EventDetailActivity extends AppCompatActivity {
 
     /** Intent extra key for the Firestore event document ID. */
     public static final String EXTRA_EVENT_ID    = "event_id";
@@ -95,23 +91,15 @@ public class EventDetailActivity extends AppCompatActivity
     /** Display name of the organizer fetched from their Firestore profile. */
     private String organizerName = "Organizer";
 
-    /** RecyclerView that lists all comments on this event. */
-    private RecyclerView rvComments;
-
     /** Input field where the organizer types a new comment. */
     private EditText etNewComment;
 
-    /** Shows a spinner while comments are being loaded from Firestore. */
-    private View commentsProgressBar;
-
-    /** Shown when there are no comments yet. */
-    private TextView tvNoComments;
-
-    /** Live list of {@link Comment} objects backing {@link #commentAdapter}. */
+    /**
+     * Full list of all comments loaded from Firestore.
+     * Passed to {@link ViewCommentsFragment} for client-side filtering —
+     * no second network round-trip is needed when the dialogs open.
+     */
     private final List<Comment> commentList = new ArrayList<>();
-
-    /** Adapter binding {@link #commentList} to {@link #rvComments}. */
-    private OrganizerCommentAdapter commentAdapter;
 
     /** Formats dates as {@code "MMM dd, yyyy"} for the date range display. */
     private final SimpleDateFormat displayDateFormat =
@@ -158,18 +146,23 @@ public class EventDetailActivity extends AppCompatActivity
         layoutCoOrganizerDisplay = findViewById(R.id.layoutCoOrganizerDisplay);
         tvCoOrganizerName        = findViewById(R.id.tvCoOrganizerName);
 
-        // ── Bind comment views ─────────────────────────────────────────────────
-        rvComments          = findViewById(R.id.rvComments);
-        etNewComment        = findViewById(R.id.etNewComment);
+        // ── Bind comment views (US 02.08.02) ──────────────────────────────────
+        etNewComment = findViewById(R.id.etNewComment);
         etNewComment.setHintTextColor(android.graphics.Color.parseColor("#AAAAAA"));
-        commentsProgressBar = findViewById(R.id.commentsProgressBar);
-        tvNoComments        = findViewById(R.id.tvNoComments);
 
-        // ── Set up comments RecyclerView ───────────────────────────────────────
-        commentAdapter = new OrganizerCommentAdapter(commentList, this);
-        rvComments.setLayoutManager(new LinearLayoutManager(this));
-        rvComments.setAdapter(commentAdapter);
-        rvComments.setNestedScrollingEnabled(false);
+        // "View Entrant Comments" opens a dialog showing only entrant-posted comments
+        findViewById(R.id.btnViewEntrantComments).setOnClickListener(v -> {
+            ViewCommentsFragment f = ViewCommentsFragment.newInstance(
+                    eventId, commentList, ViewCommentsFragment.MODE_ENTRANT);
+            f.show(getSupportFragmentManager(), "entrantComments");
+        });
+
+        // "View My Comments" opens a dialog showing only organizer-posted comments
+        findViewById(R.id.btnViewMyComments).setOnClickListener(v -> {
+            ViewCommentsFragment f = ViewCommentsFragment.newInstance(
+                    eventId, commentList, ViewCommentsFragment.MODE_ORGANIZER);
+            f.show(getSupportFragmentManager(), "myComments");
+        });
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -620,15 +613,11 @@ public class EventDetailActivity extends AppCompatActivity
     }
 
     /**
-     * Loads all comments for this event from the Firestore sub-collection
-     * {@code events/{eventId}/comments}, ordered by timestamp ascending.
-     * Clears and repopulates {@link #commentList}, then notifies the adapter.
-     * Shows {@link #tvNoComments} when the list is empty.
+     * Loads all comments from {@code events/{eventId}/comments} ordered by
+     * timestamp ascending into {@link #commentList}.
+     * The list is used by {@link ViewCommentsFragment} when the view buttons are tapped.
      */
     private void loadComments() {
-        commentsProgressBar.setVisibility(View.VISIBLE);
-        tvNoComments.setVisibility(View.GONE);
-
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .document(eventId)
@@ -636,9 +625,7 @@ public class EventDetailActivity extends AppCompatActivity
                 .orderBy("timestamp", Query.Direction.ASCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    commentsProgressBar.setVisibility(View.GONE);
                     commentList.clear();
-
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
                         Comment comment = doc.toObject(Comment.class);
                         if (comment != null) {
@@ -646,14 +633,10 @@ public class EventDetailActivity extends AppCompatActivity
                             commentList.add(comment);
                         }
                     }
-
-                    commentAdapter.notifyDataSetChanged();
-                    tvNoComments.setVisibility(commentList.isEmpty() ? View.VISIBLE : View.GONE);
                 })
-                .addOnFailureListener(e -> {
-                    commentsProgressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Failed to load comments", Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load comments", Toast.LENGTH_SHORT).show()
+                );
     }
 
     /**
@@ -668,7 +651,10 @@ public class EventDetailActivity extends AppCompatActivity
             return;
         }
 
-        Comment comment = new Comment(deviceId, organizerName, text);
+        // Append "(Organizer)" tag so the comment is visually distinguished.
+        // isOrganizer=true lets ViewCommentsFragment filter it into "My Comments".
+        String displayName = organizerName + " (Organizer)";
+        Comment comment = new Comment(deviceId, displayName, text, true);
 
         FirebaseFirestore.getInstance()
                 .collection("events")
@@ -684,43 +670,5 @@ public class EventDetailActivity extends AppCompatActivity
                 );
     }
 
-    /**
-     * Handles the delete button tap on a comment row (US 02.08.01).
-     * Shows a confirmation dialog, then deletes the Firestore document and
-     * removes the item from the list with a smooth adapter animation.
-     *
-     * @param comment  The {@link Comment} to delete.
-     * @param position The adapter position of the item being deleted.
-     */
-    @Override
-    public void onDeleteClick(Comment comment, int position) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Comment")
-                .setMessage("Are you sure you want to delete this comment?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    FirebaseFirestore.getInstance()
-                            .collection("events")
-                            .document(eventId)
-                            .collection("comments")
-                            .document(comment.getCommentId())
-                            .delete()
-                            .addOnSuccessListener(aVoid -> {
-                                if (position < commentList.size()) {
-                                    commentList.remove(position);
-                                    commentAdapter.notifyItemRemoved(position);
-                                    commentAdapter.notifyItemRangeChanged(
-                                            position, commentList.size());
-                                }
-                                tvNoComments.setVisibility(
-                                        commentList.isEmpty() ? View.VISIBLE : View.GONE);
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Failed to delete comment",
-                                            Toast.LENGTH_SHORT).show()
-                            );
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
 
 }
