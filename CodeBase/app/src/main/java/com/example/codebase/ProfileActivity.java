@@ -271,13 +271,20 @@ public class ProfileActivity extends AppCompatActivity {
             // Already on this screen — no action required.
         });
 
-        findViewById(R.id.navExplore).setOnClickListener(v ->
-                startActivity(new Intent(this, BrowseEventsActivity.class)));
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+                startActivity(new Intent(this, BrowseEventsActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navHistory).setOnClickListener(v ->
-                startActivity(new Intent(this, HistoryActivity.class)));
+        // Keep the profile screen in sync with the updated entrant navigation bar.
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+                startActivity(new Intent(this, HistoryActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navNotifications).setOnClickListener(v ->
-                startActivity(new Intent(this, NotificationsActivity.class)));
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+        });
     }
 }

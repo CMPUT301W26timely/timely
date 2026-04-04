@@ -77,6 +77,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
             // already here
         });
 
+        // The entrant bottom nav now exposes History instead of the old Search tab.
         findViewById(R.id.navHistory).setOnClickListener(v -> {
             startActivity(new Intent(this, HistoryActivity.class));
             finish();
@@ -97,8 +98,9 @@ public class BrowseEventsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.fabCamera).setOnClickListener(v ->
-                startActivity(new Intent(this, QRScannerActivity.class)));
+        findViewById(R.id.fabCamera).setOnClickListener(v -> {
+            startActivity(new Intent(this, QRScannerActivity.class));
+        });
     }
 
     /**
