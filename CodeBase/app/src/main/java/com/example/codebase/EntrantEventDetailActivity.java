@@ -74,6 +74,9 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
     /** Container holding {@link #btnJoin} and {@link #btnLeave}; hidden when the user is enrolled. */
     private View layoutJoinLeave;
 
+    /** Shown below the Join button when the entrant is a co-organizer for this event. */
+    private TextView tvCoOrgWarning;
+
     private View progressBar;
 
     /** Date formatter used to display the event start date as {@code "MMM dd, yyyy · HH:mm"}. */
@@ -104,6 +107,7 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
         btnDropOut    = findViewById(R.id.btnDropOut);
         layoutJoinLeave = findViewById(R.id.layoutJoinLeave);
         progressBar   = findViewById(R.id.entrantDetailProgressBar);
+        tvCoOrgWarning = findViewById(R.id.tvCoOrgWarning);
 
         findViewById(R.id.btnEntrantBack).setOnClickListener(v -> finish());
 
@@ -178,6 +182,23 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
      */
     private void updateButtonStates() {
         if (event == null) return;
+
+        // US 02.09.01 — co-organizers cannot join the entrant pool at all
+        ArrayList<String> coOrganizers = event.getCoOrganizers();
+        boolean isCoOrganizer = coOrganizers != null && coOrganizers.contains(deviceId);
+
+        if (isCoOrganizer) {
+            btnDropOut.setVisibility(View.GONE);
+            layoutJoinLeave.setVisibility(View.VISIBLE);
+            btnJoin.setEnabled(false);
+            btnJoin.setAlpha(0.5f);
+            btnLeave.setEnabled(false);
+            btnLeave.setAlpha(0.5f);
+            tvCoOrgWarning.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        tvCoOrgWarning.setVisibility(View.GONE);
 
         ArrayList<String> enrolled = event.getEnrolledEntrants();
         boolean isEnrolled = enrolled != null && enrolled.contains(deviceId);
@@ -265,11 +286,34 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
      */
     private void joinWaitingList() {
         progressBar.setVisibility(View.VISIBLE);
+
+        // US 02.09.01 — re-check server-side in case co-organizer status was
+        // assigned after this screen was loaded, before allowing the join
         FirebaseFirestore.getInstance().collection("events").document(eventId)
-                .update("waitingList", FieldValue.arrayUnion(deviceId))
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Joined waiting list!", Toast.LENGTH_SHORT).show();
-                    loadEventDetails();
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    Event latestEvent = EventSchema.normalizeLoadedEvent(snapshot);
+                    if (latestEvent != null
+                            && latestEvent.getCoOrganizers().contains(deviceId)) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this,
+                                "You are a co-organizer for this event and cannot join the waiting list.",
+                                Toast.LENGTH_LONG).show();
+                        loadEventDetails();
+                        return;
+                    }
+
+                    // Safe to join
+                    FirebaseFirestore.getInstance().collection("events").document(eventId)
+                            .update("waitingList", FieldValue.arrayUnion(deviceId))
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Joined waiting list!", Toast.LENGTH_SHORT).show();
+                                loadEventDetails();
+                            })
+                            .addOnFailureListener(e -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(this, "Failed to join", Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);

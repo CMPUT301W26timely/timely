@@ -108,6 +108,13 @@ public class Event implements Serializable {
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
 
     /**
+     * Device IDs of entrants assigned as co-organizers for this event.
+     * Co-organizers are excluded from the entrant pool (waitingList, selectedEntrants, etc.)
+     * for this event.
+     */
+    private ArrayList<String> coOrganizers = new ArrayList<>();
+
+    /**
      * Secondary Firestore document ID field. Kept in sync with {@link #id}.
      *
      * @see #setEventId(String)
@@ -528,5 +535,24 @@ public class Event implements Serializable {
      */
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    /**
+     * Returns the list of device IDs for entrants assigned as co-organizers.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getCoOrganizers() {
+        return coOrganizers;
+    }
+
+    /**
+     * Replaces the co-organizers collection.
+     * Co-organizers are excluded from the entrant pool for this event.
+     *
+     * @param coOrganizers The new list of device IDs.
+     */
+    public void setCoOrganizers(ArrayList<String> coOrganizers) {
+        this.coOrganizers = coOrganizers != null ? coOrganizers : new ArrayList<>();
     }
 }
