@@ -11,6 +11,7 @@ public class User {
     private String name;
     private String email;
     private String phoneNumber;
+    private boolean notificationsEnabled;
 
     /**
      * Default constructor required for Firebase Firestore serialization.
@@ -31,6 +32,7 @@ public class User {
         this.name = "";
         this.email = "";
         this.phoneNumber = "";
+        this.notificationsEnabled = true;
     }
 
     /**
@@ -111,5 +113,23 @@ public class User {
      */
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    /**
+     * Returns whether organizer/admin notifications are enabled for this user.
+     *
+     * @return {@code true} when notifications are allowed, {@code false} when opted out
+     */
+    public boolean isNotificationsEnabled() {
+        return notificationsEnabled;
+    }
+
+    /**
+     * Sets whether organizer/admin notifications are enabled for this user.
+     *
+     * @param notificationsEnabled {@code true} to allow notifications, {@code false} to opt out
+     */
+    public void setNotificationsEnabled(boolean notificationsEnabled) {
+        this.notificationsEnabled = notificationsEnabled;
     }
 }

@@ -53,4 +53,16 @@
     <string name="comments_my_title">My Comments</string>
     <string name="comments_entrant_title">Entrant Comments</string>
     <string name="comments_delete_failed">Failed to delete comment</string>
+    <string name="history_title">History</string>
+    <string name="history_subtitle">Review the events you registered for and the final status of each registration.</string>
+    <string name="history_empty_label">Registration History</string>
+    <string name="history_empty_title">No registration history yet.</string>
+    <string name="history_empty_subtitle">Events you join will appear here after you register.</string>
+    <string name="history_location_not_set">Location not set</string>
+    <string name="history_summary_registered">You are registered and waiting for the event outcome.</string>
+    <string name="history_summary_selected">You were selected for this event.</string>
+    <string name="history_summary_enrolled">You accepted your invitation and enrolled.</string>
+    <string name="history_summary_not_selected">Lottery complete. You were not selected for a spot in this event.</string>
+    <string name="history_summary_cancelled">This registration ended because you declined it or the organizer cancelled your spot.</string>
+    <string name="entrant_waiting_list_count">Total waiting list entrants: %1$d</string>
 </resources>

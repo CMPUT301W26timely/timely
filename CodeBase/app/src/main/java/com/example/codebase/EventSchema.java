@@ -46,8 +46,9 @@ public final class EventSchema {
      *     <li>Converts the snapshot to an {@link Event} via {@link DocumentSnapshot#toObject}.</li>
      *     <li>Delegates shared normalization logic to
      *         {@link #normalizeLoadedEvent(Event, String)}.</li>
-     *     <li>Explicitly re-reads the four entrant lists ({@code waitingList},
-     *         {@code selectedEntrants}, {@code enrolledEntrants}, {@code cancelledEntrants})
+     *     <li>Explicitly re-reads the entrant lists ({@code waitingList},
+     *         {@code selectedEntrants}, {@code enrolledEntrants},
+     *         {@code cancelledEntrants}, {@code registeredEntrants})
      *         directly from the raw snapshot to handle both legacy {@code Map}-based
      *         and current {@code String}-based Firestore formats via
      *         {@link #toDeviceIdList(Object)}.</li>
@@ -72,6 +73,7 @@ public final class EventSchema {
         event.setSelectedEntrants(toDeviceIdList(documentSnapshot.get("selectedEntrants")));
         event.setEnrolledEntrants(toDeviceIdList(documentSnapshot.get("enrolledEntrants")));
         event.setCancelledEntrants(toDeviceIdList(documentSnapshot.get("cancelledEntrants")));
+        event.setRegisteredEntrants(toDeviceIdList(documentSnapshot.get("registeredEntrants")));
         event.setCoOrganizers(toDeviceIdList(documentSnapshot.get("coOrganizers")));
         return event;
     }
@@ -86,7 +88,8 @@ public final class EventSchema {
      *         from {@code documentId}; if it is already present, it is also written to
      *         {@code eventId} for legacy compatibility.</li>
      *     <li><b>Entrant lists</b> — any {@code null} list ({@code waitingList},
-     *         {@code selectedEntrants}, {@code enrolledEntrants}, {@code cancelledEntrants})
+     *         {@code selectedEntrants}, {@code enrolledEntrants},
+     *         {@code cancelledEntrants}, {@code registeredEntrants})
      *         is replaced with an empty {@link ArrayList}.</li>
      *     <li><b>Draw date</b> — if {@code drawDate} is absent, it is calculated as
      *         {@value DRAW_OFFSET_DAYS} days after {@code registrationDeadline} via
@@ -124,6 +127,9 @@ public final class EventSchema {
         }
         if (event.getCancelledEntrants() == null) {
             event.setCancelledEntrants(new ArrayList<>());
+        }
+        if (event.getRegisteredEntrants() == null) {
+            event.setRegisteredEntrants(new ArrayList<>());
         }
         if (event.getCoOrganizers() == null) {
             event.setCoOrganizers(new ArrayList<>());

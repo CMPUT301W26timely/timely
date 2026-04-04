@@ -19,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,6 +295,30 @@ public class AssignCoOrganizerFragment extends DialogFragment {
     // ── Notification (US 01.09.01) ────────────────────────────────────────────
 
     private void sendCoOrganizerNotification(String targetDeviceId, String targetName) {
+        NotificationPreferenceHelper.resolveEnabledRecipients(
+                Collections.singletonList(targetDeviceId),
+                (enabledRecipients, optedOutCount) -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+
+                    if (enabledRecipients.isEmpty()) {
+                        Toast.makeText(requireContext(),
+                                targetName + " assigned as co-organizer. Notification is turned off for this user.",
+                                Toast.LENGTH_LONG).show();
+                        dismiss();
+                        return;
+                    }
+
+                    persistCoOrganizerNotification(targetDeviceId, targetName);
+                });
+    }
+
+    /**
+     * Writes the co-organizer notification only after the target entrant has been
+     * confirmed as still opted in to organizer/admin notifications.
+     */
+    private void persistCoOrganizerNotification(String targetDeviceId, String targetName) {
         Map<String, Object> notification = new HashMap<>();
         notification.put("userId",     targetDeviceId);
         notification.put("eventId",    eventId);

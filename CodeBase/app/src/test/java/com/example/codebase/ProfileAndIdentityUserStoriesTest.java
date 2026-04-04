@@ -4,7 +4,13 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -58,6 +64,23 @@ public class ProfileAndIdentityUserStoriesTest {
     }
 
     @Test
+    public void us010204_deleteProfile_clearsEntrantFacingStateFromTheProfileModel() {
+        user.setName("Jordan Lee");
+        user.setEmail("jordan@example.com");
+        user.setPhoneNumber("+1 780 555 0133");
+        user.setNotificationsEnabled(false);
+
+        clearProfile(user);
+
+        assertEquals("device-abc-123", user.getDeviceId());
+        assertEquals("", user.getName());
+        assertEquals("", user.getEmail());
+        assertEquals("", user.getPhoneNumber());
+        assertTrue("A cleared profile should return to the default opted-in state for future signups",
+                user.isNotificationsEnabled());
+    }
+
+    @Test
     public void us010701_deviceBasedAuthentication_defaultsToEntrantWithDeviceId() {
         assertEquals("device-abc-123", user.getDeviceId());
         assertEquals("entrant", user.getRole());
@@ -99,6 +122,26 @@ public class ProfileAndIdentityUserStoriesTest {
         assertTrue("Not-selected notification should still point to the related event",
                 hasEventLink(notification));
         assertEquals("Not Selected", resolveNotificationLabel(notification));
+    }
+
+    @Test
+    public void us010403_optOutNotifications_filtersRecipientsWhoDisabledOrganizerUpdates() {
+        List<String> recipients = Arrays.asList("device-a", "device-b", "device-c");
+        Map<String, Boolean> preferences = new HashMap<>();
+        preferences.put("device-a", true);
+        preferences.put("device-b", false);
+        // device-c intentionally omitted to verify legacy default-to-enabled behaviour
+
+        List<String> enabledRecipients =
+                NotificationPreferenceHelper.filterEnabledRecipients(recipients, preferences);
+
+        assertEquals(Arrays.asList("device-a", "device-c"), enabledRecipients);
+    }
+
+    @Test
+    public void us010403_optOutNotifications_defaultsMissingPreferenceToEnabled() {
+        assertTrue(NotificationPreferenceHelper.isNotificationsEnabled((Boolean) null));
+        assertFalse(NotificationPreferenceHelper.isNotificationsEnabled(Boolean.FALSE));
     }
 
     @Ignore("Verifying that the notification PendingIntent opens the event page requires Android instrumentation.")
@@ -150,6 +193,14 @@ public class ProfileAndIdentityUserStoriesTest {
             return "Waiting List";
         }
         return "Notification";
+    }
+
+    private void clearProfile(User currentUser) {
+        currentUser.setRole("entrant");
+        currentUser.setName("");
+        currentUser.setEmail("");
+        currentUser.setPhoneNumber("");
+        currentUser.setNotificationsEnabled(true);
     }
 
     private static class ProfileDisplayState {

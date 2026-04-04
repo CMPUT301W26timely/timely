@@ -66,7 +66,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
      *
      * <ul>
      *   <li>Explore — no-op (already on this screen)</li>
-     *   <li>Search — shows "Not implemented yet" toast</li>
+     *   <li>History — navigates to {@link HistoryActivity}</li>
      *   <li>My Events — navigates to {@link OrganizerActivity}</li>
      *   <li>Notifications — navigates to {@link NotificationsActivity}</li>
      *   <li>Profile — navigates to {@link ProfileActivity}</li>
@@ -77,8 +77,10 @@ public class BrowseEventsActivity extends AppCompatActivity {
             // already here
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, HistoryActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             startActivity(new Intent(this, OrganizerActivity.class));
@@ -95,9 +97,8 @@ public class BrowseEventsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.fabCamera).setOnClickListener(v -> {
-            startActivity(new Intent(this, QRScannerActivity.class));
-        });
+        findViewById(R.id.fabCamera).setOnClickListener(v ->
+                startActivity(new Intent(this, QRScannerActivity.class)));
     }
 
     /**

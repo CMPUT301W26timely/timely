@@ -49,8 +49,18 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Empty-state label inside {@link #emptyStateCard}. */
     private TextView emptyState;
 
+    /** Supporting copy shown under {@link #emptyState}. */
+    private TextView emptyStateSubtitle;
+
     /** Describes the number of pending invitations inside {@link #invitationCard}. */
     private TextView invitationCountSummary;
+
+    /**
+     * Tracks whether organizer/admin notifications are currently enabled for the
+     * signed-in device. Async Firestore results check this flag before updating UI
+     * so a late-arriving query cannot repopulate the screen after the entrant opts out.
+     */
+    private boolean notificationsEnabled = true;
 
     /**
      * Row data for {@link NotificationListAdapter}. Each map contains
@@ -82,6 +92,7 @@ public class NotificationsActivity extends AppCompatActivity {
         emptyStateCard        = findViewById(R.id.cardNotificationsEmptyState);
         invitationCard        = findViewById(R.id.invitationSummaryInclude);
         emptyState            = findViewById(R.id.tvNotificationsEmptyState);
+        emptyStateSubtitle    = findViewById(R.id.tvNotificationsEmptySubtitle);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
@@ -92,8 +103,7 @@ public class NotificationsActivity extends AppCompatActivity {
                 startActivity(new Intent(this, InvitationsActivity.class)));
 
         setupBottomNavigation();
-        loadInvitationSummary();
-        loadNotifications();
+        refreshNotificationPreferencesAndContent();
     }
 
     /**
@@ -104,6 +114,52 @@ public class NotificationsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        refreshNotificationPreferencesAndContent();
+    }
+
+    /**
+     * Loads the entrant's latest notification preference before refreshing any
+     * organizer/admin notification content on screen.
+     *
+     * <p>If cached profile data already exists, the UI is updated immediately so the
+     * screen feels responsive while the background refresh confirms the latest value.
+     */
+    private void refreshNotificationPreferencesAndContent() {
+        if (AppCache.getInstance().hasCachedUser()) {
+            applyNotificationPreference(AppCache.getInstance().getCachedUser().isNotificationsEnabled());
+        } else {
+            applyNotificationPreference(true);
+        }
+
+        UserRepository.loadUserProfile(this, new UserRepository.UserCallback() {
+            @Override
+            public void onUserLoaded(User user) {
+                applyNotificationPreference(NotificationPreferenceHelper.isNotificationsEnabled(user));
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // Fall back to the legacy enabled behaviour if the profile cannot be read.
+                applyNotificationPreference(true);
+            }
+        });
+    }
+
+    /**
+     * Applies the current notification preference to the screen and either refreshes
+     * notification content or replaces it with an opted-out empty state.
+     *
+     * @param enabled {@code true} when organizer/admin notifications are enabled
+     */
+    private void applyNotificationPreference(boolean enabled) {
+        notificationsEnabled = enabled;
+
+        if (!enabled) {
+            showOptedOutState();
+            return;
+        }
+
+        showDefaultEmptyState();
         loadInvitationSummary();
         loadNotifications();
     }
@@ -116,14 +172,23 @@ public class NotificationsActivity extends AppCompatActivity {
      * <p>Shows a toast on failure.
      */
     private void loadNotifications() {
+        if (!notificationsEnabled) {
+            showOptedOutState();
+            return;
+        }
+
         AppDatabase.getInstance()
                 .notificationsRef
                 .document(deviceId)
                 .collection("messages")
                 .orderBy("sentAt", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots ->
-                        populateNotifications(queryDocumentSnapshots.getDocuments()))
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!notificationsEnabled) {
+                        return;
+                    }
+                    populateNotifications(queryDocumentSnapshots.getDocuments());
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
                                 "Failed to load notifications",
@@ -142,11 +207,21 @@ public class NotificationsActivity extends AppCompatActivity {
      * <p>Hides the card on query failure.
      */
     private void loadInvitationSummary() {
+        if (!notificationsEnabled) {
+            invitationCard.setVisibility(View.GONE);
+            return;
+        }
+
         AppDatabase.getInstance()
                 .eventsRef
                 .whereArrayContains("selectedEntrants", deviceId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!notificationsEnabled) {
+                        invitationCard.setVisibility(View.GONE);
+                        return;
+                    }
+
                     int invitationCount = 0;
                     for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
                         Event event = EventSchema.normalizeLoadedEvent(doc);
@@ -184,6 +259,11 @@ public class NotificationsActivity extends AppCompatActivity {
      *                  {@code messages} sub-collection.
      */
     private void populateNotifications(java.util.List<DocumentSnapshot> documents) {
+        if (!notificationsEnabled) {
+            showOptedOutState();
+            return;
+        }
+
         items.clear();
         eventIds.clear();
 
@@ -204,6 +284,7 @@ public class NotificationsActivity extends AppCompatActivity {
         boolean hasNotifications = !items.isEmpty();
         emptyStateCard.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
         emptyState.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
+        emptyStateSubtitle.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
         listViewNotifications.setVisibility(hasNotifications ? View.VISIBLE : View.GONE);
 
         listViewNotifications.setOnItemClickListener((parent, view, position, id) -> {
@@ -218,7 +299,7 @@ public class NotificationsActivity extends AppCompatActivity {
      *
      * <ul>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → toast placeholder</li>
+     *   <li>History → {@link HistoryActivity}</li>
      *   <li>My Events → {@link OrganizerActivity}</li>
      *   <li>Notifications → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
@@ -230,8 +311,10 @@ public class NotificationsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, HistoryActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             startActivity(new Intent(this, OrganizerActivity.class));
@@ -294,5 +377,33 @@ public class NotificationsActivity extends AppCompatActivity {
         if ("cancelledEntrants".equals(type)) return "Cancelled";
         if ("waitingList".equals(type))       return "Waiting List";
         return "Notification";
+    }
+
+    /** Restores the default empty-state copy used when notifications are enabled. */
+    private void showDefaultEmptyState() {
+        emptyState.setText(R.string.notifications_empty_title);
+        emptyStateSubtitle.setText(R.string.notifications_empty_subtitle);
+    }
+
+    /**
+     * Replaces the list with an opted-out message so entrants can clearly see that
+     * organizer/admin notifications are disabled for their profile.
+     */
+    private void showOptedOutState() {
+        invitationCard.setVisibility(View.GONE);
+        clearNotifications();
+        emptyStateCard.setVisibility(View.VISIBLE);
+        emptyState.setVisibility(View.VISIBLE);
+        emptyStateSubtitle.setVisibility(View.VISIBLE);
+        emptyState.setText(R.string.notifications_opted_out_title);
+        emptyStateSubtitle.setText(R.string.notifications_opted_out_subtitle);
+        listViewNotifications.setVisibility(View.GONE);
+    }
+
+    /** Clears any currently rendered notification rows from the list view. */
+    private void clearNotifications() {
+        items.clear();
+        eventIds.clear();
+        listViewNotifications.setAdapter(new NotificationListAdapter(this, items));
     }
 }

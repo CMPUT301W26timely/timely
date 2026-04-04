@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,12 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * "My Events" screen for the organizer role.
+ * Organizer/admin event browser screen.
  *
- * <p>Displays a {@link RecyclerView} of all events whose {@code organizerDeviceId}
- * field matches the current device, loaded from Firestore. Tapping an event row
- * opens {@link EventDetailActivity}. The floating action button opens
- * {@link CreateEventActivity} to create a new event.
+ * <p>Role-specific behaviour:
+ * <ul>
+ *   <li><b>Entrant session</b> — behaves as the organizer's "My Events" screen and
+ *       only shows events created by the current device.</li>
+ *   <li><b>Admin session</b> — becomes the administrator browse-events screen and
+ *       shows every event in the system, including closed ones.</li>
+ * </ul>
  *
  * <p>An empty-state label is shown when no events exist for the device.
  * The event list is reloaded on every {@link #onResume()} so it stays current
@@ -42,8 +46,23 @@ public class OrganizerActivity extends AppCompatActivity {
     /** Empty-state label shown when the organizer has no events. */
     private TextView tvNoEvents;
 
+    /** Title text that changes between organizer and administrator modes. */
+    private TextView tvScreenTitle;
+
+    /** Supporting subtitle shown only for administrator mode. */
+    private TextView tvScreenSubtitle;
+
     /** Opens {@link CreateEventActivity} when tapped. */
     private FloatingActionButton fabCreate;
+
+    /** Search-nav icon repurposed as the profile browser shortcut for admins. */
+    private ImageView navSearchIcon;
+
+    /** Search-nav label repurposed as the profile browser shortcut for admins. */
+    private TextView navSearchLabel;
+
+    /** Active events label, renamed to "Events" when an admin is browsing. */
+    private TextView navMyEventsLabel;
 
     /** Adapter binding {@link #eventList} to {@link #rvEvents}. */
     private OrganizerEventAdapter adapter;
@@ -53,6 +72,9 @@ public class OrganizerActivity extends AppCompatActivity {
 
     /** Device ID used to filter events by {@code organizerDeviceId} in Firestore. */
     private String deviceId;
+
+    /** Whether the current session is the administrator browse mode. */
+    private boolean isAdminMode;
 
     /**
      * Initialises the activity, resolves the device ID, binds views, sets up the
@@ -67,10 +89,16 @@ public class OrganizerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_organizer);
 
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
+        isAdminMode = WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this));
 
         rvEvents  = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
+        tvScreenTitle = findViewById(R.id.tvOrganizerTitle);
+        tvScreenSubtitle = findViewById(R.id.tvOrganizerSubtitle);
         fabCreate = findViewById(R.id.fabCreateEvent);
+        navSearchIcon = findViewById(R.id.navSearchIcon);
+        navSearchLabel = findViewById(R.id.navSearchLabel);
+        navMyEventsLabel = findViewById(R.id.navMyEventsLabel);
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
@@ -82,11 +110,12 @@ public class OrganizerActivity extends AppCompatActivity {
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
         rvEvents.setAdapter(adapter);
 
+        applyRoleMode();
         fabCreate.setOnClickListener(v ->
                 startActivity(new Intent(this, CreateEventActivity.class)));
 
         setupBottomNavigation();
-        loadOrganizerEvents();
+        loadVisibleEvents();
     }
 
     /**
@@ -97,17 +126,47 @@ public class OrganizerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrganizerEvents();
+        loadVisibleEvents();
+    }
+
+    /**
+     * Applies the role-specific screen copy and navigation affordances.
+     */
+    private void applyRoleMode() {
+        if (isAdminMode) {
+            tvScreenTitle.setText(R.string.browse_events_title);
+            tvScreenSubtitle.setVisibility(View.VISIBLE);
+            tvScreenSubtitle.setText(R.string.admin_browse_events_subtitle);
+            tvNoEvents.setText(R.string.admin_browse_events_empty);
+            fabCreate.setVisibility(View.GONE);
+
+            // Reuse the unused search slot as the admin's profile-browser shortcut.
+            findViewById(R.id.navExplore).setVisibility(View.GONE);
+            navSearchIcon.setImageResource(R.drawable.ic_nav_profile);
+            navSearchIcon.setContentDescription(getString(R.string.admin_nav_profiles));
+            navSearchLabel.setText(R.string.admin_nav_profiles);
+            navMyEventsLabel.setText(R.string.admin_nav_events);
+        } else {
+            tvScreenTitle.setText(R.string.my_events_title);
+            tvScreenSubtitle.setVisibility(View.GONE);
+            tvNoEvents.setText(R.string.no_events_yet);
+            fabCreate.setVisibility(View.VISIBLE);
+            findViewById(R.id.navExplore).setVisibility(View.VISIBLE);
+            navSearchIcon.setImageResource(R.drawable.ic_nav_search);
+            navSearchIcon.setContentDescription(getString(R.string.nav_search));
+            navSearchLabel.setText(R.string.nav_search);
+            navMyEventsLabel.setText(R.string.nav_my_events);
+        }
     }
 
     /**
      * Wires the five bottom navigation items to their respective destinations.
      *
      * <ul>
-     *   <li>My Events → no-op (already on this screen)</li>
+     *   <li>My Events / Events → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
-     *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → toast placeholder</li>
+     *   <li>Explore → {@link BrowseEventsActivity} for entrant mode only</li>
+     *   <li>Search / Profiles → {@link AdminBrowseProfilesActivity} for admin mode</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
      * </ul>
      */
@@ -126,8 +185,14 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+            if (isAdminMode) {
+                startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
+                return;
+            }
+
+            Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+        });
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {
             startActivity(new Intent(this, NotificationsActivity.class));
@@ -141,12 +206,39 @@ public class OrganizerActivity extends AppCompatActivity {
      *
      * <p>Shows a localised error toast on failure.
      */
+    private void loadVisibleEvents() {
+        if (isAdminMode) {
+            loadAdminEvents();
+            return;
+        }
+
+        loadOrganizerEvents();
+    }
+
+    /** Loads all system events for the administrator browse-events story. */
+    private void loadAdminEvents() {
+        EventRepository.loadAllEvents(new EventRepository.EventsCallback() {
+            @Override
+            public void onEventsLoaded(List<Event> events) {
+                showEvents(AdminBrowseHelper.sortEventsForAdmin(events));
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerActivity.this,
+                        getString(R.string.error_loading_events),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /** Loads only the current device's events for organizer mode. */
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .whereEqualTo("organizerDeviceId", deviceId)
                 .get()
-                .addOnSuccessListener(this::populateList)
+                .addOnSuccessListener(this::populateOrganizerEvents)
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
                                 getString(R.string.error_loading_events),
@@ -163,16 +255,29 @@ public class OrganizerActivity extends AppCompatActivity {
      *
      * @param snapshot The {@link QuerySnapshot} returned by the Firestore events query.
      */
-    private void populateList(QuerySnapshot snapshot) {
-        eventList.clear();
+    private void populateOrganizerEvents(QuerySnapshot snapshot) {
+        List<Event> loadedEvents = new ArrayList<>();
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
             Event event = EventSchema.normalizeLoadedEvent(doc);
             if (event != null) {
-                eventList.add(event);
+                loadedEvents.add(event);
             }
         }
 
+        showEvents(loadedEvents);
+    }
+
+    /**
+     * Replaces the current adapter data and toggles the empty state.
+     *
+     * @param loadedEvents events ready for display
+     */
+    private void showEvents(List<Event> loadedEvents) {
+        eventList.clear();
+        if (loadedEvents != null) {
+            eventList.addAll(loadedEvents);
+        }
         adapter.notifyDataSetChanged();
         tvNoEvents.setVisibility(eventList.isEmpty() ? View.VISIBLE : View.GONE);
         rvEvents.setVisibility(eventList.isEmpty() ? View.GONE : View.VISIBLE);

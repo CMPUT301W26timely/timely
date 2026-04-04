@@ -21,6 +21,8 @@
         <activity android:name=".InvitationsActivity" android:exported="false" />
         <activity android:name=".EntrantEventDetailActivity" android:exported="false" />
         <activity android:name=".FinalEntrantListActivity" android:exported="false" />
+        <activity android:name=".HistoryActivity" android:exported="false" />
+        <activity android:name=".AdminBrowseProfilesActivity" android:exported="false" />
 
         <activity
             android:name=".NotificationsActivity"
