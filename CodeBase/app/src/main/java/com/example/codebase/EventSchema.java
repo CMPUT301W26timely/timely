@@ -72,6 +72,7 @@ public final class EventSchema {
         event.setSelectedEntrants(toDeviceIdList(documentSnapshot.get("selectedEntrants")));
         event.setEnrolledEntrants(toDeviceIdList(documentSnapshot.get("enrolledEntrants")));
         event.setCancelledEntrants(toDeviceIdList(documentSnapshot.get("cancelledEntrants")));
+        event.setCoOrganizers(toDeviceIdList(documentSnapshot.get("coOrganizers")));
         return event;
     }
 
@@ -123,6 +124,9 @@ public final class EventSchema {
         }
         if (event.getCancelledEntrants() == null) {
             event.setCancelledEntrants(new ArrayList<>());
+        }
+        if (event.getCoOrganizers() == null) {
+            event.setCoOrganizers(new ArrayList<>());
         }
 
         if (event.getDrawDate() == null) {

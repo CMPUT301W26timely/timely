@@ -80,6 +80,10 @@ public class EventDetailActivity extends AppCompatActivity
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
 
+    /** Co-organizer display views (US 02.09.01). */
+    private View     layoutCoOrganizerDisplay;
+    private TextView tvCoOrganizerName;
+
     /** Most recently loaded event; {@code null} until the first Firestore load completes. */
     private Event event;
 
@@ -151,6 +155,8 @@ public class EventDetailActivity extends AppCompatActivity
         tvEventCost           = findViewById(R.id.tvEventCost);
         ivHeroPoster          = findViewById(R.id.ivHeroPoster);
         progressBar           = findViewById(R.id.detailProgressBar);
+        layoutCoOrganizerDisplay = findViewById(R.id.layoutCoOrganizerDisplay);
+        tvCoOrganizerName        = findViewById(R.id.tvCoOrganizerName);
 
         // ── Bind comment views ─────────────────────────────────────────────────
         rvComments          = findViewById(R.id.rvComments);
@@ -260,6 +266,16 @@ public class EventDetailActivity extends AppCompatActivity
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
             startActivity(intent);
+        });
+
+        // US 02.09.01 — Assign Co-Organizer
+        findViewById(R.id.rowAssignCoOrganizer).setOnClickListener(v -> {
+            AssignCoOrganizerFragment fragment = AssignCoOrganizerFragment.newInstance(eventId, eventTitle);
+            // Reload the event when the dialog closes so co-organizer displays immediately
+            fragment.setDismissListener(() -> {
+                if (eventId != null) loadEventDetails();
+            });
+            fragment.show(getSupportFragmentManager(), "AssignCoOrganizer");
         });
 
         loadEventDetails();
@@ -395,6 +411,24 @@ public class EventDetailActivity extends AppCompatActivity
         tvEnrolledCount.setText(String.valueOf(enrolledCount));
         tvCancelledCount.setText(String.valueOf(cancelledCount));
         tvWaitingListRowCount.setText(String.valueOf(waitingCount));
+
+        // US 02.09.01 — show the assigned co-organizer name if one exists
+        ArrayList<String> coOrganizers = event.getCoOrganizers();
+        if (coOrganizers != null && !coOrganizers.isEmpty()) {
+            String coOrgDeviceId = coOrganizers.get(0);
+            layoutCoOrganizerDisplay.setVisibility(android.view.View.VISIBLE);
+            tvCoOrganizerName.setText("Loading...");
+            AppDatabase.getInstance().usersRef.document(coOrgDeviceId)
+                    .get()
+                    .addOnSuccessListener(userSnap -> {
+                        String name = userSnap.exists() ? userSnap.getString("name") : null;
+                        tvCoOrganizerName.setText(
+                                (name != null && !name.isEmpty()) ? name : coOrgDeviceId);
+                    })
+                    .addOnFailureListener(e -> tvCoOrganizerName.setText(coOrgDeviceId));
+        } else {
+            layoutCoOrganizerDisplay.setVisibility(android.view.View.GONE);
+        }
 
         String status = calculateStatus(
                 regOpen, registrationDeadline, drawDate, startDate, endDate,

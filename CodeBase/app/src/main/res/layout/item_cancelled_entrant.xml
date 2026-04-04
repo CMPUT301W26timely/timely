@@ -41,7 +41,7 @@
             android:textColor="#111111"
             android:layout_marginBottom="6dp" />
 
-        <!-- Email — hidden until user structure known -->
+        <!-- Email — shown when available -->
         <TextView
             android:id="@+id/tvCancelledEmail"
             android:layout_width="wrap_content"
