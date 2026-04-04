@@ -1,7 +1,11 @@
 package com.example.codebase;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +13,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 /**
@@ -145,5 +152,39 @@ public class FinalEntrantListActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.exportBtn).setOnClickListener(v -> exportToCSV());
     }
+
+    private void exportToCSV(){
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("Entrant Device ID\n");
+        for (String entrant : finalEntrants) {
+            csvBuilder.append(entrant).append("\n");
+        }
+
+        String fileName = "final_entrants_" + event.getTitle() + ".csv";
+        String csvContent = csvBuilder.toString();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "text/csv");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+                    outputStream.write(csvContent.getBytes());
+                    outputStream.flush();
+                }
+                Toast.makeText(this, "Exported to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Export failed: could not create file.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
