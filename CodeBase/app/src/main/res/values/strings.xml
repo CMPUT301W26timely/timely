@@ -6,6 +6,9 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <!-- Comments — Entrant (US 01.08.01 & US 01.08.02) -->
+    <string name="comments_organizer_title">Organizer Comments</string>
+    <string name="comments_all_entrant_title">All Entrant Comments</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
@@ -43,4 +46,11 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <!-- Comments (US 02.08.02) -->
+    <string name="comments_title">Comments</string>
+    <string name="comments_empty">No comments here yet.</string>
+    <string name="comments_close">Close</string>
+    <string name="comments_my_title">My Comments</string>
+    <string name="comments_entrant_title">Entrant Comments</string>
+    <string name="comments_delete_failed">Failed to delete comment</string>
 </resources>

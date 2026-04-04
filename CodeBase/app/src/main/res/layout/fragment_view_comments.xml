@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    fragment_view_comments.xml
+    Dialog layout used by ViewCommentsFragment to show a filtered comment list.
+    Displays either "My Comments" (organizer) or "Entrant Comments" depending
+    on the mode argument passed via ViewCommentsFragment.newInstance().
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="16dp">
+
+    <!-- Dialog title -->
+    <TextView
+        android:id="@+id/tvViewCommentsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/comments_title"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EEEEEE" />
+
+    <!-- Empty state label -->
+    <TextView
+        android:id="@+id/tvViewCommentsEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/comments_empty"
+        android:textSize="13sp"
+        android:textColor="#AAAAAA"
+        android:gravity="center"
+        android:padding="24dp"
+        android:visibility="gone" />
+
+    <!-- Comment list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvViewComments"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="400dp"
+        android:nestedScrollingEnabled="true"
+        android:overScrollMode="never"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp" />
+
+    <!-- Close button -->
+    <Button
+        android:id="@+id/btnViewCommentsClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/comments_close"
+        android:textSize="13sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4A7A4A"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp" />
+
+</LinearLayout>

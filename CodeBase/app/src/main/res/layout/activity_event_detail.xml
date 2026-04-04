@@ -868,7 +868,7 @@
             android:paddingTop="8dp"
             android:paddingBottom="6dp" />
 
-        <!-- Comment list card -->
+        <!-- Comment view buttons card (US 02.08.02) -->
         <androidx.cardview.widget.CardView
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
@@ -883,37 +883,37 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center">
 
-                <!-- Loading spinner for comments -->
-                <ProgressBar
-                    android:id="@+id/commentsProgressBar"
-                    android:layout_width="wrap_content"
+                <!-- View entrant comments -->
+                <Button
+                    android:id="@+id/btnViewEntrantComments"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginBottom="12dp"
-                    android:visibility="gone" />
+                    android:layout_marginEnd="6dp"
+                    android:text="View Entrant Comments"
+                    android:textSize="12sp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#4A7A4A"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
 
-                <!-- Empty state -->
-                <TextView
-                    android:id="@+id/tvNoComments"
-                    android:layout_width="match_parent"
+                <!-- View my (organizer) comments -->
+                <Button
+                    android:id="@+id/btnViewMyComments"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="No comments yet. Be the first to comment!"
-                    android:textSize="13sp"
-                    android:textColor="#AAAAAA"
-                    android:gravity="center"
-                    android:padding="20dp"
-                    android:visibility="gone" />
-
-                <!-- RecyclerView for comment items -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvComments"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never" />
+                    android:layout_marginStart="6dp"
+                    android:text="View My Comments"
+                    android:textSize="12sp"
+                    android:textColor="#4A7A4A"
+                    android:backgroundTint="#E8F0E8"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
 
             </LinearLayout>
 

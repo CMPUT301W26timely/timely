@@ -38,6 +38,13 @@ public class Comment {
     private String text;
 
     /**
+     * {@code true} when this comment was posted by an organizer.
+     * Used to filter comments into "my comments" vs "entrant comments" views.
+     * Stored in Firestore so both roles can query without client-side guessing.
+     */
+    private boolean isOrganizer;
+
+    /**
      * Timestamp automatically assigned by Firestore when the document is written.
      * Used to sort comments in ascending chronological order.
      */
@@ -60,6 +67,23 @@ public class Comment {
         this.authorDeviceId = authorDeviceId;
         this.authorName     = authorName;
         this.text           = text;
+        this.isOrganizer    = false;
+        // timestamp is set server-side via @ServerTimestamp
+    }
+
+    /**
+     * Convenience constructor used when posting a new organizer comment.
+     *
+     * @param authorDeviceId Device ID of the commenter.
+     * @param authorName     Display name to show next to the comment.
+     * @param text           The comment body text.
+     * @param isOrganizer    {@code true} if the commenter is an organizer.
+     */
+    public Comment(String authorDeviceId, String authorName, String text, boolean isOrganizer) {
+        this.authorDeviceId = authorDeviceId;
+        this.authorName     = authorName;
+        this.text           = text;
+        this.isOrganizer    = isOrganizer;
         // timestamp is set server-side via @ServerTimestamp
     }
 
@@ -96,4 +120,10 @@ public class Comment {
 
     /** @param timestamp The Firestore server timestamp for this comment. */
     public void setTimestamp(Date timestamp)           { this.timestamp = timestamp; }
+
+    /** @return {@code true} if this comment was posted by an organizer. */
+    public boolean isOrganizer()                       { return isOrganizer; }
+
+    /** @param isOrganizer {@code true} if the comment author is an organizer. */
+    public void setOrganizer(boolean isOrganizer)      { this.isOrganizer = isOrganizer; }
 }
