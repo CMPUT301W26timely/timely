@@ -42,12 +42,66 @@ import java.util.Date;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * Fragment for the first step ("Basics") of the create-event wizard.
+ *
+ * <p>Displays input fields for the core event details:
+ * <ul>
+ *   <li>Event name</li>
+ *   <li>Description</li>
+ *   <li>Location</li>
+ *   <li>Price</li>
+ *   <li>Poster image (selected from the device gallery)</li>
+ * </ul>
+ *
+ * <p>All field values are written directly into the shared {@link CreateEventViewModel}
+ * as the user types, so state is preserved if the user navigates back to this step.
+ *
+ * <p>The poster image is resized to fit within 800×800 px and JPEG-compressed at 60%
+ * quality before being Base64-encoded and stored in
+ * {@link CreateEventViewModel#posterBase64}, keeping the payload within Firestore's
+ * 1 MB document size limit.
+ *
+ * @see CreateEventActivity
+ * @see CreateEventViewModel
+ */
 public class CreateEventFragment extends Fragment {
 
+    /** Shared ViewModel providing persistent state across all wizard steps. */
     private CreateEventViewModel viewModel;
+
+    /**
+     * Tap target that opens the image picker; replaced by a poster preview once
+     * an image has been selected.
+     */
     private FrameLayout posterUploadArea;
+
+    /**
+     * Displays the selected poster bitmap inside {@link #posterUploadArea}.
+     * Created lazily on first image selection.
+     */
     private ImageView ivPosterPreview;
 
+    /**
+     * Launcher for the gallery image-picker intent.
+     *
+     * <p>On a successful result the selected image is processed as follows:
+     * <ol>
+     *   <li>Decoded to a {@link Bitmap} using {@link ImageDecoder} (API 28+) or
+     *       the legacy {@link MediaStore} API.</li>
+     *   <li>Scaled down proportionally so neither dimension exceeds
+     *       {@code MAX_DIMENSION} (800 px), preventing Firestore document-size
+     *       violations.</li>
+     *   <li>JPEG-compressed at 60% quality and Base64-encoded, then stored in
+     *       {@link CreateEventViewModel#posterBase64}.</li>
+     *   <li>Displayed in {@link #ivPosterPreview} inside {@link #posterUploadArea};
+     *       the preview {@link ImageView} is created and added lazily if it does not
+     *       yet exist.</li>
+     * </ol>
+     *
+     * <p>An {@link IOException} during decoding shows a toast and leaves the
+     * ViewModel poster unchanged.
+     */
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -98,6 +152,30 @@ public class CreateEventFragment extends Fragment {
                 }
             });
 
+    /**
+     * Inflates the fragment layout, binds the shared {@link CreateEventViewModel},
+     * pre-fills all input fields with any previously saved values, and attaches
+     * {@link SimpleTextWatcher} instances to sync user input back to the ViewModel.
+     *
+     * <p>Field-to-ViewModel mappings:
+     * <ul>
+     *   <li>{@code etEventName} → {@link CreateEventViewModel#name}</li>
+     *   <li>{@code etDescription} → {@link CreateEventViewModel#description}</li>
+     *   <li>{@code etLocation} → {@link CreateEventViewModel#location}</li>
+     *   <li>{@code etPrice} → {@link CreateEventViewModel#price} (parsed as
+     *       {@code double}; {@link NumberFormatException} is silently ignored on
+     *       intermediate keystrokes)</li>
+     * </ul>
+     *
+     * <p>Tapping {@code posterUploadArea} fires {@link #imagePickerLauncher} with a
+     * gallery pick intent.
+     *
+     * @param inflater           The {@link LayoutInflater} used to inflate the view.
+     * @param container          The parent {@link ViewGroup} the fragment UI will be
+     *                           attached to, or {@code null}.
+     * @param savedInstanceState Previously saved state, or {@code null}.
+     * @return The inflated {@link View} for this fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -139,9 +217,35 @@ public class CreateEventFragment extends Fragment {
         return view;
     }
 
-    // Helper text watcher to keep code clean
+    /**
+     * A convenience {@link TextWatcher} adapter that provides no-op implementations of
+     * {@link #beforeTextChanged} and {@link #afterTextChanged}, allowing subclasses to
+     * override only {@link #onTextChanged} when that is the only callback needed.
+     *
+     * <p>Usage example:
+     * <pre>{@code
+     * editText.addTextChangedListener(new SimpleTextWatcher() {
+     *     @Override
+     *     public void onTextChanged(CharSequence s, int start, int before, int count) {
+     *         viewModel.name = s.toString();
+     *     }
+     * });
+     * }</pre>
+     */
     public abstract static class SimpleTextWatcher implements TextWatcher {
+
+        /**
+         * No-op. Override in a subclass if pre-change behaviour is required.
+         *
+         * {@inheritDoc}
+         */
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+        /**
+         * No-op. Override in a subclass if post-change behaviour is required.
+         *
+         * {@inheritDoc}
+         */
         @Override public void afterTextChanged(Editable s) {}
     }
 }

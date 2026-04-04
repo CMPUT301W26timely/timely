@@ -9,24 +9,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.Date;
 import java.util.List;
 
 /**
- * InvitedEntrantsAdapter — RecyclerView adapter for Invited Entrants screen.
+ * RecyclerView adapter for the Invited Entrants screen.
  *
- * Cancel button rules (US 02.06.04):
- *   - Only shown for Pending entrants
- *   - GREYED OUT (disabled) if today < registration deadline  → entrant still has time
- *   - ENABLED (red)         if today >= registration deadline → time is up
- *
- * On cancel press → calls CancelListener.onCancelRequested() back to Activity
- * which shows confirmation dialog and updates Firestore.
+ * <p>Each row shows the entrant's name, email, a colour-coded status badge,
+ * and — for Pending entrants only — a Cancel button (US 02.06.04).
+ * Name and email are fetched from the {@code users} collection using the device ID.
  */
 public class InvitedEntrantsAdapter extends
         RecyclerView.Adapter<InvitedEntrantsAdapter.EntrantViewHolder> {
 
-    // ─── Cancel callback interface ────────────────────────────────────────────
+    // ─── Cancel callback ──────────────────────────────────────────────────────
 
     public interface CancelListener {
         void onCancelRequested(InvitedEntrantsActivity.InvitedEntrant entrant);
@@ -36,8 +34,6 @@ public class InvitedEntrantsAdapter extends
 
     private List<InvitedEntrantsActivity.InvitedEntrant> list;
     private final CancelListener cancelListener;
-
-    // Set by Activity after loading Firestore — determines button enabled state
     private Date registrationDeadlineDate = null;
 
     public InvitedEntrantsAdapter(
@@ -47,7 +43,6 @@ public class InvitedEntrantsAdapter extends
         this.cancelListener = cancelListener;
     }
 
-    /** Called by Activity once registration deadline is loaded from Firestore */
     public void setRegistrationDeadlineDate(Date registrationDeadlineDate) {
         this.registrationDeadlineDate = registrationDeadlineDate;
         notifyDataSetChanged();
@@ -78,30 +73,52 @@ public class InvitedEntrantsAdapter extends
 
     static class EntrantViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView tvDeviceId;
+        private final TextView tvName;
+        private final TextView tvEmail;
         private final TextView tvStatus;
         private final Button   btnCancel;
 
         EntrantViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvDeviceId = itemView.findViewById(R.id.tvEntrantDeviceId);
-            tvStatus   = itemView.findViewById(R.id.tvEntrantStatus);
-            btnCancel  = itemView.findViewById(R.id.btnCancelEntrant);
+            tvName    = itemView.findViewById(R.id.tvEntrantDeviceId); // kept original ID — now shows name
+            tvEmail   = itemView.findViewById(R.id.tvEntrantEmail);
+            tvStatus  = itemView.findViewById(R.id.tvEntrantStatus);
+            btnCancel = itemView.findViewById(R.id.btnCancelEntrant);
         }
 
         void bind(
                 InvitedEntrantsActivity.InvitedEntrant entrant,
-                 Date registrationDeadlineDate,
-                 CancelListener cancelListener) {
+                Date registrationDeadlineDate,
+                CancelListener cancelListener) {
 
-            // ── Shortened deviceId ────────────────────────────────────────────
             String id = entrant.deviceId;
-            String shortId = id.length() > 12
-                    ? id.substring(0, 8) + "..." + id.substring(id.length() - 4)
-                    : id;
-            tvDeviceId.setText(shortId);
 
-            // ── Status badge ──────────────────────────────────────────────────
+            // Show placeholder while loading
+            tvName.setText("Loading...");
+            tvEmail.setVisibility(View.GONE);
+
+            // Fetch name and email from users collection
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(id)
+                    .get()
+                    .addOnSuccessListener(userSnap -> {
+                        String name  = userSnap.exists() ? userSnap.getString("name")  : null;
+                        String email = userSnap.exists() ? userSnap.getString("email") : null;
+
+                        tvName.setText((name != null && !name.trim().isEmpty())
+                                ? name.trim() : "Unknown");
+
+                        if (email != null && !email.trim().isEmpty()) {
+                            tvEmail.setText(email.trim());
+                            tvEmail.setVisibility(View.VISIBLE);
+                        } else {
+                            tvEmail.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(e -> tvName.setText("Unknown"));
+
+            // Status badge
             tvStatus.setText(entrant.status);
             switch (entrant.status) {
                 case "Accepted":
@@ -118,7 +135,7 @@ public class InvitedEntrantsAdapter extends
                     break;
             }
 
-            // ── Cancel button — only for Pending ─────────────────────────────
+            // Cancel button — only for Pending
             if (!entrant.status.equals("Pending")) {
                 btnCancel.setVisibility(View.GONE);
                 return;
@@ -127,17 +144,15 @@ public class InvitedEntrantsAdapter extends
             btnCancel.setVisibility(View.VISIBLE);
 
             Date today = new Date();
-            boolean canCancel = registrationDeadlineDate != null && today.after(registrationDeadlineDate);
+            boolean canCancel = registrationDeadlineDate != null
+                    && today.after(registrationDeadlineDate);
 
             if (canCancel) {
-                // ── Enabled: event has started, time is up ────────────────────
                 btnCancel.setEnabled(true);
                 btnCancel.setAlpha(1.0f);
                 btnCancel.setText("Cancel");
-                btnCancel.setOnClickListener(v ->
-                        cancelListener.onCancelRequested(entrant));
+                btnCancel.setOnClickListener(v -> cancelListener.onCancelRequested(entrant));
             } else {
-                // ── Disabled: entrant still has time to respond ───────────────
                 btnCancel.setEnabled(false);
                 btnCancel.setAlpha(0.4f);
                 btnCancel.setText("Waiting...");

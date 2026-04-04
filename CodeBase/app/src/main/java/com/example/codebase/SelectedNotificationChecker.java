@@ -16,13 +16,43 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 /**
- * Reads unread notifications from Firestore for the current user
- * and shows them as local Android notifications.
+ * Utility class that reads unread notifications from Firestore for the current device
+ * and posts them as local Android notifications.
+ *
+ * <p>Notifications are stored in Firestore under:
+ * {@code notifications/{deviceId}/messages/{notificationId}}.
+ * Each document is expected to deserialise into an {@link AppNotification}. After a
+ * notification is successfully posted it is marked as read ({@code "read": true}) in
+ * Firestore so it is not shown again on subsequent checks.
+ *
+ * <p>All methods are static; this class is not intended to be instantiated.
  */
 public class SelectedNotificationChecker {
 
+    /**
+     * The notification channel ID used for all lottery-result notifications on
+     * Android 8.0 (Oreo, API 26) and above.
+     */
     private static final String CHANNEL_ID = "timely_notifications";
 
+    /**
+     * Queries Firestore for unread notifications belonging to the current device and
+     * posts each one as a local Android notification.
+     *
+     * <p>For each unread {@link AppNotification} document:
+     * <ol>
+     *   <li>{@link #showNotification(Context, AppNotification, String)} is called to
+     *       build and post the system notification.</li>
+     *   <li>If posting succeeds, the Firestore document's {@code "read"} field is set
+     *       to {@code true} to prevent duplicate notifications.</li>
+     * </ol>
+     *
+     * <p>The notification channel is created (if not already present) before any
+     * notifications are posted.
+     *
+     * @param context The {@link Context} used to access the device ID, notification
+     *                system services, and Firestore.
+     */
     public static void checkAndShow(Context context) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
 
@@ -44,6 +74,31 @@ public class SelectedNotificationChecker {
                 });
     }
 
+    /**
+     * Builds and posts a single local notification for the given {@link AppNotification}.
+     *
+     * <p>Tapping the notification opens {@link EntrantEventDetailActivity} with the
+     * associated event ID. The notification is auto-cancelled when tapped.
+     *
+     * <p>Returns {@code false} without posting if:
+     * <ul>
+     *   <li>{@code appNotification} is {@code null} or its event ID is {@code null}.</li>
+     *   <li>The device is running Android 13 (Tiramisu, API 33) or above and the
+     *       {@link Manifest.permission#POST_NOTIFICATIONS} permission has not been
+     *       granted.</li>
+     * </ul>
+     *
+     * <p>Fallback strings are used if {@link AppNotification#getTitle()} or
+     * {@link AppNotification#getMessage()} return {@code null}.
+     *
+     * @param context          The {@link Context} used to build the notification and
+     *                         resolve the pending intent.
+     * @param appNotification  The {@link AppNotification} data to display.
+     * @param notificationId   The Firestore document ID, used as a stable numeric
+     *                         notification ID (via {@link String#hashCode()}).
+     * @return {@code true} if the notification was posted successfully;
+     *         {@code false} otherwise.
+     */
     private static boolean showNotification(
             Context context,
             AppNotification appNotification,
@@ -86,6 +141,16 @@ public class SelectedNotificationChecker {
         return true;
     }
 
+    /**
+     * Creates the {@link NotificationChannel} required for posting notifications on
+     * Android 8.0 (Oreo, API 26) and above.
+     *
+     * <p>The channel is created with {@link NotificationManager#IMPORTANCE_HIGH} and
+     * the ID {@link #CHANNEL_ID}. This call is a no-op on earlier API levels or if the
+     * channel already exists.
+     *
+     * @param context The {@link Context} used to obtain the {@link NotificationManager}.
+     */
     private static void createNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(

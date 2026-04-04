@@ -20,6 +20,7 @@
         <activity android:name=".ExplorePageActivity" android:exported="false" />
         <activity android:name=".InvitationsActivity" android:exported="false" />
         <activity android:name=".EntrantEventDetailActivity" android:exported="false" />
+        <activity android:name=".FinalEntrantListActivity" android:exported="false" />
 
         <activity
             android:name=".NotificationsActivity"
@@ -91,7 +92,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".SearchEventsActivity"
+            android:name=".QRScannerActivity"
             android:exported="false" />
 
         <provider
@@ -105,8 +106,5 @@
         </provider>
 
     </application>
-
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" />
 
 </manifest>

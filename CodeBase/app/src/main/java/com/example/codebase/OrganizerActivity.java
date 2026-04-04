@@ -19,17 +19,48 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * OrganizerActivity — "My Events" screen for Organizer role.
+ * "My Events" screen for the organizer role.
+ *
+ * <p>Displays a {@link RecyclerView} of all events whose {@code organizerDeviceId}
+ * field matches the current device, loaded from Firestore. Tapping an event row
+ * opens {@link EventDetailActivity}. The floating action button opens
+ * {@link CreateEventActivity} to create a new event.
+ *
+ * <p>An empty-state label is shown when no events exist for the device.
+ * The event list is reloaded on every {@link #onResume()} so it stays current
+ * after returning from the create or detail screens.
+ *
+ * @see OrganizerEventAdapter
+ * @see EventSchema
+ * @see DeviceIdManager
  */
 public class OrganizerActivity extends AppCompatActivity {
 
+    /** Displays the list of events owned by the current organizer. */
     private RecyclerView rvEvents;
+
+    /** Empty-state label shown when the organizer has no events. */
     private TextView tvNoEvents;
+
+    /** Opens {@link CreateEventActivity} when tapped. */
     private FloatingActionButton fabCreate;
+
+    /** Adapter binding {@link #eventList} to {@link #rvEvents}. */
     private OrganizerEventAdapter adapter;
+
+    /** Live list of events owned by the current device; mutated in place on reload. */
     private final List<Event> eventList = new ArrayList<>();
+
+    /** Device ID used to filter events by {@code organizerDeviceId} in Firestore. */
     private String deviceId;
 
+    /**
+     * Initialises the activity, resolves the device ID, binds views, sets up the
+     * {@link RecyclerView} with {@link OrganizerEventAdapter}, wires the FAB and
+     * bottom navigation, and triggers the initial event load.
+     *
+     * @param savedInstanceState Previously saved instance state, or {@code null}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +68,7 @@ public class OrganizerActivity extends AppCompatActivity {
 
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
-        // Back button → WelcomeActivity
-
-        rvEvents = findViewById(R.id.rvEvents);
+        rvEvents  = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
         fabCreate = findViewById(R.id.fabCreateEvent);
 
@@ -54,19 +83,34 @@ public class OrganizerActivity extends AppCompatActivity {
         rvEvents.setAdapter(adapter);
 
         fabCreate.setOnClickListener(v ->
-                startActivity(new Intent(this, CreateEventActivity.class))
-        );
+                startActivity(new Intent(this, CreateEventActivity.class)));
 
         setupBottomNavigation();
         loadOrganizerEvents();
     }
 
+    /**
+     * Reloads the organizer's event list from Firestore each time the activity
+     * resumes, ensuring the list reflects any changes made in
+     * {@link CreateEventActivity} or {@link EventDetailActivity}.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         loadOrganizerEvents();
     }
 
+    /**
+     * Wires the five bottom navigation items to their respective destinations.
+     *
+     * <ul>
+     *   <li>My Events → no-op (already on this screen)</li>
+     *   <li>Profile → {@link ProfileActivity}</li>
+     *   <li>Explore → {@link BrowseEventsActivity}</li>
+     *   <li>Search → toast placeholder</li>
+     *   <li>Notifications → {@link NotificationsActivity}</li>
+     * </ul>
+     */
     private void setupBottomNavigation() {
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             // already here
@@ -82,10 +126,8 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-            startActivity(new Intent(this, SearchEventsActivity.class));
-            finish();
-        });
+        findViewById(R.id.navSearch).setOnClickListener(v ->
+                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {
             startActivity(new Intent(this, NotificationsActivity.class));
@@ -93,6 +135,12 @@ public class OrganizerActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Queries Firestore for all events where {@code organizerDeviceId} equals
+     * {@link #deviceId} and delegates rendering to {@link #populateList(QuerySnapshot)}.
+     *
+     * <p>Shows a localised error toast on failure.
+     */
     private void loadOrganizerEvents() {
         FirebaseFirestore.getInstance()
                 .collection("events")
@@ -102,10 +150,19 @@ public class OrganizerActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
                                 getString(R.string.error_loading_events),
-                                Toast.LENGTH_SHORT).show()
-                );
+                                Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Clears and repopulates {@link #eventList} from the Firestore query snapshot,
+     * normalising each document via {@link EventSchema#normalizeLoadedEvent(DocumentSnapshot)}.
+     *
+     * <p>Documents that cannot be normalised (return {@code null}) are silently
+     * skipped. After updating the list, notifies the adapter and toggles the
+     * empty-state label and the {@link RecyclerView} visibility.
+     *
+     * @param snapshot The {@link QuerySnapshot} returned by the Firestore events query.
+     */
     private void populateList(QuerySnapshot snapshot) {
         eventList.clear();
 

@@ -22,14 +22,50 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 import java.io.File;
 import java.io.FileOutputStream;
 
+/**
+ * Generates and displays a QR code for a specific event, and allows the user to
+ * share the QR code image via the Android share sheet.
+ *
+ * <p>The QR code encodes a deep-link URI in the format {@code timely://event/{eventId}},
+ * rendered at 600×600 pixels using the ZXing library. The generated {@link Bitmap} is
+ * displayed inline and cached to the app's internal cache directory when shared.
+ *
+ * <p>Expected {@link Intent} extras:
+ * <ul>
+ *   <li>{@code "event_id"} — the Firestore document ID of the event (required).</li>
+ *   <li>{@code "event_title"} — the human-readable event title shown in the toolbar
+ *       (optional; falls back to {@code "Event QR"}).</li>
+ * </ul>
+ */
 public class QrDisplayActivity extends AppCompatActivity {
+
+    /**
+     * The {@link Bitmap} containing the generated QR code.
+     * {@code null} if QR generation failed in {@link #onCreate(Bundle)}.
+     */
     private Bitmap qrBitmap;
+
+    /**
+     * Firestore document ID of the event, extracted from the launching {@link Intent}.
+     * Used as the payload in the deep-link URI and as part of the cached image filename.
+     */
     private String eventId;
 
+    /**
+     * Inflates the layout, reads intent extras, generates the QR code {@link Bitmap},
+     * and wires the share button.
+     *
+     * <p>QR generation encodes {@code timely://event/{eventId}} as a
+     * {@link BarcodeFormat#QR_CODE} at 600×600 px. If encoding fails a {@link Toast}
+     * error is shown and {@link #qrBitmap} remains {@code null}.
+     *
+     * @param savedInstanceState If the activity is being re-created from a previous state,
+     *                           this bundle contains the most recent data; otherwise {@code null}.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qr_display); // Use the new layout wrapper
+        setContentView(R.layout.activity_qr_display);
 
         eventId = getIntent().getStringExtra("event_id");
         String title = getIntent().getStringExtra("event_title");
@@ -39,20 +75,20 @@ public class QrDisplayActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-        toolbar.setNavigationOnClickListener(v -> finish()); // Handle the new back button
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        TextView tvTitle = findViewById(R.id.tvEventNameDisplay);
+        TextView tvTitle   = findViewById(R.id.tvEventNameDisplay);
         TextView tvEyebrow = findViewById(R.id.tvQrEyebrow);
-        ImageView ivQr = findViewById(R.id.ivQrCode);
-        Button btnShare = findViewById(R.id.btnShare);
+        ImageView ivQr     = findViewById(R.id.ivQrCode);
+        Button btnShare    = findViewById(R.id.btnShare);
 
         tvTitle.setText(title != null ? title : "Event QR");
         tvEyebrow.setText("EVENT QR CODE");
 
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(
-                "timely://event/" + eventId,
-                BarcodeFormat.QR_CODE, 600, 600
+                    "timely://event/" + eventId,
+                    BarcodeFormat.QR_CODE, 600, 600
             );
             qrBitmap = new BarcodeEncoder().createBitmap(bitMatrix);
             ivQr.setImageBitmap(qrBitmap);
@@ -64,6 +100,19 @@ public class QrDisplayActivity extends AppCompatActivity {
         btnShare.setOnClickListener(v -> shareQrCode());
     }
 
+    /**
+     * Writes {@link #qrBitmap} to the app's internal cache directory and launches the
+     * Android share sheet so the user can send the QR code image to another app.
+     *
+     * <p>The bitmap is saved as a lossless PNG at
+     * {@code <cacheDir>/images/qr_{eventId}.png} and exposed via {@link FileProvider}
+     * using the authority {@code <packageName>.fileprovider}. A
+     * {@link Intent#FLAG_GRANT_READ_URI_PERMISSION} flag is added so the receiving app
+     * can read the file without requiring additional permissions.
+     *
+     * <p>Does nothing if {@link #qrBitmap} is {@code null}. Shows a {@link Toast} error
+     * message if any {@link Exception} is thrown during file I/O or URI resolution.
+     */
     private void shareQrCode() {
         if (qrBitmap == null) return;
         try {

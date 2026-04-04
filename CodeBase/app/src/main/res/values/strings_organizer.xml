@@ -89,6 +89,9 @@
     <string name="row_view_qr_code">View Event QR Code</string>
     <string name="row_edit_event">Edit Event Details</string>
     <string name="row_cancelled_users">View Cancelled Users</string>
+    <string name="row_assign_co_organizer">Assign Co-Organizer</string>
+    <string name="co_organizer_notification_title">Co-Organizer Invitation</string>
+    <string name="co_organizer_notification_message">You have been selected to be a co-organizer for this event.</string>
 
     <!-- Coming soon placeholders -->
     <string name="lottery_draw_coming_soon">Run Lottery Draw — Coming Soon</string>
