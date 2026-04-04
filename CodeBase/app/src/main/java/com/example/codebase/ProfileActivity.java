@@ -271,13 +271,19 @@ public class ProfileActivity extends AppCompatActivity {
             // Already on this screen — no action required.
         });
 
-        findViewById(R.id.navExplore).setOnClickListener(v ->
-                startActivity(new Intent(this, BrowseEventsActivity.class)));
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+                startActivity(new Intent(this, BrowseEventsActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+                startActivity(new Intent(this, SearchEventsActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navNotifications).setOnClickListener(v ->
-                startActivity(new Intent(this, NotificationsActivity.class)));
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+        });
     }
 }
