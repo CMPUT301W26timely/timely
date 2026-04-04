@@ -83,7 +83,8 @@ public class OrganizerActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.navSearch).setOnClickListener(v -> {
-            Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, SearchEventsActivity.class));
+            finish();
         });
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {

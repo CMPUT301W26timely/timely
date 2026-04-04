@@ -145,8 +145,10 @@ public class NotificationsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+            startActivity(new Intent(this, SearchEventsActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             startActivity(new Intent(this, OrganizerActivity.class));
