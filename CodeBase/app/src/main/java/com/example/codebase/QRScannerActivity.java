@@ -1,6 +1,8 @@
 package com.example.codebase;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
@@ -61,6 +63,8 @@ public class QRScannerActivity extends AppCompatActivity {
      */
     private static final int CAMERA_PERMISSION_REQUEST = 100;
 
+    private static final String[] REQUIRED_PERMISSIONS = {Manifest.permission.CAMERA};
+
     /** Displays the live camera feed to the user. */
     private PreviewView previewView;
 
@@ -94,7 +98,52 @@ public class QRScannerActivity extends AppCompatActivity {
 
         cancelButton.setOnClickListener(v -> finish());
 
-        startCamera();
+        if (hasCameraPermission()) {
+            startCamera();
+        } else {
+            requestPermissions(REQUIRED_PERMISSIONS, CAMERA_PERMISSION_REQUEST);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the app currently holds the {@link Manifest.permission#CAMERA}
+     * permission, {@code false} otherwise.
+     *
+     * @return {@code true} if camera permission is granted; {@code false} if it is denied or
+     *         not yet requested
+     */
+    private boolean hasCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Handles the result of a runtime permission request.
+     *
+     * <p>If the camera permission was granted, the camera preview is started via
+     * {@link #startCamera()}. If denied, a {@link Toast} is shown informing the user
+     * that camera permission is required, and the activity finishes.</p>
+     *
+     * @param requestCode  the request code passed to {@link #requestPermissions}, used to
+     *                     identify this specific permission request
+     * @param permissions  the requested permissions; in this activity always contains
+     *                     {@link Manifest.permission#CAMERA}
+     * @param grantResults the grant results for the corresponding permissions; a value of
+     *                     {@link PackageManager#PERMISSION_GRANTED} indicates the permission
+     *                     was granted
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            } else {
+                Toast.makeText(this, "Camera permission is required to scan QR codes",
+                        Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
     }
 
     /**
@@ -233,8 +282,12 @@ public class QRScannerActivity extends AppCompatActivity {
                         if (rawValue != null && !qrIdentified) {
                             qrIdentified = true;
                             runOnUiThread(() -> {
-                                Intent intent = new Intent(this, WelcomeActivity.class);
-                                intent.putExtra("qr_result", rawValue);
+                                String eventId = rawValue;
+                                if (rawValue.startsWith("timely://event/")) {
+                                    eventId = rawValue.replace("timely://event/", "");
+                                }
+                                Intent intent = new Intent(this, EntrantEventDetailActivity.class);
+                                intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventId);
                                 startActivity(intent);
                                 finish();
                             });

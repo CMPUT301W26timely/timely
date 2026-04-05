@@ -3,6 +3,8 @@ package com.example.codebase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.io.Serializable;
+
 /**
  * Represents an event poster image stored in a Base64-encoded format.
  *
@@ -10,7 +12,7 @@ import android.graphics.BitmapFactory;
  * Images are encoded as Base64 strings to allow storage in Firestore,
  * which does not natively support binary data.</p>
  */
-public class EventPoster {
+public class EventPoster implements Serializable {
 
     /**
      * The Base64-encoded string representation of the poster image.

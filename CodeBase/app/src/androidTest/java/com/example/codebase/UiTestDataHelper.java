@@ -59,6 +59,17 @@ public final class UiTestDataHelper {
     }
 
     /**
+     * Stores the active session role used by screens that branch on entrant vs admin UI.
+     *
+     * @param role one of the {@link WelcomeActivity} role constants
+     */
+    public static void setSessionRole(String role) {
+        SharedPreferences preferences =
+                context().getSharedPreferences(WelcomeActivity.PREFS_NAME, Context.MODE_PRIVATE);
+        preferences.edit().putString(WelcomeActivity.KEY_ROLE, role).commit();
+    }
+
+    /**
      * Returns a unique ID suitable for test documents.
      *
      * @param prefix a readable prefix for the generated ID
@@ -78,12 +89,31 @@ public final class UiTestDataHelper {
      * @throws Exception if Firestore write fails
      */
     public static void seedUser(String deviceId, String name, String email, String phone) throws Exception {
+        seedUser(deviceId, name, email, phone, true);
+    }
+
+    /**
+     * Seeds a user profile document in Firestore with an explicit notification preference.
+     *
+     * @param deviceId the user/device ID
+     * @param name the display name
+     * @param email the email address
+     * @param phone the phone number
+     * @param notificationsEnabled whether organizer/admin notifications are enabled
+     * @throws Exception if Firestore write fails
+     */
+    public static void seedUser(String deviceId,
+                                String name,
+                                String email,
+                                String phone,
+                                boolean notificationsEnabled) throws Exception {
         Map<String, Object> data = new HashMap<>();
         data.put("deviceId", deviceId);
         data.put("role", "entrant");
         data.put("name", name);
         data.put("email", email);
         data.put("phoneNumber", phone);
+        data.put("notificationsEnabled", notificationsEnabled);
         await(FirebaseFirestore.getInstance().collection("users").document(deviceId).set(data));
     }
 

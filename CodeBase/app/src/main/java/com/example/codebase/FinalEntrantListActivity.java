@@ -1,7 +1,11 @@
 package com.example.codebase;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +13,15 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 /**
@@ -145,5 +152,59 @@ public class FinalEntrantListActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.exportBtn).setOnClickListener(v -> exportToCSV());
     }
+
+    /**
+     * Exports the list of enrolled entrants to a CSV file and saves it to the device's
+     * Downloads folder.
+     *
+     * <p>The CSV contains a single column header {@code "Entrant Device ID"} followed by
+     * one device ID per row, sourced from {@link #finalEntrants}. The output file is named
+     * {@code final_entrants_<eventTitle>.csv}.</p>
+     *
+     * <p>Uses {@link MediaStore} to write the file, which is the recommended approach for
+     * API 29 and above and does not require the {@code WRITE_EXTERNAL_STORAGE} runtime
+     * permission on those versions.</p>
+     *
+     * <p>A {@link Toast} is shown to the user on both success and failure:</p>
+     * <ul>
+     *     <li>On success: confirms the file path within Downloads.</li>
+     *     <li>On failure: reports either that the file could not be created (if the
+     *         {@link android.content.ContentResolver} returned a {@code null} {@link Uri})
+     *         or the {@link IOException} message if writing failed.</li>
+     * </ul>
+     */
+    private void exportToCSV(){
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("Entrant Device ID\n");
+        for (String entrant : finalEntrants) {
+            csvBuilder.append(entrant).append("\n");
+        }
+
+        String fileName = "final_entrants_" + event.getTitle() + ".csv";
+        String csvContent = csvBuilder.toString();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Downloads.MIME_TYPE, "text/csv");
+            values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                try (OutputStream outputStream = getContentResolver().openOutputStream(uri)) {
+                    outputStream.write(csvContent.getBytes());
+                    outputStream.flush();
+                }
+                Toast.makeText(this, "Exported to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Export failed: could not create file.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Export failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

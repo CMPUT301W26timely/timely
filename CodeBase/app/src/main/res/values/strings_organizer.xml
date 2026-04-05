@@ -5,6 +5,10 @@
     <string name="my_events_title">My Events</string>
     <string name="browse_events_title">Browse Events</string>
     <string name="browse_events_empty">No active events available.</string>
+    <string name="admin_browse_events_subtitle">Review every event in the system, including closed or archived ones.</string>
+    <string name="admin_browse_events_empty">No events are available in the system yet.</string>
+    <string name="admin_nav_events">Events</string>
+    <string name="admin_nav_profiles">Profiles</string>
     <string name="no_events_yet">No events yet.\nTap + to create your first event.</string>
     <string name="create_event_coming_soon">Create Event — Coming Soon</string>
     <string name="create_event_fab_desc">Create new event</string>
@@ -26,12 +30,15 @@
     <!-- Bottom navigation -->
     <string name="nav_explore">Explore</string>
     <string name="nav_search">Search</string>
+    <string name="nav_history">History</string>
     <string name="nav_my_events">My Events</string>
     <string name="nav_notifications">Notifications</string>
     <string name="nav_profile">Profile</string>
     <string name="notifications_updates_label">Updates</string>
     <string name="notifications_empty_title">No notifications yet.</string>
     <string name="notifications_empty_subtitle">Event updates and invitation responses will appear here.</string>
+    <string name="notifications_opted_out_title">Notifications are turned off.</string>
+    <string name="notifications_opted_out_subtitle">Turn organizer and admin notifications back on in Edit Profile whenever you want updates again.</string>
     <string name="notifications_invitation_title">Event Invitations</string>
     <string name="notifications_invitation_loading">Checking for invitations...</string>
     <string name="profile_settings_first_run_title">Create Your Profile</string>
@@ -57,11 +64,25 @@
     <string name="profile_settings_email_required">Email is required.</string>
     <string name="profile_settings_email_invalid">Enter a valid email address.</string>
     <string name="profile_settings_phone_invalid">Enter a valid phone number or leave it blank.</string>
+    <string name="profile_settings_notifications_title">Organizer &amp; Admin Notifications</string>
+    <string name="profile_settings_notifications_toggle">Toggle organizer/admin notifications</string>
+    <string name="profile_settings_notifications_enabled_summary">You will receive messages and updates sent by organizers and admins.</string>
+    <string name="profile_settings_notifications_disabled_summary">Notifications are turned off. You will not receive organizer or admin messages.</string>
     <string name="profile_settings_continue">Continue</string>
     <string name="profile_settings_save">Save Changes</string>
     <string name="profile_settings_saving">Saving...</string>
+    <string name="profile_settings_deleting">Deleting...</string>
     <string name="profile_settings_saved">Profile saved successfully</string>
     <string name="profile_settings_save_failed">Failed to save profile. Please try again.</string>
+    <string name="profile_settings_delete_title">Delete Profile</string>
+    <string name="profile_settings_delete_summary">Delete your saved profile, remove your notification history, and withdraw this device from event participation.</string>
+    <string name="profile_settings_delete_button">Delete My Profile</string>
+    <string name="profile_settings_delete_confirm_title">Delete profile?</string>
+    <string name="profile_settings_delete_confirm_message">This permanently removes your saved profile and event participation for this device.</string>
+    <string name="profile_settings_delete_confirm">Delete Profile</string>
+    <string name="profile_settings_delete_cancel">Keep Profile</string>
+    <string name="profile_settings_delete_success">Profile deleted</string>
+    <string name="profile_settings_delete_failed">Failed to delete profile. Please try again.</string>
     <string name="profile_settings_required">Complete your profile to continue.</string>
 
     <!-- Event Detail — Header -->
@@ -89,6 +110,9 @@
     <string name="row_view_qr_code">View Event QR Code</string>
     <string name="row_edit_event">Edit Event Details</string>
     <string name="row_cancelled_users">View Cancelled Users</string>
+    <string name="row_assign_co_organizer">Assign Co-Organizer</string>
+    <string name="co_organizer_notification_title">Co-Organizer Invitation</string>
+    <string name="co_organizer_notification_message">You have been selected to be a co-organizer for this event.</string>
 
     <!-- Coming soon placeholders -->
     <string name="lottery_draw_coming_soon">Run Lottery Draw — Coming Soon</string>

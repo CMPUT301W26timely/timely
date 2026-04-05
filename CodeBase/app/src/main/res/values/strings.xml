@@ -6,6 +6,9 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <!-- Comments — Entrant (US 01.08.01 & US 01.08.02) -->
+    <string name="comments_organizer_title">Organizer Comments</string>
+    <string name="comments_all_entrant_title">All Entrant Comments</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
@@ -43,4 +46,33 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <!-- Comments (US 02.08.02) -->
+    <string name="comments_title">Comments</string>
+    <string name="comments_empty">No comments here yet.</string>
+    <string name="comments_close">Close</string>
+    <string name="comments_my_title">My Comments</string>
+    <string name="comments_entrant_title">Entrant Comments</string>
+    <string name="comments_delete_failed">Failed to delete comment</string>
+    <string name="history_title">History</string>
+    <string name="history_subtitle">Review the events you registered for and the final status of each registration.</string>
+    <string name="history_empty_label">Registration History</string>
+    <string name="history_empty_title">No registration history yet.</string>
+    <string name="history_empty_subtitle">Events you join will appear here after you register.</string>
+    <string name="history_location_not_set">Location not set</string>
+    <string name="history_summary_registered">You are registered and waiting for the event outcome.</string>
+    <string name="history_summary_selected">You were selected for this event.</string>
+    <string name="history_summary_enrolled">You accepted your invitation and enrolled.</string>
+    <string name="history_summary_not_selected">Lottery complete. You were not selected for a spot in this event.</string>
+    <string name="history_summary_cancelled">This registration ended because you declined it or the organizer cancelled your spot.</string>
+    <string name="entrant_waiting_list_count">Total waiting list entrants: %1$d</string>
+    <string name="btn_invite">Invite</string>
+    <string name="btn_invited">Invited</string>
+    <string name="invite_screen_title">Invite Entrants</string>
+    <string name="invite_private_badge">Private Event</string>
+    <string name="invite_search_label">Search by name, email or phone</string>
+    <string name="invite_search_hint">Search entrants…</string>
+    <string name="invite_loading">Loading users…</string>
+    <string name="invite_results_label">Results</string>
+    <string name="invite_empty">No users match your search</string>
+    <string name="invite_back_desc">Back</string>
 </resources>

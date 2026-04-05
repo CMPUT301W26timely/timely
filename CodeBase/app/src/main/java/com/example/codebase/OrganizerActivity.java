@@ -61,8 +61,7 @@ public class OrganizerActivity extends AppCompatActivity {
      *
      * @param savedInstanceState Previously saved instance state, or {@code null}.
      */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_organizer);
 
@@ -107,7 +106,7 @@ public class OrganizerActivity extends AppCompatActivity {
      *   <li>My Events → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → toast placeholder</li>
+     *   <li>Search → {@link SearchEventsActivity}</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
      * </ul>
      */
@@ -126,8 +125,10 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.navSearch).setOnClickListener(v -> {
+            startActivity(new Intent(this, SearchEventsActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {
             startActivity(new Intent(this, NotificationsActivity.class));
