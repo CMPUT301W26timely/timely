@@ -22,6 +22,7 @@
         <activity android:name=".InvitationsActivity" android:exported="false" />
         <activity android:name=".EntrantEventDetailActivity" android:exported="false" />
         <activity android:name=".FinalEntrantListActivity" android:exported="false" />
+        <activity android:name=".LotteryDrawActivity" android:exported="false" />
         <activity android:name=".HistoryActivity" android:exported="false" />
         <activity android:name=".AdminBrowseProfilesActivity" android:exported="false" />
         <activity android:name=".LotteryInfoActivity" android:exported="false"/>
@@ -99,10 +100,6 @@
 
         <activity
             android:name=".QRScannerActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".SearchEventsActivity"
             android:exported="false" />
 
         <provider
