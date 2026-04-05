@@ -135,6 +135,9 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
     /** Validates input and dispatches notifications to all recipients in the selected group. */
     private Button btnSend;
 
+    /** Default label restored after validation or delivery errors. */
+    private static final String SEND_BUTTON_TEXT = "Send";
+
     /**
      * Creates a new {@link SendNotificationFragment} with the required event arguments.
      *
@@ -383,9 +386,42 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
         btnSend.setEnabled(false);
         btnSend.setText("Sending...");
 
+        // Respect entrant opt-out preferences before writing notification records.
+        NotificationPreferenceHelper.resolveEnabledRecipients(recipients,
+                (enabledRecipients, optedOutCount) -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+
+                    if (enabledRecipients.isEmpty()) {
+                        resetSendButton();
+                        Toast.makeText(getContext(),
+                                "All recipients have opted out of notifications",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    dispatchNotifications(enabledRecipients, subject, message, optedOutCount);
+                });
+    }
+
+    /**
+     * Writes one Firestore notification document per eligible recipient after opt-out
+     * preferences have been applied.
+     *
+     * @param recipients recipients who still allow notifications
+     * @param subject notification title
+     * @param message notification body
+     * @param optedOutCount number of recipients skipped because they opted out
+     */
+    private void dispatchNotifications(List<String> recipients,
+                                       String subject,
+                                       String message,
+                                       int optedOutCount) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        int total  = recipients.size();
+        int total = recipients.size();
         int[] sent = {0};
+        boolean[] failed = {false};
 
         for (String deviceId : recipients) {
             Map<String, Object> notif = new HashMap<>();
@@ -404,23 +440,36 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                     .collection("messages")
                     .add(notif)
                     .addOnSuccessListener(ref -> {
+                        if (failed[0]) {
+                            return;
+                        }
+
                         sent[0]++;
                         if (sent[0] == total && isAdded()) {
-                            Toast.makeText(getContext(),
-                                    "Sent to " + total + " recipients",
-                                    Toast.LENGTH_SHORT).show();
+                            String messageText = optedOutCount > 0
+                                    ? "Sent to " + total + " recipients. " + optedOutCount + " opted out."
+                                    : "Sent to " + total + " recipients";
+                            Toast.makeText(getContext(), messageText, Toast.LENGTH_SHORT).show();
                             dismiss();
                         }
                     })
                     .addOnFailureListener(e -> {
-                        if (!isAdded()) return;
-                        btnSend.setEnabled(true);
-                        btnSend.setText("Send Notification");
+                        if (!isAdded() || failed[0]) {
+                            return;
+                        }
+                        failed[0] = true;
+                        resetSendButton();
                         Toast.makeText(getContext(),
                                 "Failed to send some notifications",
                                 Toast.LENGTH_SHORT).show();
                     });
         }
+    }
+
+    /** Restores the send button after the compose flow is interrupted by an error. */
+    private void resetSendButton() {
+        btnSend.setEnabled(true);
+        btnSend.setText(SEND_BUTTON_TEXT);
     }
 
     /**

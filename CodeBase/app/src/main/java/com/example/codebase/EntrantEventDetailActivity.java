@@ -80,7 +80,7 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
 
     // ── Views ─────────────────────────────────────────────────────────────────
 
-    private TextView tvTitle, tvDate, tvLocation, tvDescription;
+    private TextView tvTitle, tvDate, tvLocation, tvWaitingListCount, tvDescription;
     private ImageView ivPoster;
 
     /** Adds the current device to the event's {@code waitingList}. */
@@ -151,6 +151,7 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
         tvTitle         = findViewById(R.id.tvEntrantEventTitle);
         tvDate          = findViewById(R.id.tvEntrantEventDate);
         tvLocation      = findViewById(R.id.tvEntrantEventLocation);
+        tvWaitingListCount = findViewById(R.id.tvEntrantWaitingListCount);
         tvDescription   = findViewById(R.id.tvEntrantEventDescription);
         ivPoster        = findViewById(R.id.ivEntrantHeroPoster);
         btnJoin         = findViewById(R.id.btnJoinWaitingList);
@@ -266,11 +267,16 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
      */
     private void onEventLoaded(DocumentSnapshot doc) {
         progressBar.setVisibility(View.GONE);
-        event = doc.toObject(Event.class);
+        event = EventSchema.normalizeLoadedEvent(doc);
         if (event == null) return;
 
         tvTitle.setText(event.getTitle());
         tvLocation.setText(event.getLocation());
+        // Keep the current waiting-list total visible so entrants understand demand.
+        tvWaitingListCount.setText(getString(
+                R.string.entrant_waiting_list_count,
+                event.getWaitingList().size()
+        ));
         tvDescription.setText(event.getDescription());
 
         if (event.getStartDate() != null) {
@@ -475,7 +481,12 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                     }
 
                     FirebaseFirestore.getInstance().collection("events").document(eventId)
-                            .update("waitingList", FieldValue.arrayUnion(deviceId))
+                            // Keep a permanent history entry even if the entrant later moves
+                            // out of the active waiting list or invitation arrays.
+                            .update(
+                                    "waitingList", FieldValue.arrayUnion(deviceId),
+                                    "registeredEntrants", FieldValue.arrayUnion(deviceId)
+                            )
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(this, "Joined waiting list!", Toast.LENGTH_SHORT).show();
                                 loadEventDetails();

@@ -15,6 +15,12 @@
     <color name="border">#efefef</color>
     <color name="accentBorderLight">#e2ece2</color>
     <color name="accentBorderMid">#dceadc</color>
+    <color name="historyNotSelectedCardBg">#F4F7FB</color>
+    <color name="historyNotSelectedBorder">#C8D4E4</color>
+    <color name="historyNotSelectedText">#27415F</color>
+    <color name="historyCancelledCardBg">#FFF4F4</color>
+    <color name="historyCancelledBorder">#E7C4C4</color>
+    <color name="historyCancelledText">#9B3535</color>
 
     <!-- Team/shared dark theme colors -->
     <color name="accent_blue">#4EA1FF</color>

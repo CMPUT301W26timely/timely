@@ -257,7 +257,7 @@ public class ProfileActivity extends AppCompatActivity {
      *   <li><b>My Events</b> — starts {@link OrganizerActivity} and finishes this activity.</li>
      *   <li><b>Profile</b> — no-op; the user is already on this screen.</li>
      *   <li><b>Explore</b> — starts {@link BrowseEventsActivity}.</li>
-     *   <li><b>Search</b> — shows a "Not implemented yet" {@link Toast}.</li>
+     *   <li><b>History</b> — starts {@link HistoryActivity}.</li>
      *   <li><b>Notifications</b> — starts {@link NotificationsActivity}.</li>
      * </ul>
      */
@@ -276,8 +276,9 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-                startActivity(new Intent(this, SearchEventsActivity.class));
+        // Keep the profile screen in sync with the updated entrant navigation bar.
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+                startActivity(new Intent(this, HistoryActivity.class));
                 finish();
         });
 

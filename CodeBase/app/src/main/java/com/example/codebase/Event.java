@@ -9,9 +9,9 @@ import java.util.Date;
  *
  * <p>An event progresses through several lifecycle stages driven by its date fields
  * ({@link #registrationOpen}, {@link #registrationDeadline}, {@link #drawDate},
- * {@link #startDate}, {@link #endDate}) and the state of its four entrant lists:
- * {@link #waitingList}, {@link #selectedEntrants}, {@link #enrolledEntrants}, and
- * {@link #cancelledEntrants}.
+ * {@link #startDate}, {@link #endDate}) and the state of its entrant lists:
+ * {@link #waitingList}, {@link #selectedEntrants}, {@link #enrolledEntrants},
+ * {@link #cancelledEntrants}, and {@link #registeredEntrants}.
  *
  * <p>The class implements {@link Serializable} so that instances can be passed between
  * Android components via {@link android.os.Bundle} or {@link android.content.Intent} extras.
@@ -106,6 +106,15 @@ public class Event implements Serializable {
 
     /** Device IDs of entrants who declined their invitation or were removed. */
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
+
+    /**
+     * Device IDs of entrants who have ever registered for this event.
+     *
+     * <p>Unlike {@link #waitingList}, this list is append-only from the entrant's
+     * perspective and is used to build a persistent registration history even
+     * after the live entrant-state arrays change.</p>
+     */
+    private ArrayList<String> registeredEntrants = new ArrayList<>();
 
     /**
      * Device IDs of entrants assigned as co-organizers for this event.
@@ -373,6 +382,24 @@ public class Event implements Serializable {
      */
     public void setCancelledEntrants(ArrayList<String> cancelledEntrants) {
         this.cancelledEntrants = cancelledEntrants;
+    }
+
+    /**
+     * Returns the list of device IDs for entrants who have ever registered.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getRegisteredEntrants() {
+        return registeredEntrants;
+    }
+
+    /**
+     * Replaces the registered-entrants history collection.
+     *
+     * @param registeredEntrants The new list of device IDs.
+     */
+    public void setRegisteredEntrants(ArrayList<String> registeredEntrants) {
+        this.registeredEntrants = registeredEntrants;
     }
 
     /**

@@ -49,6 +49,9 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Empty-state label inside {@link #emptyStateCard}. */
     private TextView emptyState;
 
+    /** Supporting copy under the empty-state headline. */
+    private TextView emptyStateSubtitle;
+
     /** Describes the number of pending invitations inside {@link #invitationCard}. */
     private TextView invitationCountSummary;
 
@@ -82,6 +85,7 @@ public class NotificationsActivity extends AppCompatActivity {
         emptyStateCard        = findViewById(R.id.cardNotificationsEmptyState);
         invitationCard        = findViewById(R.id.invitationSummaryInclude);
         emptyState            = findViewById(R.id.tvNotificationsEmptyState);
+        emptyStateSubtitle    = findViewById(R.id.tvNotificationsEmptySubtitle);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
@@ -204,6 +208,7 @@ public class NotificationsActivity extends AppCompatActivity {
         boolean hasNotifications = !items.isEmpty();
         emptyStateCard.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
         emptyState.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
+        emptyStateSubtitle.setVisibility(hasNotifications ? View.GONE : View.VISIBLE);
         listViewNotifications.setVisibility(hasNotifications ? View.VISIBLE : View.GONE);
 
         listViewNotifications.setOnItemClickListener((parent, view, position, id) -> {
@@ -218,7 +223,7 @@ public class NotificationsActivity extends AppCompatActivity {
      *
      * <ul>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → toast placeholder</li>
+     *   <li>History → {@link HistoryActivity}</li>
      *   <li>My Events → {@link OrganizerActivity}</li>
      *   <li>Notifications → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
@@ -230,8 +235,9 @@ public class NotificationsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-            startActivity(new Intent(this, SearchEventsActivity.class));
+        // The layout now uses a dedicated history tab for entrant registration history.
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, HistoryActivity.class));
             finish();
         });
 
