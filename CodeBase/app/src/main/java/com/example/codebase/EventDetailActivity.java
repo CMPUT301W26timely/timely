@@ -31,7 +31,7 @@ import java.util.Locale;
  * <ul>
  *   <li>View invited entrants → {@link InvitedEntrantsActivity}</li>
  *   <li>View cancelled entrants → {@link CancelledEntrantsActivity}</li>
- *   <li>View QR code → {@link QrDisplayActivity}</li>
+ *   <li>View QR code → {@link QrDisplayActivity} (hidden for private events)</li>
  *   <li>Edit event → {@link CreateEventActivity} in edit mode</li>
  *   <li>Send notification → {@link SendNotificationFragment}</li>
  *   <li>Run lottery, view waiting list, view entrant map (stubs)</li>
@@ -233,6 +233,7 @@ public class EventDetailActivity extends AppCompatActivity {
             intent.putExtra("location",    event.getLocation()    != null ? event.getLocation()    : "");
             intent.putExtra("price",       (double) event.getPrice());
             intent.putExtra("geoRequired", event.isGeoEnabled());
+            intent.putExtra("isPrivate",   event.isPrivate());
             intent.putExtra("waitlistCap", event.getWaitlistCap());
             intent.putExtra("capacity",    event.getMaxCapacity() != null
                     ? event.getMaxCapacity().intValue() : 0);
@@ -428,6 +429,29 @@ public class EventDetailActivity extends AppCompatActivity {
                 selectedEntrants, enrolledEntrants
         );
         applyStatusBadge(status);
+
+        // US 02.01.02: Hide "View Event QR Code" row for private events
+        // Private events do not have a promotional QR code
+        View rowViewQrCode = findViewById(R.id.rowViewQrCode);
+        if (rowViewQrCode != null) {
+            rowViewQrCode.setVisibility(event.isPrivate() ? View.GONE : View.VISIBLE);
+        }
+
+        // US 02.01.03: Show "Invite Entrants" button only for private events
+        View rowInviteEntrants = findViewById(R.id.rowInviteEntrants);
+        if (rowInviteEntrants != null) {
+            if (event.isPrivate()) {
+                rowInviteEntrants.setVisibility(View.VISIBLE);
+                rowInviteEntrants.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, InviteEntrantsActivity.class);
+                    intent.putExtra(InviteEntrantsActivity.EXTRA_EVENT_ID, eventId);
+                    intent.putExtra(InviteEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+                    startActivity(intent);
+                });
+            } else {
+                rowInviteEntrants.setVisibility(View.GONE);
+            }
+        }
     }
 
     /**
@@ -669,6 +693,4 @@ public class EventDetailActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
                 );
     }
-
-
 }

@@ -25,6 +25,8 @@
         <activity android:name=".HistoryActivity" android:exported="false" />
         <activity android:name=".AdminBrowseProfilesActivity" android:exported="false" />
         <activity android:name=".LotteryInfoActivity" android:exported="false"/>
+        <!-- US 02.01.03: Organizer invite entrants to private event waiting list -->
+        <activity android:name=".InviteEntrantsActivity" android:exported="false" />
 
         <activity
             android:name=".NotificationsActivity"
