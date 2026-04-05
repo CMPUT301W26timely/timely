@@ -103,10 +103,6 @@
             android:name=".QRScannerActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".SearchEventsActivity"
-            android:exported="false" />
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
