@@ -100,14 +100,14 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * Wires the five bottom navigation items to their respective destinations.
+     * Wires the bottom navigation items to their respective destinations.
      *
      * <ul>
      *   <li>My Events → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → {@link SearchEventsActivity}</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
+     *   <li>History → {@link HistoryActivity}</li>
      * </ul>
      */
     private void setupBottomNavigation() {
@@ -125,8 +125,8 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.navSearch).setOnClickListener(v -> {
-            startActivity(new Intent(this, SearchEventsActivity.class));
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, HistoryActivity.class));
             finish();
         });
 
