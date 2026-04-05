@@ -249,6 +249,7 @@
 
             <!-- Waiting List -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cardWaitingList"
                 android:layout_width="0dp"
                 android:layout_height="80dp"
                 android:layout_columnWeight="1"

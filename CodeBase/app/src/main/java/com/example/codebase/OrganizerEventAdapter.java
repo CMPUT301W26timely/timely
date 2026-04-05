@@ -181,6 +181,9 @@ public class OrganizerEventAdapter extends
         /** Displays the computed status badge. */
         private final TextView tvStatus;
 
+        /** Displays whether the event is Private or Public. */
+        private final TextView tvPrivacy;
+
         /** Displays the number of entrants on the waiting list. */
         private final TextView tvWaiting;
 
@@ -200,6 +203,7 @@ public class OrganizerEventAdapter extends
             tvTitle     = itemView.findViewById(R.id.tvEventItemTitle);
             tvDate      = itemView.findViewById(R.id.tvEventItemDate);
             tvStatus    = itemView.findViewById(R.id.tvEventStatus);
+            tvPrivacy   = itemView.findViewById(R.id.tvEventPrivacy);
             tvWaiting   = itemView.findViewById(R.id.tvWaitingCount);
             tvSelected  = itemView.findViewById(R.id.tvSelectedCount);
             ivThumbnail = itemView.findViewById(R.id.ivEventThumbnail);
@@ -293,6 +297,17 @@ public class OrganizerEventAdapter extends
             }
 
             itemView.setOnClickListener(v -> listener.onEventClick(event));
+
+            // ── Privacy badge ─────────────────────────────────────────────────
+            if (event.isPrivate()) {
+                tvPrivacy.setText("Private");
+                tvPrivacy.setBackgroundResource(R.drawable.bg_pill_amber);
+                tvPrivacy.setTextColor(0xFF8B7A2A);
+            } else {
+                tvPrivacy.setText("Public");
+                tvPrivacy.setBackgroundResource(R.drawable.bg_pill_green);
+                tvPrivacy.setTextColor(0xFF4A7A4A);
+            }
         }
     }
 }

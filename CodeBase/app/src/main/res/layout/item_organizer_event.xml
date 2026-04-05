@@ -68,6 +68,20 @@
                 android:textSize="9sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.06"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Privacy badge (Private / Public) -->
+            <TextView
+                android:id="@+id/tvEventPrivacy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.06"
                 android:layout_marginBottom="8dp" />
 
             <!-- Stats row -->
