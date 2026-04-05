@@ -155,6 +155,26 @@ public class FinalEntrantListActivity extends AppCompatActivity {
         findViewById(R.id.exportBtn).setOnClickListener(v -> exportToCSV());
     }
 
+    /**
+     * Exports the list of enrolled entrants to a CSV file and saves it to the device's
+     * Downloads folder.
+     *
+     * <p>The CSV contains a single column header {@code "Entrant Device ID"} followed by
+     * one device ID per row, sourced from {@link #finalEntrants}. The output file is named
+     * {@code final_entrants_<eventTitle>.csv}.</p>
+     *
+     * <p>Uses {@link MediaStore} to write the file, which is the recommended approach for
+     * API 29 and above and does not require the {@code WRITE_EXTERNAL_STORAGE} runtime
+     * permission on those versions.</p>
+     *
+     * <p>A {@link Toast} is shown to the user on both success and failure:</p>
+     * <ul>
+     *     <li>On success: confirms the file path within Downloads.</li>
+     *     <li>On failure: reports either that the file could not be created (if the
+     *         {@link android.content.ContentResolver} returned a {@code null} {@link Uri})
+     *         or the {@link IOException} message if writing failed.</li>
+     * </ul>
+     */
     private void exportToCSV(){
         StringBuilder csvBuilder = new StringBuilder();
         csvBuilder.append("Entrant Device ID\n");
