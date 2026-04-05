@@ -83,6 +83,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".WaitingListActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".QrDisplayActivity"
             android:exported="false" />
 
