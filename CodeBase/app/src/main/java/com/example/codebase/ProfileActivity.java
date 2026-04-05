@@ -257,7 +257,7 @@ public class ProfileActivity extends AppCompatActivity {
      *   <li><b>My Events</b> — starts {@link OrganizerActivity} and finishes this activity.</li>
      *   <li><b>Profile</b> — no-op; the user is already on this screen.</li>
      *   <li><b>Explore</b> — starts {@link BrowseEventsActivity}.</li>
-     *   <li><b>Search</b> — shows a "Not implemented yet" {@link Toast}.</li>
+     *   <li><b>History</b> — starts {@link HistoryActivity}.</li>
      *   <li><b>Notifications</b> — starts {@link NotificationsActivity}.</li>
      * </ul>
      */
@@ -271,13 +271,20 @@ public class ProfileActivity extends AppCompatActivity {
             // Already on this screen — no action required.
         });
 
-        findViewById(R.id.navExplore).setOnClickListener(v ->
-                startActivity(new Intent(this, BrowseEventsActivity.class)));
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+                startActivity(new Intent(this, BrowseEventsActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navSearch).setOnClickListener(v ->
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show());
+        // Keep the profile screen in sync with the updated entrant navigation bar.
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+                startActivity(new Intent(this, HistoryActivity.class));
+                finish();
+        });
 
-        findViewById(R.id.navNotifications).setOnClickListener(v ->
-                startActivity(new Intent(this, NotificationsActivity.class)));
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+        });
     }
 }

@@ -14,9 +14,9 @@ import java.util.Date;
  *
  * <p>An event progresses through several lifecycle stages driven by its date fields
  * ({@link #registrationOpen}, {@link #registrationDeadline}, {@link #drawDate},
- * {@link #startDate}, {@link #endDate}) and the state of its four entrant lists:
- * {@link #waitingList}, {@link #selectedEntrants}, {@link #enrolledEntrants}, and
- * {@link #cancelledEntrants}.
+ * {@link #startDate}, {@link #endDate}) and the state of its entrant lists:
+ * {@link #waitingList}, {@link #selectedEntrants}, {@link #enrolledEntrants},
+ * {@link #cancelledEntrants}, and {@link #registeredEntrants}.
  *
  * <p>The class implements {@link Serializable} so that instances can be passed between
  * Android components via {@link android.os.Bundle} or {@link android.content.Intent} extras.
@@ -109,8 +109,36 @@ public class Event implements Serializable {
      */
     private boolean geoEnabled;
 
+    /**
+     * Whether this event is private.
+     *
+     * <p>Private events (US 02.01.02):
+     * <ul>
+     *   <li>Are not shown in the public event listing.</li>
+     *   <li>Do not generate a promotional QR code.</li>
+     *   <li>Accept entrants only via organizer invitation (US 02.01.03).</li>
+     * </ul>
+     */
+    private boolean isPrivate;
+
     /** Device IDs of entrants who declined their invitation or were removed. */
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
+
+    /**
+     * Device IDs of entrants who have ever registered for this event.
+     *
+     * <p>Unlike {@link #waitingList}, this list is append-only from the entrant's
+     * perspective and is used to build a persistent registration history even
+     * after the live entrant-state arrays change.</p>
+     */
+    private ArrayList<String> registeredEntrants = new ArrayList<>();
+
+    /**
+     * Device IDs of entrants assigned as co-organizers for this event.
+     * Co-organizers are excluded from the entrant pool (waitingList, selectedEntrants, etc.)
+     * for this event.
+     */
+    private ArrayList<String> coOrganizers = new ArrayList<>();
 
     /**
      * Secondary Firestore document ID field. Kept in sync with {@link #id}.
@@ -154,6 +182,28 @@ public class Event implements Serializable {
      */
     public void setGeoEnabled(boolean geoEnabled) {
         this.geoEnabled = geoEnabled;
+    }
+
+    /**
+     * Returns whether this event is private.
+     *
+     * <p>Private events are not visible in the public event listing and do not
+     * generate a promotional QR code (US 02.01.02). Entrants are invited directly
+     * by the organizer (US 02.01.03).</p>
+     *
+     * @return {@code true} if the event is private; {@code false} if it is public.
+     */
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    /**
+     * Sets whether this event is private.
+     *
+     * @param isPrivate {@code true} to make the event private; {@code false} for public.
+     */
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     /**
@@ -374,6 +424,24 @@ public class Event implements Serializable {
     }
 
     /**
+     * Returns the list of device IDs for entrants who have ever registered.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getRegisteredEntrants() {
+        return registeredEntrants;
+    }
+
+    /**
+     * Replaces the registered-entrants history collection.
+     *
+     * @param registeredEntrants The new list of device IDs.
+     */
+    public void setRegisteredEntrants(ArrayList<String> registeredEntrants) {
+        this.registeredEntrants = registeredEntrants;
+    }
+
+    /**
      * Returns the event poster object containing the Base64-encoded image.
      *
      * @return The {@link EventPoster}, or {@code null} if no poster has been set.
@@ -535,4 +603,22 @@ public class Event implements Serializable {
         this.price = price;
     }
 
+    /**
+     * Returns the list of device IDs for entrants assigned as co-organizers.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getCoOrganizers() {
+        return coOrganizers;
+    }
+
+    /**
+     * Replaces the co-organizers collection.
+     * Co-organizers are excluded from the entrant pool for this event.
+     *
+     * @param coOrganizers The new list of device IDs.
+     */
+    public void setCoOrganizers(ArrayList<String> coOrganizers) {
+        this.coOrganizers = coOrganizers != null ? coOrganizers : new ArrayList<>();
+    }
 }

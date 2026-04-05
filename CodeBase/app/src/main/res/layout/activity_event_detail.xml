@@ -728,6 +728,128 @@
 
         </LinearLayout>
 
+        <!-- Invite Entrants to private event (US 02.01.03) — hidden for public events -->
+        <LinearLayout
+            android:id="@+id/rowInviteEntrants"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_row_item_light"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_send"
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Invite Entrants"
+                android:textSize="15sp"
+                android:textColor="#111111" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
+
+        </LinearLayout>
+
+        <!-- Assign Co-Organizer (US 02.09.01) -->
+        <LinearLayout
+            android:id="@+id/rowAssignCoOrganizer"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_row_item_light"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_add"
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/row_assign_co_organizer"
+                android:textSize="15sp"
+                android:textColor="#111111" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
+
+        </LinearLayout>
+
+        <!-- Current co-organizer display — hidden until one is assigned -->
+        <LinearLayout
+            android:id="@+id/layoutCoOrganizerDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:background="#FFF8F0"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_info_details"
+                app:tint="#4A7A4A"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/decorative_image" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Co-organizer: "
+                android:textSize="13sp"
+                android:textColor="#555555" />
+
+            <TextView
+                android:id="@+id/tvCoOrganizerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#4A7A4A" />
+
+        </LinearLayout>
+
         <!-- View Cancelled Users -->
         <LinearLayout
             android:id="@+id/rowCancelledUsers"
@@ -766,10 +888,128 @@
                 android:contentDescription="@string/decorative_image" />
 
         </LinearLayout>
+        <!-- ═══════════════════════════════════════════════════════════════════════
+             COMMENTS SECTION  (US 02.08.01 / US 02.08.02)
+             Add this block BEFORE the closing </LinearLayout></ScrollView> tags
+             at the very bottom of activity_event_detail.xml.
+             ═══════════════════════════════════════════════════════════════════════ -->
 
+        <!-- Section header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="COMMENTS"
+            android:textSize="11sp"
+            android:textColor="#AAAAAA"
+            android:textAllCaps="true"
+            android:letterSpacing="0.08"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="6dp" />
+
+        <!-- Comment view buttons card (US 02.08.02) -->
+        <androidx.cardview.widget.CardView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center">
+
+                <!-- View entrant comments -->
+                <Button
+                    android:id="@+id/btnViewEntrantComments"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:text="View Entrant Comments"
+                    android:textSize="12sp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#4A7A4A"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+
+                <!-- View my (organizer) comments -->
+                <Button
+                    android:id="@+id/btnViewMyComments"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="View My Comments"
+                    android:textSize="12sp"
+                    android:textColor="#4A7A4A"
+                    android:backgroundTint="#E8F0E8"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Post new comment card -->
+        <androidx.cardview.widget.CardView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="12dp">
+
+                <!-- Text input for new comment -->
+                <EditText
+                    android:id="@+id/etNewComment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Write a comment…"
+                    android:textSize="14sp"
+                    android:textColor="#222222"
+                    android:background="@drawable/bg_input_field"
+                    android:padding="10dp"
+                    android:maxLines="4"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:imeOptions="actionDone"
+                    android:layout_marginEnd="8dp" />
+
+                <!-- Send button -->
+                <Button
+                    android:id="@+id/btnPostComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Post"
+                    android:textSize="13sp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#4A7A4A"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
 
 
 </ScrollView>
-
-

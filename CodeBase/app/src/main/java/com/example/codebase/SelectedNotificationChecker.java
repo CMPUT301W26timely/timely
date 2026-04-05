@@ -56,6 +56,32 @@ public class SelectedNotificationChecker {
     public static void checkAndShow(Context context) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
 
+        AppDatabase.getInstance()
+                .usersRef
+                .document(deviceId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    Boolean storedPreference = snapshot.getBoolean(
+                            NotificationPreferenceHelper.FIELD_NOTIFICATIONS_ENABLED);
+                    if (!NotificationPreferenceHelper.isNotificationsEnabled(storedPreference)) {
+                        return;
+                    }
+
+                    loadUnreadNotifications(context, deviceId);
+                })
+                .addOnFailureListener(e ->
+                        // Preserve legacy behaviour if the preference lookup fails.
+                        loadUnreadNotifications(context, deviceId));
+    }
+
+    /**
+     * Queries Firestore for unread notifications only after the entrant's preference
+     * has been checked and confirmed as enabled.
+     *
+     * @param context  app context used for Android notifications
+     * @param deviceId current device/user ID
+     */
+    private static void loadUnreadNotifications(Context context, String deviceId) {
         createNotificationChannel(context);
 
         AppDatabase.getInstance()

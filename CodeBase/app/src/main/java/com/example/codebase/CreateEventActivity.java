@@ -106,6 +106,7 @@ public class CreateEventActivity extends AppCompatActivity {
             viewModel.location = getIntent().getStringExtra("location") != null ? getIntent().getStringExtra("location") : "";
             viewModel.price = getIntent().getDoubleExtra("price", 0.0);
             viewModel.geoRequired = getIntent().getBooleanExtra("geoRequired", false);
+            viewModel.isPrivate = getIntent().getBooleanExtra("isPrivate", false);
             viewModel.waitlistLimit = getIntent().getIntExtra("waitlistCap", -1);
             viewModel.capacity = getIntent().getIntExtra("capacity", 0);
             viewModel.posterBase64 = getIntent().getStringExtra("posterBase64") != null ? getIntent().getStringExtra("posterBase64") : "";
@@ -297,6 +298,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 existing.setWinnersCount((long) viewModel.capacity);
                 existing.setWaitlistCap(viewModel.waitlistLimit);
                 existing.setGeoEnabled(viewModel.geoRequired);
+                existing.setPrivate(viewModel.isPrivate);
                 applyScheduleFields(existing);
 
                 if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
@@ -325,6 +327,7 @@ public class CreateEventActivity extends AppCompatActivity {
             event.setWinnersCount((long) viewModel.capacity);
             event.setWaitlistCap(viewModel.waitlistLimit);
             event.setGeoEnabled(viewModel.geoRequired);
+            event.setPrivate(viewModel.isPrivate);
             applyScheduleFields(event);
 
             if (viewModel.posterBase64 != null && !viewModel.posterBase64.isEmpty())
@@ -339,7 +342,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
             db.collection("events").document(eventId).set(event, SetOptions.merge())
                     .addOnSuccessListener(aVoid -> {
-                        generateQr(eventId);
+                        // Private events do not generate a promotional QR code (US 02.01.02)
+                        if (!viewModel.isPrivate) {
+                            generateQr(eventId);
+                        }
                         viewPager.setCurrentItem(3);
                         updateStepUI();
                     })

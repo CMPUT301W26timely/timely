@@ -104,7 +104,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/navSearch"
+                android:id="@+id/navHistory"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -116,13 +116,13 @@
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_search"
+                    android:src="@android:drawable/ic_menu_recent_history"
                     app:tint="@color/textDisabled"
-                    android:contentDescription="@string/nav_search" />
+                    android:contentDescription="@string/nav_history" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/nav_search"
+                    android:text="@string/nav_history"
                     android:textSize="9sp"
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/textDisabled"
@@ -209,4 +209,19 @@
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabCamera"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="100dp"
+        app:icon="@android:drawable/ic_menu_camera"
+        app:iconTint="@color/primaryAccent"
+        app:iconSize="22dp"
+        app:backgroundTint="@color/surface"
+        app:strokeColor="@color/border"
+        app:strokeWidth="1dp" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

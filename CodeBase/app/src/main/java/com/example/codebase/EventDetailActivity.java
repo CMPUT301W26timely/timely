@@ -2,7 +2,9 @@ package com.example.codebase;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -10,10 +12,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -27,7 +31,7 @@ import java.util.Locale;
  * <ul>
  *   <li>View invited entrants → {@link InvitedEntrantsActivity}</li>
  *   <li>View cancelled entrants → {@link CancelledEntrantsActivity}</li>
- *   <li>View QR code → {@link QrDisplayActivity}</li>
+ *   <li>View QR code → {@link QrDisplayActivity} (hidden for private events)</li>
  *   <li>Edit event → {@link CreateEventActivity} in edit mode</li>
  *   <li>Send notification → {@link SendNotificationFragment}</li>
  *   <li>Run lottery, view waiting list, view entrant map (stubs)</li>
@@ -72,8 +76,30 @@ public class EventDetailActivity extends AppCompatActivity {
     private android.widget.ImageView ivHeroPoster;
     private View progressBar;
 
+    /** Co-organizer display views (US 02.09.01). */
+    private View     layoutCoOrganizerDisplay;
+    private TextView tvCoOrganizerName;
+
     /** Most recently loaded event; {@code null} until the first Firestore load completes. */
     private Event event;
+
+    // ── Comment fields ─────────────────────────────────────────────────────────
+
+    /** Device ID of the current organizer, used as the comment author ID. */
+    private String deviceId;
+
+    /** Display name of the organizer fetched from their Firestore profile. */
+    private String organizerName = "Organizer";
+
+    /** Input field where the organizer types a new comment. */
+    private EditText etNewComment;
+
+    /**
+     * Full list of all comments loaded from Firestore.
+     * Passed to {@link ViewCommentsFragment} for client-side filtering —
+     * no second network round-trip is needed when the dialogs open.
+     */
+    private final List<Comment> commentList = new ArrayList<>();
 
     /** Formats dates as {@code "MMM dd, yyyy"} for the date range display. */
     private final SimpleDateFormat displayDateFormat =
@@ -100,6 +126,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
+        deviceId   = DeviceIdManager.getOrCreateDeviceId(this);
 
         tvDetailTitle         = findViewById(R.id.tvDetailTitle);
         tvDetailDate          = findViewById(R.id.tvDetailDate);
@@ -116,6 +143,26 @@ public class EventDetailActivity extends AppCompatActivity {
         tvEventCost           = findViewById(R.id.tvEventCost);
         ivHeroPoster          = findViewById(R.id.ivHeroPoster);
         progressBar           = findViewById(R.id.detailProgressBar);
+        layoutCoOrganizerDisplay = findViewById(R.id.layoutCoOrganizerDisplay);
+        tvCoOrganizerName        = findViewById(R.id.tvCoOrganizerName);
+
+        // ── Bind comment views (US 02.08.02) ──────────────────────────────────
+        etNewComment = findViewById(R.id.etNewComment);
+        etNewComment.setHintTextColor(android.graphics.Color.parseColor("#AAAAAA"));
+
+        // "View Entrant Comments" opens a dialog showing only entrant-posted comments
+        findViewById(R.id.btnViewEntrantComments).setOnClickListener(v -> {
+            ViewCommentsFragment f = ViewCommentsFragment.newInstance(
+                    eventId, commentList, ViewCommentsFragment.MODE_ENTRANT);
+            f.show(getSupportFragmentManager(), "entrantComments");
+        });
+
+        // "View My Comments" opens a dialog showing only organizer-posted comments
+        findViewById(R.id.btnViewMyComments).setOnClickListener(v -> {
+            ViewCommentsFragment f = ViewCommentsFragment.newInstance(
+                    eventId, commentList, ViewCommentsFragment.MODE_ORGANIZER);
+            f.show(getSupportFragmentManager(), "myComments");
+        });
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -190,6 +237,7 @@ public class EventDetailActivity extends AppCompatActivity {
             intent.putExtra("location",    event.getLocation()    != null ? event.getLocation()    : "");
             intent.putExtra("price",       (double) event.getPrice());
             intent.putExtra("geoRequired", event.isGeoEnabled());
+            intent.putExtra("isPrivate",   event.isPrivate());
             intent.putExtra("waitlistCap", event.getWaitlistCap());
             intent.putExtra("capacity",    event.getMaxCapacity() != null
                     ? event.getMaxCapacity().intValue() : 0);
@@ -218,7 +266,22 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // US 02.09.01 — Assign Co-Organizer
+        findViewById(R.id.rowAssignCoOrganizer).setOnClickListener(v -> {
+            AssignCoOrganizerFragment fragment = AssignCoOrganizerFragment.newInstance(eventId, eventTitle);
+            // Reload the event when the dialog closes so co-organizer displays immediately
+            fragment.setDismissListener(() -> {
+                if (eventId != null) loadEventDetails();
+            });
+            fragment.show(getSupportFragmentManager(), "AssignCoOrganizer");
+        });
+
         loadEventDetails();
+
+        // ── Wire comment post button and load comments ──────────────────────────
+        findViewById(R.id.btnPostComment).setOnClickListener(v -> postComment());
+        loadOrganizerName();
+        loadComments();
     }
 
     /**
@@ -347,11 +410,52 @@ public class EventDetailActivity extends AppCompatActivity {
         tvCancelledCount.setText(String.valueOf(cancelledCount));
         tvWaitingListRowCount.setText(String.valueOf(waitingCount));
 
+        // US 02.09.01 — show the assigned co-organizer name if one exists
+        ArrayList<String> coOrganizers = event.getCoOrganizers();
+        if (coOrganizers != null && !coOrganizers.isEmpty()) {
+            String coOrgDeviceId = coOrganizers.get(0);
+            layoutCoOrganizerDisplay.setVisibility(android.view.View.VISIBLE);
+            tvCoOrganizerName.setText("Loading...");
+            AppDatabase.getInstance().usersRef.document(coOrgDeviceId)
+                    .get()
+                    .addOnSuccessListener(userSnap -> {
+                        String name = userSnap.exists() ? userSnap.getString("name") : null;
+                        tvCoOrganizerName.setText(
+                                (name != null && !name.isEmpty()) ? name : coOrgDeviceId);
+                    })
+                    .addOnFailureListener(e -> tvCoOrganizerName.setText(coOrgDeviceId));
+        } else {
+            layoutCoOrganizerDisplay.setVisibility(android.view.View.GONE);
+        }
+
         String status = calculateStatus(
                 regOpen, registrationDeadline, drawDate, startDate, endDate,
                 selectedEntrants, enrolledEntrants
         );
         applyStatusBadge(status);
+
+        // US 02.01.02: Hide "View Event QR Code" row for private events
+        // Private events do not have a promotional QR code
+        View rowViewQrCode = findViewById(R.id.rowViewQrCode);
+        if (rowViewQrCode != null) {
+            rowViewQrCode.setVisibility(event.isPrivate() ? View.GONE : View.VISIBLE);
+        }
+
+        // US 02.01.03: Show "Invite Entrants" button only for private events
+        View rowInviteEntrants = findViewById(R.id.rowInviteEntrants);
+        if (rowInviteEntrants != null) {
+            if (event.isPrivate()) {
+                rowInviteEntrants.setVisibility(View.VISIBLE);
+                rowInviteEntrants.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, InviteEntrantsActivity.class);
+                    intent.putExtra(InviteEntrantsActivity.EXTRA_EVENT_ID, eventId);
+                    intent.putExtra(InviteEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
+                    startActivity(intent);
+                });
+            } else {
+                rowInviteEntrants.setVisibility(View.GONE);
+            }
+        }
     }
 
     /**
@@ -514,4 +618,83 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    // ── Comments (US 02.08.02) ─────────────────────────────────────────────────
+
+    /**
+     * Fetches the organizer's display name from their Firestore user document
+     * ({@code users/{deviceId}}) so that it can be attached to new comments.
+     * Falls back to {@code "Organizer"} if the name field is blank.
+     */
+    private void loadOrganizerName() {
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(deviceId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String name = doc.getString("name");
+                        if (name != null && !name.trim().isEmpty()) {
+                            organizerName = name.trim();
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Loads all comments from {@code events/{eventId}/comments} ordered by
+     * timestamp ascending into {@link #commentList}.
+     * The list is used by {@link ViewCommentsFragment} when the view buttons are tapped.
+     */
+    private void loadComments() {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .collection("comments")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    commentList.clear();
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Comment comment = doc.toObject(Comment.class);
+                        if (comment != null) {
+                            comment.setCommentId(doc.getId());
+                            commentList.add(comment);
+                        }
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to load comments", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    /**
+     * Posts a new comment from the organizer to Firestore.
+     * Validates the input, writes a {@link Comment} doc to
+     * {@code events/{eventId}/comments}, then reloads the list on success.
+     */
+    private void postComment() {
+        String text = etNewComment.getText().toString().trim();
+        if (TextUtils.isEmpty(text)) {
+            etNewComment.setError("Comment cannot be empty");
+            return;
+        }
+
+        // Append "(Organizer)" tag so the comment is visually distinguished.
+        // isOrganizer=true lets ViewCommentsFragment filter it into "My Comments".
+        String displayName = organizerName + " (Organizer)";
+        Comment comment = new Comment(deviceId, displayName, text, true);
+
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .collection("comments")
+                .add(comment)
+                .addOnSuccessListener(docRef -> {
+                    etNewComment.setText("");
+                    loadComments();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to post comment", Toast.LENGTH_SHORT).show()
+                );
+    }
 }

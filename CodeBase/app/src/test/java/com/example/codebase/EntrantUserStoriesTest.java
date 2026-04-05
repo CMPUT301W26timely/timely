@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
  *   US 01.01.01 — Join waiting list
  *   US 01.01.02 — Leave waiting list
  *   US 01.01.03 — Browse events
+ *   US 01.02.03 — View registration history
+ *   US 01.05.04 — View total waiting-list count
  *   US 01.05.02 — Accept invitation
  *   US 01.05.03 — Decline invitation
  *
@@ -118,6 +120,125 @@ public class EntrantUserStoriesTest {
         assertEquals("Community Swim Lessons", card.title);
         assertEquals("Downtown Rec Centre", card.location);
         assertEquals(BROWSE_DATE_FORMAT.format(openEvent.getStartDate()), card.date);
+    }
+
+    @Test
+    public void us010203_history_marksSelectedRegistrantAsSelected() {
+        Event historyEvent = makeEvent(
+                "history-selected",
+                "Summer Soccer",
+                "Field House",
+                daysFromNow(12),
+                daysFromNow(-7),
+                daysFromNow(-2)
+        );
+        historyEvent.setDrawDate(daysFromNow(-1));
+        historyEvent.setRegisteredEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+        historyEvent.setSelectedEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+
+        List<EntrantHistoryHelper.HistoryEntry> history = EntrantHistoryHelper.buildHistory(
+                Arrays.asList(historyEvent),
+                deviceId,
+                new Date()
+        );
+
+        assertEquals("One matching event should appear in history", 1, history.size());
+        assertEquals("Selected entrants should see the selected status",
+                EntrantHistoryHelper.HistoryStatus.SELECTED, history.get(0).getStatus());
+    }
+
+    @Test
+    public void us010203_history_marksWaitingRegistrantAsNotSelectedAfterDraw() {
+        Event historyEvent = makeEvent(
+                "history-not-selected",
+                "Autumn Painting",
+                "Studio 3",
+                daysFromNow(9),
+                daysFromNow(-8),
+                daysFromNow(-4)
+        );
+        historyEvent.setDrawDate(daysFromNow(-1));
+        historyEvent.setRegisteredEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+        historyEvent.setWaitingList(new ArrayList<>(Arrays.asList(deviceId)));
+
+        List<EntrantHistoryHelper.HistoryEntry> history = EntrantHistoryHelper.buildHistory(
+                Arrays.asList(historyEvent),
+                deviceId,
+                new Date()
+        );
+
+        assertEquals("One matching event should appear in history", 1, history.size());
+        assertEquals("Waiting-list entrants should become not selected once the draw passes",
+                EntrantHistoryHelper.HistoryStatus.NOT_SELECTED, history.get(0).getStatus());
+    }
+
+    @Test
+    public void us010203_history_keepsEventAfterLiveListsClearBecauseRegistrationWasRecorded() {
+        Event historyEvent = makeEvent(
+                "history-persistent",
+                "Winter Yoga",
+                "Room A",
+                daysFromNow(15),
+                daysFromNow(-3),
+                daysFromNow(3)
+        );
+        historyEvent.setRegisteredEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+        historyEvent.setWaitingList(new ArrayList<>());
+        historyEvent.setSelectedEntrants(new ArrayList<>());
+        historyEvent.setEnrolledEntrants(new ArrayList<>());
+        historyEvent.setCancelledEntrants(new ArrayList<>());
+
+        List<EntrantHistoryHelper.HistoryEntry> history = EntrantHistoryHelper.buildHistory(
+                Arrays.asList(historyEvent),
+                deviceId,
+                new Date()
+        );
+
+        assertEquals("The permanent registration history should keep the event visible",
+                1, history.size());
+        assertEquals("An event without a final draw outcome should remain registered",
+                EntrantHistoryHelper.HistoryStatus.REGISTERED, history.get(0).getStatus());
+    }
+
+    @Test
+    public void us010203_history_marksRecordedRegistrationAsNotSelectedAfterDrawEvenIfListsClear() {
+        Event historyEvent = makeEvent(
+                "history-finalized",
+                "Spring Coding Lab",
+                "Library",
+                daysFromNow(7),
+                daysFromNow(-10),
+                daysFromNow(-6)
+        );
+        historyEvent.setDrawDate(daysFromNow(-1));
+        historyEvent.setRegisteredEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+        historyEvent.setWaitingList(new ArrayList<>());
+        historyEvent.setSelectedEntrants(new ArrayList<>());
+        historyEvent.setEnrolledEntrants(new ArrayList<>());
+        historyEvent.setCancelledEntrants(new ArrayList<>());
+
+        List<EntrantHistoryHelper.HistoryEntry> history = EntrantHistoryHelper.buildHistory(
+                Arrays.asList(historyEvent),
+                deviceId,
+                new Date()
+        );
+
+        assertEquals("The recorded registration should still appear in history", 1, history.size());
+        assertEquals("Past-draw registrations without another outcome should read as not selected",
+                EntrantHistoryHelper.HistoryStatus.NOT_SELECTED, history.get(0).getStatus());
+    }
+
+    @Test
+    public void us010504_waitingListCount_reportsTotalEntrantsForEvent() {
+        openEvent.setWaitingList(new ArrayList<>(Arrays.asList(
+                deviceId,
+                "device-other-1",
+                "device-other-2"
+        )));
+
+        assertEquals("Entrants should see the total number of people currently waiting",
+                3,
+                openEvent.getWaitingList().size());
     }
 
     @Ignore("Opening the event details Activity from a card click requires Android instrumentation.")

@@ -11,8 +11,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -67,6 +69,10 @@ public class ProfileSettingsActivity extends AppCompatActivity {
     private TextInputEditText editTextName;
     private TextInputEditText editTextEmail;
     private TextInputEditText editTextPhone;
+    private TextView textViewNotificationsSummary;
+    private SwitchCompat switchNotificationsEnabled;
+    private MaterialCardView cardDeleteProfile;
+    private Button buttonDeleteProfile;
     private Button buttonSaveChanges;
 
     /**
@@ -94,10 +100,15 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         editTextName = findViewById(R.id.editTextName);
         editTextEmail = findViewById(R.id.editTextEmail);
         editTextPhone = findViewById(R.id.editTextPhone);
+        textViewNotificationsSummary = findViewById(R.id.textViewNotificationsSummary);
+        switchNotificationsEnabled = findViewById(R.id.switchNotificationsEnabled);
+        cardDeleteProfile = findViewById(R.id.cardDeleteProfile);
+        buttonDeleteProfile = findViewById(R.id.buttonDeleteProfile);
         buttonSaveChanges = findViewById(R.id.buttonSaveChanges);
 
         applyMode();
         attachFieldWatchers();
+        attachNotificationToggle();
         textViewDeviceId.setText(
                 getString(
                         R.string.profile_settings_device_id_value,
@@ -122,6 +133,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         });
 
         buttonSaveChanges.setOnClickListener(v -> saveProfile());
+        buttonDeleteProfile.setOnClickListener(v -> confirmDeleteProfile());
     }
 
     /**
@@ -139,6 +151,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             textViewModeBadge.setText(R.string.profile_settings_mode_required);
             textViewModeBadge.setBackgroundResource(R.drawable.bg_pill_amber);
             buttonBack.setVisibility(View.INVISIBLE);
+            cardDeleteProfile.setVisibility(View.GONE);
         } else {
             textViewTitle.setText(R.string.profile_settings_edit_title);
             textViewSubtitle.setText(R.string.profile_settings_edit_subtitle);
@@ -146,6 +159,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
             textViewModeBadge.setText(R.string.profile_settings_mode_editable);
             textViewModeBadge.setBackgroundResource(R.drawable.bg_pill_green);
             buttonBack.setOnClickListener(v -> finish());
+            cardDeleteProfile.setVisibility(View.VISIBLE);
         }
     }
 
@@ -153,6 +167,17 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         editTextName.addTextChangedListener(createWatcher(inputLayoutName));
         editTextEmail.addTextChangedListener(createWatcher(inputLayoutEmail));
         editTextPhone.addTextChangedListener(createWatcher(inputLayoutPhone));
+    }
+
+    private void attachNotificationToggle() {
+        switchNotificationsEnabled.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isPopulatingFields) {
+                return;
+            }
+            hasUserEditedFields = true;
+            updateNotificationSummary(isChecked);
+        });
+        updateNotificationSummary(switchNotificationsEnabled.isChecked());
     }
 
     private TextWatcher createWatcher(TextInputLayout layout) {
@@ -191,6 +216,8 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         setTextIfDifferent(editTextName, user.getName());
         setTextIfDifferent(editTextEmail, user.getEmail());
         setTextIfDifferent(editTextPhone, user.getPhoneNumber());
+        switchNotificationsEnabled.setChecked(user.isNotificationsEnabled());
+        updateNotificationSummary(user.isNotificationsEnabled());
         isPopulatingFields = false;
     }
 
@@ -206,6 +233,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
         String name = ProfileInputValidator.safeTrim(readValue(editTextName));
         String email = ProfileInputValidator.safeTrim(readValue(editTextEmail));
         String phone = ProfileInputValidator.safeTrim(readValue(editTextPhone));
+        boolean notificationsEnabled = switchNotificationsEnabled.isChecked();
 
         clearErrors();
         ProfileInputValidator.ValidationResult result =
@@ -223,6 +251,7 @@ public class ProfileSettingsActivity extends AppCompatActivity {
                 name,
                 email,
                 phone,
+                notificationsEnabled,
                 () -> {
                     setSavingState(false);
                     hasUserEditedFields = false;
@@ -254,15 +283,33 @@ public class ProfileSettingsActivity extends AppCompatActivity {
 
     private void setSavingState(boolean isSaving) {
         buttonSaveChanges.setEnabled(!isSaving);
+        buttonDeleteProfile.setEnabled(!isSaving);
         editTextName.setEnabled(!isSaving);
         editTextEmail.setEnabled(!isSaving);
         editTextPhone.setEnabled(!isSaving);
+        switchNotificationsEnabled.setEnabled(!isSaving);
+        buttonBack.setEnabled(!isSaving);
         buttonSaveChanges.setText(
                 isSaving
                         ? R.string.profile_settings_saving
                         : isFirstRun
                         ? R.string.profile_settings_continue
                         : R.string.profile_settings_save
+        );
+    }
+
+    private void setDeletingState(boolean isDeleting) {
+        buttonSaveChanges.setEnabled(!isDeleting);
+        buttonDeleteProfile.setEnabled(!isDeleting);
+        editTextName.setEnabled(!isDeleting);
+        editTextEmail.setEnabled(!isDeleting);
+        editTextPhone.setEnabled(!isDeleting);
+        switchNotificationsEnabled.setEnabled(!isDeleting);
+        buttonBack.setEnabled(!isDeleting);
+        buttonDeleteProfile.setText(
+                isDeleting
+                        ? R.string.profile_settings_deleting
+                        : R.string.profile_settings_delete_button
         );
     }
 
@@ -304,6 +351,64 @@ public class ProfileSettingsActivity extends AppCompatActivity {
     private String readValue(TextInputEditText editText) {
         Editable editable = editText.getText();
         return editable == null ? "" : editable.toString();
+    }
+
+    private void updateNotificationSummary(boolean notificationsEnabled) {
+        textViewNotificationsSummary.setText(
+                notificationsEnabled
+                        ? R.string.profile_settings_notifications_enabled_summary
+                        : R.string.profile_settings_notifications_disabled_summary
+        );
+    }
+
+    private void confirmDeleteProfile() {
+        if (isFirstRun) {
+            return;
+        }
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.profile_settings_delete_confirm_title)
+                .setMessage(R.string.profile_settings_delete_confirm_message)
+                .setNegativeButton(R.string.profile_settings_delete_cancel, null)
+                .setPositiveButton(R.string.profile_settings_delete_confirm, (dialog, which) ->
+                        deleteProfile())
+                .show();
+    }
+
+    private void deleteProfile() {
+        setDeletingState(true);
+
+        UserRepository.deleteUserProfile(
+                this,
+                () -> {
+                    setDeletingState(false);
+                    getSharedPreferences(WelcomeActivity.PREFS_NAME, MODE_PRIVATE)
+                            .edit()
+                            .clear()
+                            .apply();
+
+                    Toast.makeText(
+                            this,
+                            R.string.profile_settings_delete_success,
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Intent intent = new Intent(this, WelcomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                    finish();
+                },
+                e -> {
+                    setDeletingState(false);
+                    Toast.makeText(
+                            this,
+                            R.string.profile_settings_delete_failed,
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+        );
     }
 
     @Override

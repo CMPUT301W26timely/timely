@@ -16,6 +16,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -35,6 +36,7 @@ public class EntrantAndProfileUiStoriesTest {
     @Before
     public void setUp() {
         UiTestDataHelper.setDeviceId(UiTestDataHelper.TEST_DEVICE_ID);
+        UiTestDataHelper.setSessionRole(WelcomeActivity.ROLE_USER);
     }
 
     @After
@@ -123,6 +125,23 @@ public class EntrantAndProfileUiStoriesTest {
         onView(withId(R.id.btnEditProfile)).check(matches(isDisplayed()));
     }
 
+    /** US 01.02.04 - Delete profile. */
+    @Test
+    public void us010204_deleteProfile_editScreenShowsDeleteActionAndConfirmationDialog() throws Exception {
+        UiTestDataHelper.seedUser(UiTestDataHelper.TEST_DEVICE_ID,
+                "Taylor Brooks",
+                "taylor@example.com",
+                "+1 780 555 0198");
+        seededUser = true;
+
+        ActivityScenario.launch(ProfileSettingsActivity.class);
+        UiTestDataHelper.waitForUi();
+
+        onView(withId(R.id.buttonDeleteProfile)).perform(scrollTo(), click());
+        onView(withText("Delete profile?")).check(matches(isDisplayed()));
+        onView(withText("Delete Profile")).check(matches(isDisplayed()));
+    }
+
     /** US 01.04.01 - Receive notification when chosen. */
     @Test
     public void us010401_notificationWhenChosen_notificationsScreenShowsSelectedStatus() throws Exception {
@@ -165,6 +184,24 @@ public class EntrantAndProfileUiStoriesTest {
         onView(withText("You were not selected in this draw.")).check(matches(isDisplayed()));
     }
 
+    /** US 01.04.03 - Opt out of organizer/admin notifications. */
+    @Test
+    public void us010403_optOutNotifications_notificationsScreenShowsOptedOutState() throws Exception {
+        UiTestDataHelper.seedUser(UiTestDataHelper.TEST_DEVICE_ID,
+                "Taylor Brooks",
+                "taylor@example.com",
+                "+1 780 555 0198",
+                false);
+        seededUser = true;
+
+        ActivityScenario.launch(NotificationsActivity.class);
+        UiTestDataHelper.waitForUi();
+
+        onView(withText("Notifications are turned off.")).check(matches(isDisplayed()));
+        onView(withText(containsString("Turn organizer and admin notifications back on")))
+                .check(matches(isDisplayed()));
+    }
+
     /** US 01.05.02 - Accept invitation to register. */
     @Test
     public void us010502_acceptInvitation_invitationsScreenShowsAcceptAction() throws Exception {
@@ -187,6 +224,24 @@ public class EntrantAndProfileUiStoriesTest {
 
         onView(withText("Invitation Decline Event")).check(matches(isDisplayed()));
         onView(withId(R.id.btnExploreDecline)).check(matches(isDisplayed()));
+    }
+
+    /** US 01.05.04 - View total entrants on the waiting list. */
+    @Test
+    public void us010504_waitingListCount_eventDetailShowsTotalEntrants() throws Exception {
+        ArrayList<String> waitingList = new ArrayList<>();
+        waitingList.add(UiTestDataHelper.TEST_DEVICE_ID);
+        waitingList.add("ui-test-device-002");
+        waitingList.add("ui-test-device-003");
+        String eventId = seedEntrantEvent("Counted Event", waitingList);
+
+        Intent intent = new Intent(UiTestDataHelper.context(), EntrantEventDetailActivity.class);
+        intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventId);
+        ActivityScenario.launch(intent);
+        UiTestDataHelper.waitForUi();
+
+        onView(withId(R.id.tvEntrantWaitingListCount))
+                .check(matches(withText("Total waiting list entrants: 3")));
     }
 
     /** US 01.07.01 - Device-based identification with no password flow. */

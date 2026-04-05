@@ -41,6 +41,39 @@ public class EventRepository {
     }
 
     /**
+     * Loads every event in the system for administrator browse flows.
+     *
+     * <p>Unlike {@link #loadActiveEvents(EventsCallback)}, this method does not filter
+     * out closed events. Administrators need visibility into the full event catalogue,
+     * including past or inactive records.</p>
+     *
+     * @param callback The {@link EventsCallback} to receive the loaded events or an error.
+     */
+    public static void loadAllEvents(@NonNull EventsCallback callback) {
+        AppDatabase.getInstance()
+                .eventsRef
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> events = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        try {
+                            Event event = EventSchema.normalizeLoadedEvent(doc);
+                            if (event != null) {
+                                events.add(event);
+                            }
+                        } catch (Exception ignored) {
+                            // Skip malformed event docs instead of crashing the admin browser.
+                        }
+                    }
+
+                    AppCache.getInstance().setCachedEvents(events);
+                    callback.onEventsLoaded(events);
+                })
+                .addOnFailureListener(callback::onError);
+    }
+
+    /**
      * Callback interface for operations that return a single {@link Event}.
      */
     public interface EventDetailsCallback {
@@ -85,6 +118,9 @@ public class EventRepository {
                             Event event = EventSchema.normalizeLoadedEvent(doc);
 
                             if (event == null) continue;
+
+                            // Private events are not visible on the public event listing (US 02.01.02)
+                            if (event.isPrivate()) continue;
 
                             if (isEventActive(event)) {
                                 events.add(event);
