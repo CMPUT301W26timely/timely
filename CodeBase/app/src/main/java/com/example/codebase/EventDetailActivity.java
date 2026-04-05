@@ -136,11 +136,15 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.rowRunLottery).setOnClickListener(v ->
-                Toast.makeText(this,
-                        getString(R.string.lottery_draw_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.rowRunLottery).setOnClickListener(v -> {
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(this, LotteryDrawActivity.class);
+            intent.putExtra("EXTRA_EVENT", (Serializable) event);
+            startActivity(intent);
+        });
 
         findViewById(R.id.rowSendNotification).setOnClickListener(v -> {
             if (event == null) {

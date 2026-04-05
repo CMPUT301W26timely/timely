@@ -1,7 +1,15 @@
 package com.example.codebase;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Singleton database management class for Firebase Firestore.
@@ -64,4 +72,24 @@ public class AppDatabase {
         }
         return instance;
     }
+
+    public synchronized void addSelectedEntrants(Event event, List<String> entrants){
+
+        HashMap<String, List<String>> newData = new HashMap<>();
+        newData.put("selectedEntrants", entrants);
+
+        Log.d("AppDatabase", newData.toString());
+
+         db.collection("events")
+                .document(event.getId())
+                .set(newData, SetOptions.merge());
+    }
+
+    public synchronized void deleteWaitingEntrants(Event event, List<String> entrants){
+
+        db.collection("events")
+                .document(event.getId())
+                .update("waitingList", FieldValue.arrayRemove(entrants.toArray()));
+    }
+
 }

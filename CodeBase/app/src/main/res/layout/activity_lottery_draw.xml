@@ -113,7 +113,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Capacity"
+                    android:text="Spot Open"
                     android:textAllCaps="true"
                     android:textColor="#AAAAAA"
                     android:textSize="11sp" />
@@ -162,6 +162,7 @@
                 android:layout_width="240dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
                 android:inputType="text"
                 android:numeric="integer"
                 android:singleLine="true" />

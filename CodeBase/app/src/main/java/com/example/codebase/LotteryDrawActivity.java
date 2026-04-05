@@ -9,6 +9,12 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class LotteryDrawActivity extends AppCompatActivity {
 
     TextView waitListView;
@@ -18,10 +24,16 @@ public class LotteryDrawActivity extends AppCompatActivity {
     EditText spotsEditText;
 
     Event event;
+    String eventTitle;
+    Long spotsAvailable;
+    Integer waitingListSize;
+    Integer numEnrolled;
+    Integer numSelected;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lottery_draw);
 
         waitListView = findViewById(R.id.tvWaitingList);
         capacityView = findViewById(R.id.tvCapacity);
@@ -33,15 +45,23 @@ public class LotteryDrawActivity extends AppCompatActivity {
 
         event = (Event) getIntent().getSerializableExtra("EXTRA_EVENT");
 
-        titleTextView.setText(event.getTitle());
-        waitListView.setText(Integer.toString(event.getWaitingList().size()));
-        capacityView.setText(event.getMaxCapacity().toString());
+        eventTitle = event.getTitle();
+        waitingListSize = event.getWaitingList().size();
+        numEnrolled = event.getEnrolledEntrants().size();
+        numSelected = event.getSelectedEntrants().size();
+        spotsAvailable = event.getMaxCapacity() - (numSelected + numEnrolled);
+
+        titleTextView.setText(eventTitle);
+        waitListView.setText(waitingListSize.toString());
+        capacityView.setText(spotsAvailable.toString());
 
         runLotteryBtn.setOnClickListener(v -> {
             if(runDraw(Integer.valueOf(spotsEditText.getText().toString())))
                 Toast.makeText(this, "Sent out invites", Toast.LENGTH_SHORT).show();
             else
                 Toast.makeText(this, "Invalid value", Toast.LENGTH_SHORT).show();
+
+            spotsEditText.setText("");
 
             return;
 
@@ -50,10 +70,17 @@ public class LotteryDrawActivity extends AppCompatActivity {
     }
 
     private boolean runDraw(Integer spots){
-        if (spots <= 0)
+        if (spots <= 0 || spots > waitingListSize || spots > spotsAvailable)
             return false;
 
+        ArrayList<String> possibleEntrants;
+        List<String> newEntrants;
 
+        possibleEntrants = event.getWaitingList();
+        Collections.shuffle(possibleEntrants);
+        newEntrants = possibleEntrants.subList(0, spots);
+
+        AppDatabase.getInstance().addSelectedEntrants(event, newEntrants);
 
         return true;
     }
