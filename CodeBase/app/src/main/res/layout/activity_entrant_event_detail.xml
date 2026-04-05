@@ -219,6 +219,15 @@
                     android:layout_height="wrap_content"
                     android:text="View All Entrant Comments"
                     android:textColor="#FFFFFF"
+                    android:backgroundTint="#5C6BC0"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnViewLottoInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View Lottery Info"
+                    android:textColor="#FFFFFF"
                     android:backgroundTint="#5C6BC0" />
 
             </LinearLayout>

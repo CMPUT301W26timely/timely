@@ -1,5 +1,6 @@
 package com.example.codebase;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -180,6 +181,11 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
 
         btnViewEntrantComments.setOnClickListener(v ->
                 openCommentDialog(EntrantViewCommentsFragment.MODE_ENTRANT));
+
+        findViewById(R.id.btnViewLottoInfo).setOnClickListener(v -> {
+            startActivity(new Intent(this, LotteryInfoActivity.class));
+        });
+
 
         // Load the entrant's display name first, then event details
         loadEntrantName();

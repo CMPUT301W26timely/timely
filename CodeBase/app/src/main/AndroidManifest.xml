@@ -24,6 +24,7 @@
         <activity android:name=".FinalEntrantListActivity" android:exported="false" />
         <activity android:name=".HistoryActivity" android:exported="false" />
         <activity android:name=".AdminBrowseProfilesActivity" android:exported="false" />
+        <activity android:name=".LotteryInfoActivity" android:exported="false"/>
 
         <activity
             android:name=".NotificationsActivity"

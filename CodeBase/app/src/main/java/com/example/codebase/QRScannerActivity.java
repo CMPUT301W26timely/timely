@@ -105,11 +105,33 @@ public class QRScannerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Returns {@code true} if the app currently holds the {@link Manifest.permission#CAMERA}
+     * permission, {@code false} otherwise.
+     *
+     * @return {@code true} if camera permission is granted; {@code false} if it is denied or
+     *         not yet requested
+     */
     private boolean hasCameraPermission() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Handles the result of a runtime permission request.
+     *
+     * <p>If the camera permission was granted, the camera preview is started via
+     * {@link #startCamera()}. If denied, a {@link Toast} is shown informing the user
+     * that camera permission is required, and the activity finishes.</p>
+     *
+     * @param requestCode  the request code passed to {@link #requestPermissions}, used to
+     *                     identify this specific permission request
+     * @param permissions  the requested permissions; in this activity always contains
+     *                     {@link Manifest.permission#CAMERA}
+     * @param grantResults the grant results for the corresponding permissions; a value of
+     *                     {@link PackageManager#PERMISSION_GRANTED} indicates the permission
+     *                     was granted
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
