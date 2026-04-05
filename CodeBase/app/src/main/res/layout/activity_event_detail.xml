@@ -728,6 +728,46 @@
 
         </LinearLayout>
 
+        <!-- Invite Entrants to private event (US 02.01.03) — hidden for public events -->
+        <LinearLayout
+            android:id="@+id/rowInviteEntrants"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/bg_row_item_light"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_send"
+                app:tint="#CCCCCC"
+                android:layout_marginEnd="14dp"
+                android:contentDescription="@string/decorative_image" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Invite Entrants"
+                android:textSize="15sp"
+                android:textColor="#111111" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_media_next"
+                app:tint="#CCCCCC"
+                android:contentDescription="@string/decorative_image" />
+
+        </LinearLayout>
+
         <!-- Assign Co-Organizer (US 02.09.01) -->
         <LinearLayout
             android:id="@+id/rowAssignCoOrganizer"

@@ -263,12 +263,22 @@ public class AssignCoOrganizerFragment extends DialogFragment {
                         return;
                     }
 
+                    // Null guard — coOrganizers may be null for events that never had one
+                    if (coOrganizers == null) {
+                        coOrganizers = new ArrayList<>();
+                    }
                     coOrganizers.add(targetDeviceId);
 
                     ArrayList<String> waitingList       = event.getWaitingList();
                     ArrayList<String> selectedEntrants  = event.getSelectedEntrants();
                     ArrayList<String> enrolledEntrants  = event.getEnrolledEntrants();
                     ArrayList<String> cancelledEntrants = event.getCancelledEntrants();
+
+                    // Null guards — any pool may be null on a brand new event
+                    if (waitingList == null)       waitingList       = new ArrayList<>();
+                    if (selectedEntrants == null)  selectedEntrants  = new ArrayList<>();
+                    if (enrolledEntrants == null)  enrolledEntrants  = new ArrayList<>();
+                    if (cancelledEntrants == null) cancelledEntrants = new ArrayList<>();
 
                     waitingList.remove(targetDeviceId);
                     selectedEntrants.remove(targetDeviceId);

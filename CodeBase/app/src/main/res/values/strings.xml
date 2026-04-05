@@ -65,4 +65,14 @@
     <string name="history_summary_not_selected">Lottery complete. You were not selected for a spot in this event.</string>
     <string name="history_summary_cancelled">This registration ended because you declined it or the organizer cancelled your spot.</string>
     <string name="entrant_waiting_list_count">Total waiting list entrants: %1$d</string>
+    <string name="btn_invite">Invite</string>
+    <string name="btn_invited">Invited</string>
+    <string name="invite_screen_title">Invite Entrants</string>
+    <string name="invite_private_badge">Private Event</string>
+    <string name="invite_search_label">Search by name, email or phone</string>
+    <string name="invite_search_hint">Search entrants…</string>
+    <string name="invite_loading">Loading users…</string>
+    <string name="invite_results_label">Results</string>
+    <string name="invite_empty">No users match your search</string>
+    <string name="invite_back_desc">Back</string>
 </resources>

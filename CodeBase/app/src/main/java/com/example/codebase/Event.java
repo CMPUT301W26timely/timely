@@ -104,6 +104,18 @@ public class Event implements Serializable {
      */
     private boolean geoEnabled;
 
+    /**
+     * Whether this event is private.
+     *
+     * <p>Private events (US 02.01.02):
+     * <ul>
+     *   <li>Are not shown in the public event listing.</li>
+     *   <li>Do not generate a promotional QR code.</li>
+     *   <li>Accept entrants only via organizer invitation (US 02.01.03).</li>
+     * </ul>
+     */
+    private boolean isPrivate;
+
     /** Device IDs of entrants who declined their invitation or were removed. */
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
 
@@ -165,6 +177,28 @@ public class Event implements Serializable {
      */
     public void setGeoEnabled(boolean geoEnabled) {
         this.geoEnabled = geoEnabled;
+    }
+
+    /**
+     * Returns whether this event is private.
+     *
+     * <p>Private events are not visible in the public event listing and do not
+     * generate a promotional QR code (US 02.01.02). Entrants are invited directly
+     * by the organizer (US 02.01.03).</p>
+     *
+     * @return {@code true} if the event is private; {@code false} if it is public.
+     */
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    /**
+     * Sets whether this event is private.
+     *
+     * @param isPrivate {@code true} to make the event private; {@code false} for public.
+     */
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     /**
