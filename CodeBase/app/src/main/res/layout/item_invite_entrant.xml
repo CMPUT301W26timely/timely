@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Row layout for InviteEntrantsActivity's RecyclerView.
+    US 02.01.03 — Each row shows a user's name, email/phone, and an Invite button.
+    The Invite button is disabled and labelled "Invited" once the user is on the waiting list.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:background="@drawable/bg_card_light"
+    android:layout_marginBottom="8dp">
+
+    <!-- Name + email/phone sub-line -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvInviteName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#111111"
+            android:layout_marginBottom="2dp" />
+
+        <TextView
+            android:id="@+id/tvInviteSub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#AAAAAA"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Invite / Invited button -->
+    <Button
+        android:id="@+id/btnInvite"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="@string/btn_invite"
+        android:textSize="11sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#111111"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:stateListAnimator="@null" />
+
+</LinearLayout>

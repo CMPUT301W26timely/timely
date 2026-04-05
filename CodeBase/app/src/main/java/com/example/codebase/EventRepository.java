@@ -119,6 +119,9 @@ public class EventRepository {
 
                             if (event == null) continue;
 
+                            // Private events are not visible on the public event listing (US 02.01.02)
+                            if (event.isPrivate()) continue;
+
                             if (isEventActive(event)) {
                                 events.add(event);
                             }

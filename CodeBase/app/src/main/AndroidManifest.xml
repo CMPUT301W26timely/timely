@@ -22,9 +22,12 @@
         <activity android:name=".InvitationsActivity" android:exported="false" />
         <activity android:name=".EntrantEventDetailActivity" android:exported="false" />
         <activity android:name=".FinalEntrantListActivity" android:exported="false" />
+        <activity android:name=".LotteryDrawActivity" android:exported="false" />
         <activity android:name=".HistoryActivity" android:exported="false" />
         <activity android:name=".AdminBrowseProfilesActivity" android:exported="false" />
         <activity android:name=".LotteryInfoActivity" android:exported="false"/>
+        <!-- US 02.01.03: Organizer invite entrants to private event waiting list -->
+        <activity android:name=".InviteEntrantsActivity" android:exported="false" />
         <activity android:name=".AdminBrowseImagesActivity" android:exported="false"/>
 
         <activity

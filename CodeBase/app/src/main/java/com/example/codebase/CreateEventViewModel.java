@@ -128,6 +128,15 @@ public class CreateEventViewModel extends ViewModel {
      */
     public boolean geoRequired = false;
 
+    /**
+     * Whether the event is private (US 02.01.02).
+     *
+     * <p>When {@code true}, the event will not appear in the public browse listing
+     * and no promotional QR code will be generated. Entrants can only join via
+     * organizer invitation (US 02.01.03).</p>
+     */
+    public boolean isPrivate = false;
+
     // -------------------------------------------------------------------------
     // Step 3: QR Result
     // -------------------------------------------------------------------------
