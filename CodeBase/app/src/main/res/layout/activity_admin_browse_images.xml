@@ -3,26 +3,46 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:layout_marginTop="26dp"
         android:background="@color/pageBg">
 
         <!-- Toolbar -->
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="IMAGES"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/textPrimary"
-            android:gravity="center"
-            android:paddingVertical="16dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp">
 
-        <!-- Grid -->
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="#000000"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="IMAGES"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/textPrimary"
+                android:gravity="center"
+                android:layout_marginEnd="56dp" />
+
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewImages"
             android:layout_width="match_parent"
@@ -31,7 +51,6 @@
             android:padding="8dp"
             android:clipToPadding="false" />
 
-        <!-- Bottom Button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,6 +67,17 @@
                 android:backgroundTint="#D32F2F"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnCancelSelection"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:text="Cancel"
+                android:backgroundTint="@color/surface"
+                android:textColor="@color/textPrimary"
+                android:textSize="13sp"
+                android:visibility="gone" />
 
         </LinearLayout>
 
