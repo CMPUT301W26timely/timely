@@ -338,17 +338,21 @@ public class AssignCoOrganizerFragment extends DialogFragment {
                     ArrayList<String> selectedEntrants  = event.getSelectedEntrants();
                     ArrayList<String> enrolledEntrants  = event.getEnrolledEntrants();
                     ArrayList<String> cancelledEntrants = event.getCancelledEntrants();
+                    ArrayList<String> pendingInvites    = event.getPendingInvites();
 
                     // Null guards — any pool may be null on a brand new event
                     if (waitingList == null)       waitingList       = new ArrayList<>();
                     if (selectedEntrants == null)  selectedEntrants  = new ArrayList<>();
                     if (enrolledEntrants == null)  enrolledEntrants  = new ArrayList<>();
                     if (cancelledEntrants == null) cancelledEntrants = new ArrayList<>();
+                    if (pendingInvites == null)    pendingInvites    = new ArrayList<>();
 
                     waitingList.remove(targetDeviceId);
                     selectedEntrants.remove(targetDeviceId);
                     enrolledEntrants.remove(targetDeviceId);
                     cancelledEntrants.remove(targetDeviceId);
+                    // US 01.05.07: remove from pendingInvites so entrant no longer sees Accept/Decline
+                    pendingInvites.remove(targetDeviceId);
 
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("coOrganizers",     coOrganizers);
@@ -356,6 +360,7 @@ public class AssignCoOrganizerFragment extends DialogFragment {
                     updates.put("selectedEntrants",  selectedEntrants);
                     updates.put("enrolledEntrants",  enrolledEntrants);
                     updates.put("cancelledEntrants", cancelledEntrants);
+                    updates.put("pendingInvites",    pendingInvites);
 
                     db.collection("events").document(eventId)
                             .update(updates)

@@ -125,6 +125,13 @@ public class Event implements Serializable {
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
 
     /**
+     * Device IDs of entrants invited to a private event's waiting list who have
+     * not yet accepted or declined (US 01.05.07).
+     * Accept moves them to waitingList; Decline or past deadline moves to cancelledEntrants.
+     */
+    private ArrayList<String> pendingInvites = new ArrayList<>();
+
+    /**
      * Device IDs of entrants who have ever registered for this event.
      *
      * <p>Unlike {@link #waitingList}, this list is append-only from the entrant's
@@ -421,6 +428,21 @@ public class Event implements Serializable {
      */
     public void setCancelledEntrants(ArrayList<String> cancelledEntrants) {
         this.cancelledEntrants = cancelledEntrants;
+    }
+
+    /**
+     * Returns entrants invited to the private waiting list who have not yet responded.
+     * US 01.05.07.
+     */
+    public ArrayList<String> getPendingInvites() {
+        return pendingInvites;
+    }
+
+    /**
+     * Sets the list of entrants with pending private waiting list invitations.
+     */
+    public void setPendingInvites(ArrayList<String> pendingInvites) {
+        this.pendingInvites = pendingInvites;
     }
 
     /**

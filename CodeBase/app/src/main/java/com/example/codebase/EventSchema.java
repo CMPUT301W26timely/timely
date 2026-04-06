@@ -75,6 +75,7 @@ public final class EventSchema {
         event.setCancelledEntrants(toDeviceIdList(documentSnapshot.get("cancelledEntrants")));
         event.setRegisteredEntrants(toDeviceIdList(documentSnapshot.get("registeredEntrants")));
         event.setCoOrganizers(toDeviceIdList(documentSnapshot.get("coOrganizers")));
+        event.setPendingInvites(toDeviceIdList(documentSnapshot.get("pendingInvites")));
         return event;
     }
 
@@ -133,6 +134,9 @@ public final class EventSchema {
         }
         if (event.getCoOrganizers() == null) {
             event.setCoOrganizers(new ArrayList<>());
+        }
+        if (event.getPendingInvites() == null) {
+            event.setPendingInvites(new ArrayList<>());
         }
 
         if (event.getDrawDate() == null) {

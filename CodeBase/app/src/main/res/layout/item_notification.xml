@@ -65,10 +65,47 @@
         </LinearLayout>
 
         <ImageView
+            android:id="@+id/ivNotifChevron"
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:src="@android:drawable/ic_media_next"
             app:tint="@color/textMuted"
             android:contentDescription="@string/decorative_image" />
     </LinearLayout>
+
+    <!-- US 01.05.07: Accept / Decline for private waiting-list invitations.
+         Visible only when notification type == "privateInvite". -->
+    <LinearLayout
+        android:id="@+id/layoutNotifPrivateActions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="14dp"
+        android:weightSum="2"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btnNotifDecline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Decline"
+            android:textColor="#D32F2F"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <Button
+            android:id="@+id/btnNotifAccept"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#4CAF50"
+            android:text="Accept"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>

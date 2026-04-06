@@ -166,9 +166,17 @@ public class InviteEntrantsActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(eventDoc -> {
                     Event event = EventSchema.normalizeLoadedEvent(eventDoc);
-                    if (event != null && event.getWaitingList() != null) {
+                    if (event != null) {
                         alreadyInvited.clear();
-                        alreadyInvited.addAll(event.getWaitingList());
+                        // Show as already invited if on waitingList OR pendingInvites
+                        if (event.getWaitingList() != null) {
+                            alreadyInvited.addAll(event.getWaitingList());
+                        }
+                        if (event.getPendingInvites() != null) {
+                            for (String id : event.getPendingInvites()) {
+                                if (!alreadyInvited.contains(id)) alreadyInvited.add(id);
+                            }
+                        }
                     }
 
                     // Track co-organizers separately so the UI can show a clear "Co-Organizer" label
@@ -262,10 +270,11 @@ public class InviteEntrantsActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // US 02.01.03: Add entrant to the event's waiting list
+        // US 02.01.03 / US 01.05.07: Add entrant to pendingInvites (Option B).
+        // The entrant must explicitly Accept before being moved to waitingList.
         db.collection("events")
                 .document(eventId)
-                .update("waitingList", FieldValue.arrayUnion(deviceId))
+                .update("pendingInvites", FieldValue.arrayUnion(deviceId))
                 .addOnSuccessListener(aVoid -> {
                     // Mark as invited locally so the UI updates immediately
                     if (!alreadyInvited.contains(deviceId)) {
