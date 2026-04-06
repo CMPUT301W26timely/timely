@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -39,6 +40,9 @@ import java.io.FileOutputStream;
  */
 public class QrDisplayActivity extends AppCompatActivity {
 
+    public static final String EXTRA_EVENT_ID = "event_id";
+    public static final String EXTRA_EVENT_TITLE = "event_title";
+
     /**
      * The {@link Bitmap} containing the generated QR code.
      * {@code null} if QR generation failed in {@link #onCreate(Bundle)}.
@@ -50,6 +54,9 @@ public class QrDisplayActivity extends AppCompatActivity {
      * Used as the payload in the deep-link URI and as part of the cached image filename.
      */
     private String eventId;
+
+    /** Cached title label view so it can be updated if the title is loaded asynchronously. */
+    private TextView tvTitle;
 
     /**
      * Inflates the layout, reads intent extras, generates the QR code {@link Bitmap},
@@ -67,8 +74,8 @@ public class QrDisplayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_display);
 
-        eventId = getIntent().getStringExtra("event_id");
-        String title = getIntent().getStringExtra("event_title");
+        eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
+        String title = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -77,13 +84,22 @@ public class QrDisplayActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        TextView tvTitle   = findViewById(R.id.tvEventNameDisplay);
+        tvTitle   = findViewById(R.id.tvEventNameDisplay);
         TextView tvEyebrow = findViewById(R.id.tvQrEyebrow);
         ImageView ivQr     = findViewById(R.id.ivQrCode);
         Button btnShare    = findViewById(R.id.btnShare);
 
-        tvTitle.setText(title != null ? title : "Event QR");
+        tvTitle.setText(title != null && !title.trim().isEmpty() ? title : "Event QR");
         tvEyebrow.setText("EVENT QR CODE");
+
+        if ((title == null || title.trim().isEmpty()) && eventId != null && !eventId.trim().isEmpty()) {
+            loadEventTitle();
+        }
+
+        if (eventId == null || eventId.trim().isEmpty()) {
+            Toast.makeText(this, "Missing event ID for QR code", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         try {
             BitMatrix bitMatrix = new MultiFormatWriter().encode(
@@ -98,6 +114,23 @@ public class QrDisplayActivity extends AppCompatActivity {
         }
 
         btnShare.setOnClickListener(v -> shareQrCode());
+    }
+
+    private void loadEventTitle() {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+
+                    Event event = EventSchema.normalizeLoadedEvent(snapshot);
+                    if (event != null && event.getTitle() != null && !event.getTitle().trim().isEmpty()) {
+                        tvTitle.setText(event.getTitle().trim());
+                    }
+                });
     }
 
     /**

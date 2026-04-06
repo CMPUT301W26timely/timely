@@ -14,6 +14,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingTop="24dp"
             android:paddingBottom="16dp">
@@ -26,6 +27,49 @@
                 android:fontFamily="serif"
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/searchTextInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/browse_events_search_hint"
+                    app:endIconMode="clear_text"
+                    app:startIconDrawable="@drawable/ic_nav_search">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextSearch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <ImageButton
+                    android:id="@+id/btnShowFilters"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_icon_btn_light"
+                    android:contentDescription="@string/browse_events_filter_desc"
+                    android:src="@android:drawable/ic_menu_manage"
+                    app:tint="@color/primaryAccent" />
+            </LinearLayout>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupActiveFilters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <FrameLayout
@@ -114,12 +158,14 @@
                 android:focusable="true"
                 android:baselineAligned="false">
                 <ImageView
+                    android:id="@+id/navHistoryIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@android:drawable/ic_menu_recent_history"
                     app:tint="@color/textDisabled"
                     android:contentDescription="@string/nav_history" />
                 <TextView
+                    android:id="@+id/navHistoryLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_history"

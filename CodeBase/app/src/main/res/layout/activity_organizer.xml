@@ -118,7 +118,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/navSearch"
+                android:id="@+id/navHistory"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -128,17 +128,17 @@
                 android:focusable="true"
                 android:baselineAligned="false">
                 <ImageView
-                    android:id="@+id/navSearchIcon"
+                    android:id="@+id/navHistoryIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_search"
+                    android:src="@android:drawable/ic_menu_recent_history"
                     app:tint="@color/textDisabled"
-                    android:contentDescription="@string/nav_search" />
+                    android:contentDescription="@string/nav_history" />
                 <TextView
-                    android:id="@+id/navSearchLabel"
+                    android:id="@+id/navHistoryLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/nav_search"
+                    android:text="@string/nav_history"
                     android:textSize="9sp"
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/textDisabled"

@@ -5,16 +5,25 @@
     <string name="my_events_title">My Events</string>
     <string name="browse_events_title">Browse Events</string>
     <string name="browse_events_empty">No active events available.</string>
+    <string name="browse_events_no_results">No events found matching your search.</string>
+    <string name="browse_events_search_hint">Search by keywords</string>
+    <string name="browse_events_filter_desc">Filter events</string>
     <string name="admin_browse_events_subtitle">Review every event in the system, including closed or archived ones.</string>
     <string name="admin_browse_events_empty">No events are available in the system yet.</string>
     <string name="admin_nav_events">Events</string>
-    <string name="admin_nav_profiles">Profiles</string>
+    <string name="admin_nav_profiles">Users</string>
     <string name="no_events_yet">No events yet.\nTap + to create your first event.</string>
     <string name="create_event_coming_soon">Create Event — Coming Soon</string>
     <string name="create_event_fab_desc">Create new event</string>
     <string name="error_loading_events">Failed to load events</string>
     <string name="search_desc">Search events</string>
     <string name="more_options_desc">More options</string>
+    <string name="filter_events_title">Filter Events</string>
+    <string name="filter_available_from">Available From</string>
+    <string name="filter_available_until">Available Until</string>
+    <string name="filter_event_capacity">Event Capacity</string>
+    <string name="filter_reset">Reset</string>
+    <string name="filter_apply">Apply</string>
 
     <!-- Event card stats -->
     <string name="waitlist_count">Waitlist: %d</string>
@@ -111,6 +120,17 @@
     <string name="row_edit_event">Edit Event Details</string>
     <string name="row_cancelled_users">View Cancelled Users</string>
     <string name="row_assign_co_organizer">Assign Co-Organizer</string>
+    <string name="entrant_map_header">Entrant Map</string>
+    <string name="entrant_map_subtitle">See where current waitlist entrants joined from for this event.</string>
+    <string name="entrant_map_empty_title">No join locations yet</string>
+    <string name="entrant_map_empty_subtitle">Entrants who join a geo-required waitlist will appear here on the map.</string>
+    <string name="entrant_map_error_title">Map unavailable</string>
+    <string name="entrant_map_error_subtitle">We could not load entrant join locations for this event.</string>
+    <string name="entrant_map_load_failed">Failed to load entrant map</string>
+    <string name="entrant_map_fallback_marker">Entrant</string>
+    <string name="entrant_map_disabled_title">Map setup needed</string>
+    <string name="entrant_map_disabled_subtitle">Add a Google Maps API key in app/credentials.properties to enable the entrant map.</string>
+    <string name="entrant_map_disabled_message">Entrant map is disabled until a Maps API key is configured.</string>
     <string name="co_organizer_notification_title">Co-Organizer Invitation</string>
     <string name="co_organizer_notification_message">You have been selected to be a co-organizer for this event.</string>
 

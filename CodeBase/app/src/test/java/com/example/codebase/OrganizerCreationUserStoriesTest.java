@@ -128,10 +128,23 @@ public class OrganizerCreationUserStoriesTest {
         assertFalse("Geo requirement should be removable when disabled", disabledEvent.isGeoEnabled());
     }
 
-    @Ignore("This branch stores the geolocation toggle, but does not yet enforce location capture on join.")
     @Test
     public void us020203_enableDisableGeolocation_requiresLocationWhenEnabled() {
-        // Needs production logic before it can be tested.
+        Event geoRequiredEvent = buildEvent(viewModel, "event-geo-required", "organizer-device-7");
+
+        assertFalse("Geo-enabled events should block joins without a location fix",
+                GeoJoinPolicy.canCompleteJoin(geoRequiredEvent.isGeoEnabled(), true, null));
+
+        EntrantLocation entrantLocation = new EntrantLocation(
+                "entrant-1",
+                "Chetan",
+                53.5461,
+                -113.4938,
+                new Date()
+        );
+
+        assertTrue("Geo-enabled events should allow joins once a valid location is captured",
+                GeoJoinPolicy.canCompleteJoin(geoRequiredEvent.isGeoEnabled(), true, entrantLocation));
     }
 
     @Ignore("Saving the event document and generated QR image to Firebase/UI requires integration testing.")
