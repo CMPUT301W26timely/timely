@@ -1,11 +1,13 @@
 package com.example.codebase;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,7 +19,9 @@ import java.util.List;
  * Administrator profile browser for US 03.05.01.
  *
  * <p>This screen lists every saved user profile in the system so an administrator can
- * review contact information and profile completeness without impersonating that user.</p>
+ * review contact information and profile completeness without impersonating that user.
+ * It also keeps the shared bottom navigation visible so admins can move between
+ * profile browsing and the rest of the app without falling out of the flow.</p>
  */
 public class AdminBrowseProfilesActivity extends AppCompatActivity {
 
@@ -60,7 +64,16 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
         adapter = new AdminProfileAdapter(profileList);
         recyclerViewProfiles.setAdapter(adapter);
 
-        buttonBack.setOnClickListener(v -> finish());
+        // Route both explicit back taps and system back gestures to the admin home screen.
+        buttonBack.setOnClickListener(v -> navigateToAdminHome());
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                navigateToAdminHome();
+            }
+        });
+
+        setupBottomNavigation();
         loadProfiles();
     }
 
@@ -68,6 +81,46 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadProfiles();
+    }
+
+    /**
+     * Wires the shared bottom navigation for the administrator profile screen.
+     */
+    private void setupBottomNavigation() {
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            // Already on the admin profile browser.
+        });
+
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> navigateToAdminHome());
+
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        });
+    }
+
+    /**
+     * Returns to the shared administrator event browser.
+     *
+     * <p>This screen is often opened from a navigation action that already finished the
+     * previous activity, so we start the admin home explicitly instead of relying on
+     * {@link #finish()} to reveal an existing screen.</p>
+     */
+    private void navigateToAdminHome() {
+        Intent intent = new Intent(this, OrganizerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     /** Loads every saved profile so the administrator can browse the full directory. */
