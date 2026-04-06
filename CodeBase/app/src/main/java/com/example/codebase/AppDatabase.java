@@ -75,14 +75,11 @@ public class AppDatabase {
 
     public synchronized void addSelectedEntrants(Event event, List<String> entrants){
 
-        HashMap<String, List<String>> newData = new HashMap<>();
-        newData.put("selectedEntrants", entrants);
-
-        Log.d("AppDatabase", newData.toString());
+        Log.d("AppDatabase", entrants.toString());
 
          db.collection("events")
                 .document(event.getId())
-                .set(newData, SetOptions.merge());
+                 .update("selectedEntrants", FieldValue.arrayUnion(entrants.toArray()));
     }
 
     public synchronized void deleteWaitingEntrants(Event event, List<String> entrants){
@@ -90,6 +87,13 @@ public class AppDatabase {
         db.collection("events")
                 .document(event.getId())
                 .update("waitingList", FieldValue.arrayRemove(entrants.toArray()));
+    }
+
+    public synchronized void deleteCancelledEntrants(Event event, List<String> entrants){
+
+        db.collection("events")
+                .document(event.getId())
+                .update("cancelledEntrants", FieldValue.arrayRemove(entrants.toArray()));
     }
 
 }
