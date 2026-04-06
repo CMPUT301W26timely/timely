@@ -36,6 +36,7 @@
         <activity android:name=".LotteryDrawActivity" android:exported="false" />
         <activity android:name=".ViewEntrantMapActivity" android:exported="false" />
         <!-- US 02.01.03: Organizer invite entrants to private event waiting list -->
+        <activity android:name=".AdminBrowseImagesActivity" android:exported="false"/>
 
         <activity
             android:name=".NotificationsActivity"

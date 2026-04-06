@@ -7,10 +7,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -98,11 +100,21 @@ public class OrganizerActivity extends AppCompatActivity {
         navHistoryIcon = findViewById(R.id.navHistoryIcon);
         navMyEventsLabel = findViewById(R.id.navMyEventsLabel);
 
-        adapter = new OrganizerEventAdapter(eventList, event -> {
-            Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getId());
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
-            startActivity(intent);
+        adapter = new OrganizerEventAdapter(eventList, isAdminSession, new OrganizerEventAdapter.OnEventClickListener() {
+            @Override
+            public void onEventClick(Event event) {
+                Intent intent = new Intent(OrganizerActivity.this, EventDetailActivity.class);
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getId());
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onEventDelete(Event event) {
+                if (isAdminSession) {
+                    showDeleteConfirmationDialog(event);
+                }
+            }
         });
 
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
@@ -114,6 +126,37 @@ public class OrganizerActivity extends AppCompatActivity {
         configureRoleSpecificUi();
         setupBottomNavigation();
         loadHomeEvents();
+    }
+
+    /**
+     * Shows a confirmation dialog before deleting an event as an administrator.
+     *
+     * @param event The event to be deleted.
+     */
+    private void showDeleteConfirmationDialog(Event event) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to permanently delete this event: \"" + event.getTitle() + "\"? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteEventFromDatabase(event))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Deletes the specified event from Firestore.
+     *
+     * @param event The event to delete.
+     */
+    private void deleteEventFromDatabase(Event event) {
+        AppDatabase.getInstance().eventsRef.document(event.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                    loadHomeEvents(); // Refresh the list
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
@@ -135,21 +178,25 @@ public class OrganizerActivity extends AppCompatActivity {
      * from the second navigation slot.</p>
      */
     private void configureRoleSpecificUi() {
-        if (!isAdminSession) {
+        if (isAdminSession) {
+            findViewById(R.id.navBarOrganizer).setVisibility(View.GONE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.VISIBLE);
+
+            tvTitle.setText(R.string.browse_events_title);
+            tvSubtitle.setVisibility(View.VISIBLE);
+            tvNoEvents.setText(R.string.admin_browse_events_empty);
+            navMyEventsLabel.setText(R.string.admin_nav_events);
+            fabCreate.setVisibility(View.GONE);
             return;
         }
 
-        tvTitle.setText(R.string.browse_events_title);
-        tvSubtitle.setVisibility(View.VISIBLE);
-        tvNoEvents.setText(R.string.admin_browse_events_empty);
+        findViewById(R.id.navBarOrganizer).setVisibility(View.VISIBLE);
+        findViewById(R.id.navBarAdmin).setVisibility(View.GONE);
 
-        navHistoryLabel.setText(R.string.admin_nav_profiles);
-        navHistoryIcon.setImageResource(R.drawable.ic_nav_profile);
-        navHistoryIcon.setContentDescription(getString(R.string.admin_nav_profiles));
-        navMyEventsLabel.setText(R.string.admin_nav_events);
-
-        // Administrators browse system data here and do not create events from this screen.
-        fabCreate.setVisibility(View.GONE);
+        tvTitle.setText(R.string.my_events_title);
+        tvSubtitle.setVisibility(View.GONE);
+        tvNoEvents.setText(R.string.no_events_yet);
+        fabCreate.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -166,6 +213,29 @@ public class OrganizerActivity extends AppCompatActivity {
      * </ul>
      */
     private void setupBottomNavigation() {
+        if (isAdminSession) {
+            findViewById(R.id.navImage).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseImagesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfiles).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminMyEvents).setOnClickListener(v -> {
+                // already here
+            });
+            findViewById(R.id.navAdminNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfile).setOnClickListener(v -> {
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
+            });
+            return;
+        }
+
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             // already here
         });

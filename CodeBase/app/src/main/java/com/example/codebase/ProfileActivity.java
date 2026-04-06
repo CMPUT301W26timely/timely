@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageButton;
@@ -63,8 +64,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     /** Displays the user's phone number, or a placeholder if not set. */
     private TextView tvPhone;
-    private TextView navHistoryLabel;
-    private ImageView navHistoryIcon;
     private TextView tvProfileStatus;
     private TextView tvProfileSummary;
     private TextView tvAvatarInitials;
@@ -78,6 +77,9 @@ public class ProfileActivity extends AppCompatActivity {
 
     /** Launches {@link ProfileSettingsActivity} in edit mode. */
     private Button btnEditProfile;
+
+    /** Whether the current app session is using the administrator role. */
+    private boolean isAdminSession;
 
     /**
      * Initialises the activity, resolves the current session role, binds all views,
@@ -95,13 +97,21 @@ public class ProfileActivity extends AppCompatActivity {
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
         String currentRole = WelcomeActivity.getSessionRole(this);
 
+        isAdminSession = WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this));
+
+        if (isAdminSession) {
+            findViewById(R.id.navBarEntrant).setVisibility(View.GONE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.navBarEntrant).setVisibility(View.VISIBLE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.GONE);
+        }
+
         tvRole = findViewById(R.id.tvUserRole);
         tvDeviceId = findViewById(R.id.tvDeviceId);
         tvName = findViewById(R.id.tvName);
         tvEmail = findViewById(R.id.tvEmail);
         tvPhone = findViewById(R.id.tvPhone);
-        navHistoryLabel = findViewById(R.id.navHistoryLabel);
-        navHistoryIcon = findViewById(R.id.navHistoryIcon);
         tvProfileStatus = findViewById(R.id.tvProfileStatus);
         tvProfileSummary = findViewById(R.id.tvProfileSummary);
         tvAvatarInitials = findViewById(R.id.tvAvatarInitials);
@@ -134,8 +144,6 @@ public class ProfileActivity extends AppCompatActivity {
         btnEditProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileSettingsActivity.class)));
 
-        // The shared second nav slot swaps between History and Profiles by role.
-        RoleAwareNavHelper.configureSecondaryNav(this, navHistoryIcon, navHistoryLabel);
         setupBottomNavigation();
         loadProfile();
     }
@@ -269,6 +277,29 @@ public class ProfileActivity extends AppCompatActivity {
      * </ul>
      */
     private void setupBottomNavigation() {
+        if (isAdminSession) {
+            findViewById(R.id.navImage).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseImagesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfiles).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminMyEvents).setOnClickListener(v -> {
+                startActivity(new Intent(this, OrganizerActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfile).setOnClickListener(v -> {
+                // already here
+            });
+            return;
+        }
+
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             startActivity(new Intent(this, OrganizerActivity.class));
             finish();

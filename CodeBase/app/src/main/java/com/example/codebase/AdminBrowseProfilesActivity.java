@@ -8,9 +8,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +64,14 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
         buttonBack = findViewById(R.id.buttonAdminProfilesBack);
 
         recyclerViewProfiles.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AdminProfileAdapter(profileList);
+        
+        // Initialize adapter with delete functionality for administrator
+        adapter = new AdminProfileAdapter(profileList, new AdminProfileAdapter.OnProfileActionListener() {
+            @Override
+            public void onProfileDelete(User user) {
+                showDeleteProfileConfirmation(user);
+            }
+        });
         recyclerViewProfiles.setAdapter(adapter);
 
         // Route both explicit back taps and system back gestures to the admin home screen.
@@ -77,6 +87,38 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
         loadProfiles();
     }
 
+    /**
+     * Shows a confirmation dialog before deleting a user profile.
+     *
+     * @param user The profile to be deleted.
+     */
+    private void showDeleteProfileConfirmation(User user) {
+        String displayName = user.getName() != null ? user.getName() : "this user";
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Profile")
+                .setMessage("Are you sure you want to permanently delete the profile for \"" + displayName + "\"? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteProfileFromDatabase(user))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Removes the specified user profile from Firestore.
+     *
+     * @param user The profile document to delete.
+     */
+    private void deleteProfileFromDatabase(User user) {
+        AppDatabase.getInstance().usersRef.document(user.getDeviceId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Profile deleted successfully", Toast.LENGTH_SHORT).show();
+                    loadProfiles(); // Refresh the list
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete profile", Toast.LENGTH_SHORT).show();
+                });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -87,8 +129,8 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
      * Wires the shared bottom navigation for the administrator profile screen.
      */
     private void setupBottomNavigation() {
-        findViewById(R.id.navExplore).setOnClickListener(v -> {
-            startActivity(new Intent(this, BrowseEventsActivity.class));
+        findViewById(R.id.navImage).setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminBrowseImagesActivity.class));
             finish();
         });
 

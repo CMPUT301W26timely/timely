@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -50,6 +51,13 @@ public class OrganizerEventAdapter extends
          * @param event The {@link Event} that was tapped.
          */
         void onEventClick(Event event);
+
+        /**
+         * Called when the admin taps the delete button.
+         *
+         * @param event The {@link Event} to be deleted.
+         */
+        default void onEventDelete(Event event) {}
     }
 
     /** The data set backing this adapter. */
@@ -58,15 +66,30 @@ public class OrganizerEventAdapter extends
     /** Listener notified when an event card is tapped. */
     private final OnEventClickListener listener;
 
+    /** Whether the adapter is in admin mode (shows delete buttons). */
+    private final boolean isAdminMode;
+
     /**
-     * Constructs a new {@code OrganizerEventAdapter}.
+     * Constructs a new {@code OrganizerEventAdapter} in non-admin mode.
      *
      * @param events   The list of {@link Event} objects to display.
      * @param listener The {@link OnEventClickListener} to notify on item taps.
      */
     public OrganizerEventAdapter(List<Event> events, OnEventClickListener listener) {
-        this.events   = events;
-        this.listener = listener;
+        this(events, false, listener);
+    }
+
+    /**
+     * Constructs a new {@code OrganizerEventAdapter} with optional admin mode.
+     *
+     * @param events      The list of {@link Event} objects to display.
+     * @param isAdminMode Whether to enable administrator features like deletion.
+     * @param listener    The {@link OnEventClickListener} to notify on item interactions.
+     */
+    public OrganizerEventAdapter(List<Event> events, boolean isAdminMode, OnEventClickListener listener) {
+        this.events      = events;
+        this.isAdminMode = isAdminMode;
+        this.listener    = listener;
     }
 
     /**
@@ -93,7 +116,7 @@ public class OrganizerEventAdapter extends
      */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        holder.bind(events.get(position), listener);
+        holder.bind(events.get(position), listener, isAdminMode);
     }
 
     /**
@@ -193,6 +216,9 @@ public class OrganizerEventAdapter extends
         /** Displays the event poster thumbnail decoded from Base64. */
         private final android.widget.ImageView ivThumbnail;
 
+        /** Displays the delete button for administrators. */
+        private final android.widget.ImageButton btnDelete;
+
         /**
          * Constructs an {@link EventViewHolder} and finds all child views.
          *
@@ -207,6 +233,7 @@ public class OrganizerEventAdapter extends
             tvWaiting   = itemView.findViewById(R.id.tvWaitingCount);
             tvSelected  = itemView.findViewById(R.id.tvSelectedCount);
             ivThumbnail = itemView.findViewById(R.id.ivEventThumbnail);
+            btnDelete   = itemView.findViewById(R.id.btnDeleteEventAdmin);
         }
 
         /**
@@ -226,10 +253,11 @@ public class OrganizerEventAdapter extends
          *   <li>Red pill — {@code "Event Ended"}</li>
          * </ul>
          *
-         * @param event    The {@link Event} whose data is displayed.
-         * @param listener The {@link OnEventClickListener} invoked when the card is tapped.
+         * @param event       The {@link Event} whose data is displayed.
+         * @param listener    The {@link OnEventClickListener} invoked when the card is tapped.
+         * @param isAdminMode Whether to show the administrator delete button.
          */
-        void bind(Event event, OnEventClickListener listener) {
+        void bind(Event event, OnEventClickListener listener, boolean isAdminMode) {
             tvTitle.setText(event.getTitle());
             tvDate.setText(event.getStartDate() != null
                     ? DATE_FORMAT.format(event.getStartDate())
@@ -297,6 +325,14 @@ public class OrganizerEventAdapter extends
             }
 
             itemView.setOnClickListener(v -> listener.onEventClick(event));
+
+            // ── Admin delete button ──────────────────────────────────────────
+            if (isAdminMode && btnDelete != null) {
+                btnDelete.setVisibility(View.VISIBLE);
+                btnDelete.setOnClickListener(v -> listener.onEventDelete(event));
+            } else if (btnDelete != null) {
+                btnDelete.setVisibility(View.GONE);
+            }
 
             // ── Privacy badge ─────────────────────────────────────────────────
             if (event.isPrivate()) {

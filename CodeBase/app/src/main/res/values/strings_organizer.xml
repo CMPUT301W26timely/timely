@@ -38,6 +38,7 @@
 
     <!-- Bottom navigation -->
     <string name="nav_explore">Explore</string>
+    <string name="nav_images">Images</string>
     <string name="nav_search">Search</string>
     <string name="nav_history">History</string>
     <string name="nav_my_events">My Events</string>
