@@ -117,9 +117,13 @@ public class AdditionalUiStoriesTest {
         useOrganizerSession();
         String eventId = seedWorkflowEvent("Replacement Draw Event");
 
+        Event event = new Event();
+        event.setId(eventId);
+        event.setTitle("Replacement Draw Event");
+
         Intent intent = new Intent(UiTestDataHelper.context(), LotteryDrawActivity.class);
-        intent.putExtra("EXTRA_EVENT_ID", eventId);
-        intent.putExtra("EXTRA_EVENT_TITLE", "Replacement Draw Event");
+        intent.putExtra("EXTRA_EVENT", event);
+
         ActivityScenario.launch(intent);
         UiTestDataHelper.waitForUi();
 
