@@ -91,6 +91,8 @@ public class EntrantAndProfileUiStoriesTest {
         UiTestDataHelper.waitForUi();
 
         onView(withText("Browse Events")).check(matches(isDisplayed()));
+        onView(withId(R.id.editTextSearch)).check(matches(isDisplayed()));
+        onView(withId(R.id.btnShowFilters)).check(matches(isDisplayed()));
         onView(withId(R.id.recyclerViewEvents)).check(matches(isDisplayed()));
         onView(withId(R.id.navExplore)).check(matches(isDisplayed()));
     }

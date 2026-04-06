@@ -1,10 +1,13 @@
 package com.example.codebase;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -51,6 +55,7 @@ public class AssignCoOrganizerFragment extends DialogFragment {
     private TextView    tvDialogEventTitle;
     private ProgressBar progressBar;
     private TextView    tvEmpty;
+    private EditText    etSearch;
     private RadioGroup  radioGroup;
     private Button      btnAssign;
     private Button      btnCancel;
@@ -110,6 +115,7 @@ public class AssignCoOrganizerFragment extends DialogFragment {
         tvDialogEventTitle = view.findViewById(R.id.tvCoOrgDialogEventTitle);
         progressBar        = view.findViewById(R.id.coOrgProgressBar);
         tvEmpty            = view.findViewById(R.id.tvCoOrgEmpty);
+        etSearch           = view.findViewById(R.id.etCoOrgSearch);
         radioGroup         = view.findViewById(R.id.rgCoOrgEntrants);
         btnAssign          = view.findViewById(R.id.btnCoOrgAssign);
         btnCancel          = view.findViewById(R.id.btnCoOrgCancel);
@@ -122,6 +128,23 @@ public class AssignCoOrganizerFragment extends DialogFragment {
 
         radioGroup.setOnCheckedChangeListener((group, checkedId) ->
                 btnAssign.setEnabled(checkedId != -1));
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // No-op.
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterEntrants();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // No-op.
+            }
+        });
 
         btnCancel.setOnClickListener(v -> dismiss());
         btnAssign.setOnClickListener(v -> onAssignClicked());
@@ -195,7 +218,7 @@ public class AssignCoOrganizerFragment extends DialogFragment {
                                 if (entrantNames.isEmpty()) {
                                     showEmpty("No entrants available to assign.");
                                 } else {
-                                    populateRadioGroup();
+                                    filterEntrants();
                                 }
                             })
                             .addOnFailureListener(e -> {
@@ -217,31 +240,73 @@ public class AssignCoOrganizerFragment extends DialogFragment {
      */
     private void populateRadioGroup() {
         radioGroup.removeAllViews();
+        btnAssign.setEnabled(false);
+
+        String query = etSearch.getText() == null
+                ? ""
+                : etSearch.getText().toString().trim().toLowerCase(Locale.getDefault());
 
         for (int i = 0; i < entrantNames.size(); i++) {
+            String entrantName = entrantNames.get(i);
+            if (!query.isEmpty()
+                    && !entrantName.toLowerCase(Locale.getDefault()).contains(query)) {
+                continue;
+            }
+
             RadioButton rb = new RadioButton(requireContext());
-            rb.setId(i);
-            rb.setText(entrantNames.get(i));
+            rb.setId(View.generateViewId());
+            rb.setTag(i);
+            rb.setText(entrantName);
             rb.setTextSize(15f);
             rb.setTextColor(0xFF111111);
             rb.setPadding(8, 24, 8, 24);
             radioGroup.addView(rb);
         }
 
+        if (radioGroup.getChildCount() == 0) {
+            tvEmpty.setTextColor(0xFFAAAAAA);
+            tvEmpty.setText("No entrants match your search.");
+            tvEmpty.setVisibility(View.VISIBLE);
+            radioGroup.setVisibility(View.GONE);
+            return;
+        }
+
+        tvEmpty.setVisibility(View.GONE);
         radioGroup.setVisibility(View.VISIBLE);
+    }
+
+    private void filterEntrants() {
+        if (entrantNames.isEmpty()) {
+            return;
+        }
+
+        populateRadioGroup();
     }
 
     // ── Assignment ────────────────────────────────────────────────────────────
 
     private void onAssignClicked() {
         int checkedId = radioGroup.getCheckedRadioButtonId();
-        if (checkedId == -1 || checkedId >= entrantDeviceIds.size()) {
+        if (checkedId == -1) {
             Toast.makeText(requireContext(), "Please select an entrant.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String targetDeviceId = entrantDeviceIds.get(checkedId);
-        String targetName     = entrantNames.get(checkedId);
+        View checkedView = radioGroup.findViewById(checkedId);
+        if (!(checkedView instanceof RadioButton)
+                || !(((RadioButton) checkedView).getTag() instanceof Integer)) {
+            Toast.makeText(requireContext(), "Please select an entrant.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int entrantIndex = (Integer) ((RadioButton) checkedView).getTag();
+        if (entrantIndex < 0 || entrantIndex >= entrantDeviceIds.size()) {
+            Toast.makeText(requireContext(), "Please select an entrant.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String targetDeviceId = entrantDeviceIds.get(entrantIndex);
+        String targetName     = entrantNames.get(entrantIndex);
 
         btnAssign.setEnabled(false);
 
@@ -366,13 +431,17 @@ public class AssignCoOrganizerFragment extends DialogFragment {
 
     private void showLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
+        etSearch.setEnabled(!loading);
+        etSearch.setVisibility(loading ? View.GONE : View.VISIBLE);
         if (loading) {
             radioGroup.setVisibility(View.GONE);
             tvEmpty.setVisibility(View.GONE);
+            btnAssign.setEnabled(false);
         }
     }
 
     private void showEmpty(String message) {
+        etSearch.setVisibility(View.GONE);
         tvEmpty.setTextColor(0xFFAAAAAA);
         tvEmpty.setText(message);
         tvEmpty.setVisibility(View.VISIBLE);
@@ -381,6 +450,7 @@ public class AssignCoOrganizerFragment extends DialogFragment {
     }
 
     private void showWarning(String message) {
+        etSearch.setVisibility(View.GONE);
         tvEmpty.setTextColor(0xFFCC3333);
         tvEmpty.setText(message);
         tvEmpty.setVisibility(View.VISIBLE);

@@ -1,6 +1,10 @@
 package com.example.codebase;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,11 +16,20 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,6 +76,11 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
 
     /** Intent extra key for the Firestore event document ID. */
     public static final String EXTRA_EVENT_ID = "event_id";
+
+    private static final String[] LOCATION_PERMISSIONS = new String[] {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
 
     /** Firestore document ID of the event being displayed. */
     private String eventId;
@@ -132,6 +150,10 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
     private final SimpleDateFormat displayFormat =
             new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
 
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
+    private FusedLocationProviderClient fusedLocationClient;
+    private boolean pendingGeoJoin;
+
     // ── Lifecycle ──────────────────────────────────────────────────────────────
 
     /**
@@ -147,6 +169,28 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
 
         eventId  = getIntent().getStringExtra(EXTRA_EVENT_ID);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    boolean granted =
+                            Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_FINE_LOCATION))
+                                    || Boolean.TRUE.equals(result.get(Manifest.permission.ACCESS_COARSE_LOCATION));
+
+                    if (pendingGeoJoin && granted) {
+                        pendingGeoJoin = false;
+                        joinWaitingList();
+                    } else if (pendingGeoJoin) {
+                        pendingGeoJoin = false;
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(
+                                this,
+                                getString(R.string.location_required_join_denied),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
 
         // ── Event detail views ────────────────────────────────────────────────
         tvTitle         = findViewById(R.id.tvEntrantEventTitle);
@@ -426,9 +470,12 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
      * Calls {@link #joinWaitingList()} if the user confirms.
      */
     private void showJoinConfirmation() {
+        boolean geoRequired = GeoJoinPolicy.requiresLocationCapture(event);
         new AlertDialog.Builder(this)
                 .setTitle("Join Waiting List")
-                .setMessage("Would you like to join the waiting list for this event?")
+                .setMessage(geoRequired
+                        ? getString(R.string.location_required_join_message)
+                        : "Would you like to join the waiting list for this event?")
                 .setPositiveButton("Confirm", (dialog, which) -> joinWaitingList())
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -476,6 +523,12 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     Event latestEvent = EventSchema.normalizeLoadedEvent(snapshot);
+                    if (latestEvent == null) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this, "Failed to join", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     if (latestEvent != null
                             && latestEvent.getCoOrganizers().contains(deviceId)) {
                         progressBar.setVisibility(View.GONE);
@@ -486,21 +539,12 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                         return;
                     }
 
-                    FirebaseFirestore.getInstance().collection("events").document(eventId)
-                            // Keep a permanent history entry even if the entrant later moves
-                            // out of the active waiting list or invitation arrays.
-                            .update(
-                                    "waitingList", FieldValue.arrayUnion(deviceId),
-                                    "registeredEntrants", FieldValue.arrayUnion(deviceId)
-                            )
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Joined waiting list!", Toast.LENGTH_SHORT).show();
-                                loadEventDetails();
-                            })
-                            .addOnFailureListener(e -> {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(this, "Failed to join", Toast.LENGTH_SHORT).show();
-                            });
+                    if (GeoJoinPolicy.requiresLocationCapture(latestEvent)) {
+                        ensureLocationAndJoin();
+                        return;
+                    }
+
+                    commitJoinToFirestore(null);
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
@@ -514,8 +558,12 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
      */
     private void leaveWaitingList() {
         progressBar.setVisibility(View.VISIBLE);
-        FirebaseFirestore.getInstance().collection("events").document(eventId)
-                .update("waitingList", FieldValue.arrayRemove(deviceId))
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        WriteBatch batch = db.batch();
+        batch.update(eventRef, "waitingList", FieldValue.arrayRemove(deviceId));
+        batch.delete(eventRef.collection("entrantLocations").document(deviceId));
+        batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Left waiting list.", Toast.LENGTH_SHORT).show();
                     loadEventDetails();
@@ -545,6 +593,120 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Failed to drop out", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void ensureLocationAndJoin() {
+        if (hasLocationPermission()) {
+            captureLocationAndJoin();
+            return;
+        }
+
+        progressBar.setVisibility(View.GONE);
+        pendingGeoJoin = true;
+
+        if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)
+                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.location_required_dialog_title)
+                    .setMessage(R.string.location_required_dialog_message)
+                    .setPositiveButton(R.string.location_required_dialog_continue,
+                            (dialog, which) -> locationPermissionLauncher.launch(LOCATION_PERMISSIONS))
+                    .setNegativeButton(R.string.location_required_dialog_cancel,
+                            (dialog, which) -> pendingGeoJoin = false)
+                    .show();
+            return;
+        }
+
+        locationPermissionLauncher.launch(LOCATION_PERMISSIONS);
+    }
+
+    private boolean hasLocationPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @SuppressLint("MissingPermission")
+    private void captureLocationAndJoin() {
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        commitJoinToFirestore(buildEntrantLocation(location));
+                        return;
+                    }
+
+                    fusedLocationClient.getLastLocation()
+                            .addOnSuccessListener(lastLocation -> {
+                                if (lastLocation != null) {
+                                    commitJoinToFirestore(buildEntrantLocation(lastLocation));
+                                } else {
+                                    progressBar.setVisibility(View.GONE);
+                                    Toast.makeText(
+                                            this,
+                                            getString(R.string.location_required_join_unavailable),
+                                            Toast.LENGTH_LONG
+                                    ).show();
+                                    loadEventDetails();
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(
+                                        this,
+                                        getString(R.string.location_required_join_unavailable),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(
+                            this,
+                            getString(R.string.location_required_join_unavailable),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+    }
+
+    private EntrantLocation buildEntrantLocation(Location location) {
+        return new EntrantLocation(
+                deviceId,
+                entrantName,
+                location.getLatitude(),
+                location.getLongitude(),
+                new Date()
+        );
+    }
+
+    private void commitJoinToFirestore(EntrantLocation entrantLocation) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference entrantLocationRef =
+                eventRef.collection("entrantLocations").document(deviceId);
+        WriteBatch batch = db.batch();
+
+        batch.update(
+                eventRef,
+                "waitingList", FieldValue.arrayUnion(deviceId),
+                "registeredEntrants", FieldValue.arrayUnion(deviceId)
+        );
+
+        if (entrantLocation != null) {
+            batch.set(entrantLocationRef, entrantLocation);
+        } else {
+            batch.delete(entrantLocationRef);
+        }
+
+        batch.commit()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Joined waiting list!", Toast.LENGTH_SHORT).show();
+                    loadEventDetails();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Failed to join", Toast.LENGTH_SHORT).show();
                 });
     }
 }

@@ -159,6 +159,7 @@ public class OrganizerActivity extends AppCompatActivity {
      *   <li>My Events → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
+     *   <li>History → {@link HistoryActivity}</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
      *   <li>History/Profiles → {@link HistoryActivity} for organizers,
      *       {@link AdminBrowseProfilesActivity} for administrators</li>

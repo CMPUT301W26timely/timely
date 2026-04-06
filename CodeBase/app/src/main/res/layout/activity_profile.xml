@@ -258,35 +258,34 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnEditProfile"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="52dp"
                             android:layout_marginTop="16dp"
                             android:text="@string/profile_edit_button"
                             android:textAllCaps="false"
+                            android:fontFamily="sans-serif-medium"
                             android:textColor="@color/white"
                             app:backgroundTint="@color/primaryAccent"
                             app:cornerRadius="100dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSwitchRole"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/switch_to_admin"
+                            android:textAllCaps="false"
+                            android:fontFamily="sans-serif-medium"
+                            android:textColor="@color/primaryAccent"
+                            app:backgroundTint="@color/accentTint"
+                            app:cornerRadius="100dp"
+                            app:strokeColor="@color/accentBorderMid"
+                            app:strokeWidth="1dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
-
-    <!-- Switch Role Button at the bottom -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSwitchRole"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="bottom"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="112dp"
-        android:text="Switch Role"
-        android:textAllCaps="false"
-        android:textColor="@color/white"
-        android:fontFamily="sans-serif-medium"
-        app:cornerRadius="100dp"
-        app:backgroundTint="@color/primaryAccent"
-        app:elevation="2dp" />
 
     <!-- Bottom Navigation -->
     <com.google.android.material.card.MaterialCardView
