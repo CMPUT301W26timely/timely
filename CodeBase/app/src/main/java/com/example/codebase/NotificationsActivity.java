@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,6 +53,12 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Supporting copy under the empty-state headline. */
     private TextView emptyStateSubtitle;
 
+    /** Shared second-tab label, which becomes "Profiles" for admin sessions. */
+    private TextView navHistoryLabel;
+
+    /** Shared second-tab icon, swapped for the admin profile browser. */
+    private ImageView navHistoryIcon;
+
     /** Describes the number of pending invitations inside {@link #invitationCard}. */
     private TextView invitationCountSummary;
 
@@ -86,6 +93,8 @@ public class NotificationsActivity extends AppCompatActivity {
         invitationCard        = findViewById(R.id.invitationSummaryInclude);
         emptyState            = findViewById(R.id.tvNotificationsEmptyState);
         emptyStateSubtitle    = findViewById(R.id.tvNotificationsEmptySubtitle);
+        navHistoryLabel       = findViewById(R.id.navHistoryLabel);
+        navHistoryIcon        = findViewById(R.id.navHistoryIcon);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
@@ -95,6 +104,8 @@ public class NotificationsActivity extends AppCompatActivity {
         invitationCard.setOnClickListener(v ->
                 startActivity(new Intent(this, InvitationsActivity.class)));
 
+        // Keep the shared second nav slot aligned with the active role.
+        RoleAwareNavHelper.configureSecondaryNav(this, navHistoryIcon, navHistoryLabel);
         setupBottomNavigation();
         loadInvitationSummary();
         loadNotifications();
@@ -235,10 +246,9 @@ public class NotificationsActivity extends AppCompatActivity {
             finish();
         });
 
-        // The layout now uses a dedicated history tab for entrant registration history.
+        // Reuse the same nav slot for entrant history and admin profile browsing.
         findViewById(R.id.navHistory).setOnClickListener(v -> {
-            startActivity(new Intent(this, HistoryActivity.class));
-            finish();
+            RoleAwareNavHelper.openSecondaryNav(this, true);
         });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
