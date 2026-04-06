@@ -43,6 +43,34 @@
         android:textStyle="bold"
         android:layout_marginBottom="24dp" />
 
+    <!-- US 02.01.02: Private Event toggle -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="VISIBILITY SETTINGS"
+        android:textSize="9sp"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swPrivateEvent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Private event (invite only)"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Private events are not shown in the public listing and do not generate a QR code. You invite entrants directly."
+        android:textSize="12sp"
+        android:textColor="@color/textMuted"
+        android:layout_marginBottom="24dp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

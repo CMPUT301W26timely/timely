@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F0EDE8">
+
+    <!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="36dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
+        android:background="#F0EDE8">
+
+        <ImageButton
+            android:id="@+id/btnBackWaitingList"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="@drawable/bg_icon_btn_light"
+            android:contentDescription="@string/back_button_desc" />
+
+        <TextView
+            android:id="@+id/tvWaitingListTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Waiting List"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.02"
+            android:textColor="#111111"
+            android:gravity="center"
+            android:layout_marginEnd="40dp" />
+
+    </LinearLayout>
+
+    <!-- ── COUNT BADGE ──────────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvWaitingListCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="13sp"
+        android:textColor="#AAAAAA" />
+
+    <!-- ── PROGRESS BAR ──────────────────────────────────────────────────── -->
+    <ProgressBar
+        android:id="@+id/waitingListProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <!-- ── EMPTY STATE ───────────────────────────────────────────────────── -->
+    <TextView
+        android:id="@+id/tvWaitingListEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No entrants on the waiting list yet."
+        android:textSize="14sp"
+        android:textColor="#AAAAAA"
+        android:gravity="center"
+        android:paddingTop="40dp"
+        android:visibility="gone" />
+
+    <!-- ── LIST ─────────────────────────────────────────────────────────── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvWaitingList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>

@@ -53,7 +53,7 @@ public class AdminUiStoriesTest {
 
         onView(withText("Browse Events")).check(matches(isDisplayed()));
         onView(withText("Archived Admin Event")).check(matches(isDisplayed()));
-        onView(withId(R.id.navSearchLabel)).check(matches(withText("Profiles")));
+        onView(withId(R.id.navHistoryLabel)).check(matches(withText("Profiles")));
     }
 
     /** US 03.05.01 - Browse user profiles as an administrator. */
@@ -65,7 +65,7 @@ public class AdminUiStoriesTest {
         ActivityScenario.launch(OrganizerActivity.class);
         UiTestDataHelper.waitForUi();
 
-        onView(withId(R.id.navSearch)).perform(click());
+        onView(withId(R.id.navHistory)).perform(click());
         UiTestDataHelper.waitForUi();
 
         onView(withText("Browse Profiles")).check(matches(isDisplayed()));

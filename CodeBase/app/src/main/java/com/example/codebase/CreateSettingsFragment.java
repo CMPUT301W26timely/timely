@@ -20,7 +20,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
  * A {@link Fragment} that provides the UI for configuring optional event settings
  * during the event creation flow.
  *
- * <p>This fragment manages two toggleable settings via {@link MaterialSwitch} controls:</p>
+ * <p>This fragment manages three toggleable settings via {@link MaterialSwitch} controls:</p>
  * <ul>
  *     <li><b>Waitlist limit</b> — optionally caps the number of waitlist entries.
  *         When enabled, a dynamically inserted {@link EditText} allows the organizer
@@ -28,6 +28,9 @@ import com.google.android.material.materialswitch.MaterialSwitch;
  *         reset to {@code -1} to indicate no cap.</li>
  *     <li><b>Geolocation requirement</b> — flags whether entrants must provide
  *         their location when joining the event waitlist.</li>
+ *     <li><b>Private event</b> (US 02.01.02) — when enabled, the event is hidden from
+ *         the public browse listing and no promotional QR code is generated. Entrants
+ *         can only join via direct organizer invitation (US 02.01.03).</li>
  * </ul>
  *
  * <p>All settings are persisted to the shared {@link CreateEventViewModel} so they
@@ -73,6 +76,7 @@ public class CreateSettingsFragment extends Fragment {
 
         MaterialSwitch swLimitWaitlist = view.findViewById(R.id.swLimitWaitlist);
         MaterialSwitch swGeoRequired = view.findViewById(R.id.swGeoRequired);
+        MaterialSwitch swPrivateEvent = view.findViewById(R.id.swPrivateEvent);
 
         LinearLayout root = (LinearLayout) view;
 
@@ -108,6 +112,7 @@ public class CreateSettingsFragment extends Fragment {
 
         swLimitWaitlist.setChecked(viewModel.waitlistLimit > 0);
         swGeoRequired.setChecked(viewModel.geoRequired);
+        swPrivateEvent.setChecked(viewModel.isPrivate);
         if (viewModel.waitlistLimit > 0) {
             etWaitlistLimit.setText(String.valueOf(viewModel.waitlistLimit));
         }
@@ -124,6 +129,11 @@ public class CreateSettingsFragment extends Fragment {
         // Persist geolocation requirement toggle to ViewModel
         swGeoRequired.setOnCheckedChangeListener((buttonView, isChecked) -> {
             viewModel.geoRequired = isChecked;
+        });
+
+        // Persist private event toggle to ViewModel (US 02.01.02)
+        swPrivateEvent.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            viewModel.isPrivate = isChecked;
         });
 
         // Parse waitlist limit from input; reset to -1 on invalid or empty input

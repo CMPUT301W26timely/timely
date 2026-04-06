@@ -33,7 +33,7 @@ import java.util.Locale;
 /**
  * Entrant browse events screen.
  *
- * <p>Displays all active events and lets the user search or filter them directly
+ * <p>Displays all active public events and lets the user search or filter them directly
  * from the Explore screen. Tapping an event navigates to either
  * {@link EventDetailActivity} (if the current user is the organizer) or
  * {@link EntrantEventDetailActivity} (if the current user is an entrant).</p>
@@ -58,7 +58,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
     /** Adapter backing the filtered Explore list. */
     private EventAdapter adapter;
 
-    /** All currently active events loaded from Firestore. */
+    /** All currently active public events loaded from Firestore. */
     private final List<Event> allActiveEvents = new ArrayList<>();
 
     /** Visible events after keyword and filter processing. */
@@ -148,9 +148,8 @@ public class BrowseEventsActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.fabCamera).setOnClickListener(v -> {
-            startActivity(new Intent(this, QRScannerActivity.class));
-        });
+        findViewById(R.id.fabCamera).setOnClickListener(v ->
+                startActivity(new Intent(this, QRScannerActivity.class)));
     }
 
     /**

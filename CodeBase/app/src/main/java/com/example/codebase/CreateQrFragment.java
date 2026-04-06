@@ -27,6 +27,10 @@ import java.io.FileOutputStream;
  * by {@code CreateEventActivity#generateQr(String)} after a successful Firestore write.
  * The organiser can also share the QR code image to other apps via the system share sheet.
  *
+ * <p>For private events (US 02.01.02), no QR code is generated. In this case the QR
+ * image, hint text, and share button are hidden, and a message is shown explaining
+ * that private events do not have a promotional QR code.
+ *
  * <p>UI population is deferred to {@link #onResume()} rather than
  * {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)} because
  * {@link CreateEventViewModel#generatedQr} is set asynchronously after the Firestore
@@ -59,33 +63,57 @@ public class CreateQrFragment extends Fragment {
     }
 
     /**
-     * Populates the UI with the event name and QR code once the fragment is visible.
+     * Populates the UI with the event name and either the QR code or a private-event
+     * message, depending on whether a QR code was generated.
      *
-     * <p>Binds the following views when both {@link #getView()} and
-     * {@link CreateEventViewModel#generatedQr} are non-null:
+     * <p><b>Public event</b> ({@link CreateEventViewModel#generatedQr} is non-null):
      * <ul>
      *   <li>{@code tvEventNameDisplay} – set to {@link CreateEventViewModel#name}.</li>
-     *   <li>{@code ivQrCode} – set to the {@link android.graphics.Bitmap} in
-     *       {@link CreateEventViewModel#generatedQr}.</li>
-     *   <li>{@code btnShare} – wired to {@link #shareQrCode()}.</li>
+     *   <li>{@code ivQrCode} – set to the generated {@link android.graphics.Bitmap}.</li>
+     *   <li>{@code tvQrHint} – shows "Scan to view event details".</li>
+     *   <li>{@code btnShare} – visible and wired to {@link #shareQrCode()}.</li>
+     *   <li>{@code tvPrivateNotice} – hidden.</li>
      * </ul>
      *
-     * <p>If either the view or the QR bitmap is not yet available this method is a
-     * no-op, avoiding a {@link NullPointerException} if the fragment becomes visible
-     * before the async Firestore write has completed.
+     * <p><b>Private event</b> (US 02.01.02 — {@link CreateEventViewModel#generatedQr}
+     * is {@code null}):
+     * <ul>
+     *   <li>{@code tvEventNameDisplay} – set to {@link CreateEventViewModel#name}.</li>
+     *   <li>{@code ivQrCode} – hidden.</li>
+     *   <li>{@code tvQrHint} – hidden.</li>
+     *   <li>{@code btnShare} – hidden.</li>
+     *   <li>{@code tvPrivateNotice} – visible with explanation message.</li>
+     * </ul>
      */
     @Override
     public void onResume() {
         super.onResume();
-        if (getView() != null && viewModel.generatedQr != null) {
-            TextView tvEventNameDisplay = getView().findViewById(R.id.tvEventNameDisplay);
-            ImageView ivQrCode = getView().findViewById(R.id.ivQrCode);
-            Button btnShare = getView().findViewById(R.id.btnShare);
+        if (getView() == null) return;
 
-            tvEventNameDisplay.setText(viewModel.name);
+        TextView tvEventNameDisplay = getView().findViewById(R.id.tvEventNameDisplay);
+        ImageView ivQrCode          = getView().findViewById(R.id.ivQrCode);
+        TextView tvQrHint           = getView().findViewById(R.id.tvQrHint);
+        Button btnShare             = getView().findViewById(R.id.btnShare);
+        TextView tvPrivateNotice    = getView().findViewById(R.id.tvPrivateNotice);
+
+        // Always show the event name
+        tvEventNameDisplay.setText(viewModel.name);
+
+        if (viewModel.generatedQr != null) {
+            // Public event — show QR code normally
             ivQrCode.setImageBitmap(viewModel.generatedQr);
+            ivQrCode.setVisibility(View.VISIBLE);
+            tvQrHint.setVisibility(View.VISIBLE);
+            btnShare.setVisibility(View.VISIBLE);
+            tvPrivateNotice.setVisibility(View.GONE);
 
             btnShare.setOnClickListener(v -> shareQrCode());
+        } else {
+            // Private event (US 02.01.02) — no QR code generated
+            ivQrCode.setVisibility(View.GONE);
+            tvQrHint.setVisibility(View.GONE);
+            btnShare.setVisibility(View.GONE);
+            tvPrivateNotice.setVisibility(View.VISIBLE);
         }
     }
 

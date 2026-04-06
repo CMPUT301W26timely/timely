@@ -72,4 +72,14 @@
     <string name="location_required_dialog_cancel">Cancel</string>
     <string name="location_required_join_denied">Location permission is required to join this waitlist.</string>
     <string name="location_required_join_unavailable">We could not get your location. Try again from a place with better location access.</string>
+    <string name="btn_invite">Invite</string>
+    <string name="btn_invited">Invited</string>
+    <string name="invite_screen_title">Invite Entrants</string>
+    <string name="invite_private_badge">Private Event</string>
+    <string name="invite_search_label">Search by name, email or phone</string>
+    <string name="invite_search_hint">Search entrants…</string>
+    <string name="invite_loading">Loading users…</string>
+    <string name="invite_results_label">Results</string>
+    <string name="invite_empty">No users match your search</string>
+    <string name="invite_back_desc">Back</string>
 </resources>
