@@ -70,8 +70,7 @@ public class OrganizerWorkflowUserStoriesTest {
     @Test
     public void us020602_viewCancelledEntrants_displaysCancelledAndDeclinedUsers() {
         buildCancelledLists(
-                Arrays.asList("user1", "user2"),
-                Arrays.asList("user2"),
+                Arrays.asList("user1"),
                 Arrays.asList("user1", "user3")
         );
 
@@ -159,21 +158,15 @@ public class OrganizerWorkflowUserStoriesTest {
         // Covered by integration tests rather than local JUnit.
     }
 
-    private void buildInvitedLists(List<String> selected,
+    private void buildInvitedLists(List<String> invited,
                                    List<String> enrolled,
-                                   List<String> cancelled) {
+                                   List<String> declined) {
         invitedAll.clear();
         invitedAccepted.clear();
         invitedPending.clear();
         invitedDeclined.clear();
 
-        List<String> selectedMinusEnrolled = new ArrayList<>(selected);
-        selectedMinusEnrolled.removeAll(enrolled);
-
-        List<String> declined = new ArrayList<>(cancelled);
-        declined.retainAll(selectedMinusEnrolled);
-
-        for (String deviceId : selected) {
+        for (String deviceId : invited) {
             String status;
             if (enrolled.contains(deviceId)) {
                 status = "Accepted";
@@ -197,21 +190,14 @@ public class OrganizerWorkflowUserStoriesTest {
         }
     }
 
-    private void buildCancelledLists(List<String> selected,
-                                     List<String> enrolled,
+    private void buildCancelledLists(List<String> declined,
                                      List<String> cancelled) {
         cancelledAll.clear();
         cancelledDeclined.clear();
         cancelledByOrganizer.clear();
 
-        List<String> selectedMinusEnrolled = new ArrayList<>(selected);
-        selectedMinusEnrolled.removeAll(enrolled);
-
-        List<String> declinedIds = new ArrayList<>(cancelled);
-        declinedIds.retainAll(selectedMinusEnrolled);
-
         for (String deviceId : cancelled) {
-            String status = declinedIds.contains(deviceId) ? "Declined" : "Cancelled";
+            String status = declined.contains(deviceId) ? "Declined" : "Cancelled";
             CancelledEntrantsActivity.CancelledEntrant entrant =
                     new CancelledEntrantsActivity.CancelledEntrant(deviceId, status, null);
             cancelledAll.add(entrant);

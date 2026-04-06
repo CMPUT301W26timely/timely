@@ -38,7 +38,8 @@
             android:layout_height="wrap_content"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#111111"
+            android:textColor="@color/textPrimary"
+            android:fontFamily="serif"
             android:layout_marginBottom="6dp" />
 
         <!-- Email — shown when available -->
@@ -47,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/textMuted"
             android:visibility="gone" />
 
         <!-- Status badge — pill style -->
@@ -64,31 +65,12 @@
             android:letterSpacing="0.08" />
 
     </LinearLayout>
-
-    <!-- Right: date + chevron -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvCancelledDate"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="top|end"
-        android:paddingStart="8dp">
-
-        <TextView
-            android:id="@+id/tvCancelledDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="10sp"
-            android:textColor="#AAAAAA"
-            android:layout_marginBottom="16dp" />
-
-        <ImageView
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:src="@android:drawable/ic_media_next"
-            app:tint="#CCCCCC"
-            android:layout_gravity="end"
-            android:contentDescription="@string/decorative_image" />
-
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="@color/textMuted"
+        android:layout_marginStart="8dp" />
 
 </LinearLayout>

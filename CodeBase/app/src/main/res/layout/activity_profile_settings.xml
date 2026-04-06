@@ -22,13 +22,9 @@
 
             <ImageButton
                 android:id="@+id/buttonBack"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:background="@drawable/bg_icon_btn_light"
+                style="@style/Widget.CodeBase.BackButton"
                 android:contentDescription="@string/back_button_desc"
-                android:padding="10dp"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="@color/textPrimary" />
+                />
 
             <TextView
                 android:id="@+id/textViewModeBadge"
@@ -120,7 +116,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputLayoutName"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.CodeBase.TextInputLayout.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -135,6 +131,7 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextName"
+                style="@style/Widget.CodeBase.TextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:importantForAutofill="yes"
@@ -147,7 +144,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputLayoutEmail"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.CodeBase.TextInputLayout.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
@@ -162,6 +159,7 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextEmail"
+                style="@style/Widget.CodeBase.TextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:importantForAutofill="yes"
@@ -174,7 +172,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/inputLayoutPhone"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.CodeBase.TextInputLayout.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
@@ -189,6 +187,7 @@
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextPhone"
+                style="@style/Widget.CodeBase.TextInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:importantForAutofill="yes"

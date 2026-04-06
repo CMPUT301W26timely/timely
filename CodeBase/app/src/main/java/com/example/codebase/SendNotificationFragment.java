@@ -16,14 +16,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Bottom sheet dialog that allows an organizer to compose and send notifications to
@@ -255,9 +252,16 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                 .addOnSuccessListener(doc -> {
                     if (!doc.exists() || !isAdded()) return;
 
-                    waitingList   = toStringList(doc.get("waitingList"));
-                    selectedList  = toStringList(doc.get("selectedEntrants"));
-                    cancelledList = toStringList(doc.get("cancelledEntrants"));
+                    Event event = EventSchema.normalizeLoadedEvent(doc);
+                    if (event == null) {
+                        return;
+                    }
+
+                    waitingList   = event.getWaitingList() != null
+                            ? new ArrayList<>(event.getWaitingList())
+                            : new ArrayList<>();
+                    selectedList  = EventRosterStatusHelper.invitedEntrants(event);
+                    cancelledList = EventRosterStatusHelper.cancelledEntrants(event);
 
                     Date today = new Date();
 
@@ -270,24 +274,29 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                             ? waitingList.size() + " recipients"
                             : "Available from registration start date");
 
-                    // Selected & Cancelled — enabled only after draw date.
+                    // Selected & Cancelled — enabled after draw date, or immediately once
+                    // the corresponding list already has entrants in it.
                     com.google.firebase.Timestamp drawTs = doc.getTimestamp("drawDate");
                     Date drawDate = drawTs != null ? drawTs.toDate() : null;
                     boolean drawEnabled = drawDate != null && !today.before(drawDate);
-                    rbSelected.setEnabled(drawEnabled);
-                    rbCancelled.setEnabled(drawEnabled);
-                    tvSelectedCount.setText(drawEnabled
+                    boolean selectedEnabled = drawEnabled || !selectedList.isEmpty();
+                    boolean cancelledEnabled = drawEnabled || !cancelledList.isEmpty();
+                    rbSelected.setEnabled(selectedEnabled);
+                    rbCancelled.setEnabled(cancelledEnabled);
+                    tvSelectedCount.setText(selectedEnabled
                             ? selectedList.size() + " recipients"
                             : "Available after draw date");
-                    tvCancelledCount.setText(drawEnabled
+                    tvCancelledCount.setText(cancelledEnabled
                             ? cancelledList.size() + " recipients"
                             : "Available after draw date");
 
                     // Auto-select the first available option.
                     if (waitingEnabled) {
                         selectType(TYPE_WAITING);
-                    } else if (drawEnabled) {
+                    } else if (selectedEnabled) {
                         selectType(TYPE_SELECTED);
+                    } else if (cancelledEnabled) {
+                        selectType(TYPE_CANCELLED);
                     } else {
                         btnSend.setEnabled(false);
                         btnSend.setText("Not available yet");
@@ -418,52 +427,43 @@ public class SendNotificationFragment extends BottomSheetDialogFragment {
                                        String subject,
                                        String message,
                                        int optedOutCount) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        int total = recipients.size();
-        int[] sent = {0};
-        boolean[] failed = {false};
-
-        for (String deviceId : recipients) {
-            Map<String, Object> notif = new HashMap<>();
-            notif.put("userId",     deviceId);
-            notif.put("eventId",    eventId);
-            notif.put("eventTitle", eventTitle);
-            notif.put("title",      subject);
-            notif.put("message",    message);
-            notif.put("status",     getStatusLabel(selectedType));
-            notif.put("type",       selectedType);
-            notif.put("sentAt",     new Timestamp(new Date()));
-            notif.put("read",       false);
-
-            db.collection("notifications")
-                    .document(deviceId)
-                    .collection("messages")
-                    .add(notif)
-                    .addOnSuccessListener(ref -> {
-                        if (failed[0]) {
+        NotificationDispatchHelper.sendPreFilteredNotifications(
+                recipients,
+                eventId,
+                eventTitle,
+                subject,
+                message,
+                getStatusLabel(selectedType),
+                selectedType,
+                DeviceIdManager.getOrCreateDeviceId(requireContext()),
+                getStatusLabel(selectedType),
+                optedOutCount,
+                new NotificationDispatchHelper.DispatchCallback() {
+                    @Override
+                    public void onComplete(int deliveredCount, int skippedCount) {
+                        if (!isAdded()) {
                             return;
                         }
+                        String messageText = skippedCount > 0
+                                ? "Sent to " + deliveredCount + " recipients. "
+                                + skippedCount + " opted out."
+                                : "Sent to " + deliveredCount + " recipients";
+                        Toast.makeText(getContext(), messageText, Toast.LENGTH_SHORT).show();
+                        dismiss();
+                    }
 
-                        sent[0]++;
-                        if (sent[0] == total && isAdded()) {
-                            String messageText = optedOutCount > 0
-                                    ? "Sent to " + total + " recipients. " + optedOutCount + " opted out."
-                                    : "Sent to " + total + " recipients";
-                            Toast.makeText(getContext(), messageText, Toast.LENGTH_SHORT).show();
-                            dismiss();
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        if (!isAdded() || failed[0]) {
+                    @Override
+                    public void onFailure(Exception e) {
+                        if (!isAdded()) {
                             return;
                         }
-                        failed[0] = true;
                         resetSendButton();
                         Toast.makeText(getContext(),
                                 "Failed to send some notifications",
                                 Toast.LENGTH_SHORT).show();
-                    });
-        }
+                    }
+                }
+        );
     }
 
     /** Restores the send button after the compose flow is interrupted by an error. */

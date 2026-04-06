@@ -77,6 +77,11 @@ public class AdminBrowseImagesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (AdminAccessHelper.finishIfNotAdmin(this, "Administrator access required")) {
+            return;
+        }
+
         setContentView(R.layout.activity_admin_browse_images);
 
         recyclerView = findViewById(R.id.recyclerViewImages);

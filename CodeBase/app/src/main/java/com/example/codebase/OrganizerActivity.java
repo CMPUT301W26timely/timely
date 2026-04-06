@@ -77,6 +77,9 @@ public class OrganizerActivity extends AppCompatActivity {
     /** Whether the current app session is using the administrator role. */
     private boolean isAdminSession;
 
+    /** Whether the current non-admin user has lost organizer privileges. */
+    private boolean organizerPrivilegesRevoked;
+
     /**
      * Initialises the activity, resolves the device ID, binds views, sets up the
      * {@link RecyclerView} with {@link OrganizerEventAdapter}, wires the FAB and
@@ -148,15 +151,18 @@ public class OrganizerActivity extends AppCompatActivity {
      * @param event The event to delete.
      */
     private void deleteEventFromDatabase(Event event) {
-        AppDatabase.getInstance().eventsRef.document(event.getId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
-                    loadHomeEvents(); // Refresh the list
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to delete event", Toast.LENGTH_SHORT).show();
-                });
+        AdminEventCleanupHelper.deleteEvent(event.getId(), new AdminEventCleanupHelper.Callback() {
+            @Override
+            public void onSuccess() {
+                    Toast.makeText(OrganizerActivity.this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                    loadHomeEvents();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                    Toast.makeText(OrganizerActivity.this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -275,6 +281,7 @@ public class OrganizerActivity extends AppCompatActivity {
      */
     private void loadHomeEvents() {
         if (isAdminSession) {
+            organizerPrivilegesRevoked = false;
             EventRepository.loadAllEvents(new EventRepository.EventsCallback() {
                 @Override
                 public void onEventsLoaded(List<Event> events) {
@@ -291,15 +298,37 @@ public class OrganizerActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .whereEqualTo("organizerDeviceId", deviceId)
-                .get()
-                .addOnSuccessListener(this::populateList)
-                .addOnFailureListener(e ->
-                        Toast.makeText(this,
-                                getString(R.string.error_loading_events),
-                                Toast.LENGTH_SHORT).show());
+        OrganizerPrivilegeHelper.checkCurrentUser(this, new OrganizerPrivilegeHelper.AccessCallback() {
+            @Override
+            public void onAllowed(User user) {
+                organizerPrivilegesRevoked = false;
+                showRevokedOrganizerState(null);
+                FirebaseFirestore.getInstance()
+                        .collection("events")
+                        .whereEqualTo("organizerDeviceId", deviceId)
+                        .get()
+                        .addOnSuccessListener(OrganizerActivity.this::populateList)
+                        .addOnFailureListener(e ->
+                                Toast.makeText(OrganizerActivity.this,
+                                        getString(R.string.error_loading_events),
+                                        Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onRevoked(User user) {
+                organizerPrivilegesRevoked = true;
+                eventList.clear();
+                adapter.notifyDataSetChanged();
+                showRevokedOrganizerState(user);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(OrganizerActivity.this,
+                        getString(R.string.error_loading_events),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
@@ -313,6 +342,9 @@ public class OrganizerActivity extends AppCompatActivity {
      * @param snapshot The {@link QuerySnapshot} returned by the Firestore events query.
      */
     private void populateList(QuerySnapshot snapshot) {
+        if (organizerPrivilegesRevoked) {
+            return;
+        }
         List<Event> normalizedEvents = new ArrayList<>();
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
@@ -331,6 +363,9 @@ public class OrganizerActivity extends AppCompatActivity {
      * @param events normalized events ready for display
      */
     private void showEvents(List<Event> events) {
+        if (organizerPrivilegesRevoked) {
+            return;
+        }
         eventList.clear();
         if (events != null) {
             eventList.addAll(events);
@@ -339,5 +374,23 @@ public class OrganizerActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         tvNoEvents.setVisibility(eventList.isEmpty() ? View.VISIBLE : View.GONE);
         rvEvents.setVisibility(eventList.isEmpty() ? View.GONE : View.VISIBLE);
+    }
+
+    private void showRevokedOrganizerState(User user) {
+        if (isAdminSession || !organizerPrivilegesRevoked) {
+            if (!isAdminSession) {
+                tvSubtitle.setVisibility(View.GONE);
+                fabCreate.setVisibility(View.VISIBLE);
+                tvNoEvents.setText(R.string.no_events_yet);
+            }
+            return;
+        }
+
+        String message = OrganizerPrivilegeHelper.getRevocationMessage(this, user);
+        tvSubtitle.setVisibility(View.GONE);
+        tvNoEvents.setText(message);
+        tvNoEvents.setVisibility(View.VISIBLE);
+        rvEvents.setVisibility(View.GONE);
+        fabCreate.setVisibility(View.GONE);
     }
 }

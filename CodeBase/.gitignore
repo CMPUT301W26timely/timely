@@ -19,3 +19,4 @@ build/
 app/google-services.json
 app/credentials.properties
 .codex
+LOCAL_USER_STORY_REPORT.md

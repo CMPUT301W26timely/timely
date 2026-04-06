@@ -5,7 +5,10 @@
 package com.example.codebase;
 
 import android.content.Context;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 
 import java.util.List;
 import java.util.Map;
@@ -37,8 +40,20 @@ public class NotificationListAdapter extends SimpleAdapter {
                 context,
                 data,
                 R.layout.item_notification,
-                new String[]{"status", "message"},
-                new int[]{R.id.tvNotificationStatus, R.id.tvNotificationMessage}
+                new String[]{"status", "message", "meta"},
+                new int[]{R.id.tvNotificationStatus, R.id.tvNotificationMessage, R.id.tvNotificationMeta}
         );
+
+        setViewBinder((view, data1, textRepresentation) -> {
+            if (view.getId() != R.id.tvNotificationMeta || !(view instanceof TextView)) {
+                return false;
+            }
+
+            TextView textView = (TextView) view;
+            String text = data1 != null ? String.valueOf(data1) : "";
+            textView.setText(text);
+            textView.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+            return true;
+        });
     }
 }

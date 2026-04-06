@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.CodeBase.TextInputLayout.Outlined" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/surface</item>
+        <item name="boxCornerRadiusBottomEnd">18dp</item>
+        <item name="boxCornerRadiusBottomStart">18dp</item>
+        <item name="boxCornerRadiusTopEnd">18dp</item>
+        <item name="boxCornerRadiusTopStart">18dp</item>
+        <item name="boxStrokeColor">@color/primaryAccent</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/textMuted</item>
+    </style>
+
+    <style name="Widget.CodeBase.TextInputLayout.Dropdown" parent="Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+        <item name="boxBackgroundColor">@color/surface</item>
+        <item name="boxCornerRadiusBottomEnd">18dp</item>
+        <item name="boxCornerRadiusBottomStart">18dp</item>
+        <item name="boxCornerRadiusTopEnd">18dp</item>
+        <item name="boxCornerRadiusTopStart">18dp</item>
+        <item name="boxStrokeColor">@color/primaryAccent</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/textMuted</item>
+    </style>
+
+    <style name="Widget.CodeBase.TextInputEditText" parent="">
+        <item name="android:minHeight">58dp</item>
+        <item name="android:paddingHorizontal">8dp</item>
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textColorHint">@color/textMuted</item>
+    </style>
+
+    <style name="Widget.CodeBase.EditText" parent="">
+        <item name="android:background">@drawable/bg_input_field</item>
+        <item name="android:minHeight">58dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingVertical">14dp</item>
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textColorHint">@color/textMuted</item>
+    </style>
+
+    <style name="Widget.CodeBase.BackButton" parent="">
+        <item name="android:layout_width">42dp</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:background">@drawable/bg_icon_btn_light</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:src">@drawable/ic_arrow_back</item>
+        <item name="android:tint">@color/textPrimary</item>
+    </style>
+
+    <style name="TextAppearance.CodeBase.PageTitle" parent="">
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.CodeBase.PageTitleCompact" parent="">
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.CodeBase.Eyebrow" parent="">
+        <item name="android:textColor">@color/textMuted</item>
+        <item name="android:textSize">9sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.18</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+</resources>

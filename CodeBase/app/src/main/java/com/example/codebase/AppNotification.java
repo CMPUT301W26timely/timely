@@ -40,7 +40,7 @@ public class AppNotification {
     /**
      * Recipient group this notification was sent to.
      * Expected values: {@code "selectedEntrants"}, {@code "cancelledEntrants"},
-     * or {@code "waitingList"}.
+     * {@code "waitingList"}, or {@code "privateInvite"}.
      */
     private String type;
 
@@ -190,7 +190,7 @@ public class AppNotification {
     /**
      * Returns the recipient group type this notification was sent to.
      * Expected values: {@code "selectedEntrants"}, {@code "cancelledEntrants"},
-     * or {@code "waitingList"}.
+     * {@code "waitingList"}, or {@code "privateInvite"}.
      *
      * @return the type string, or {@code null} if not set
      */

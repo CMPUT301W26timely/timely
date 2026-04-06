@@ -50,18 +50,15 @@
 
     <EditText
         android:id="@+id/etPin"
+        style="@style/Widget.CodeBase.EditText"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
-        android:background="@drawable/bg_input_field"
         android:hint="••••"
         android:inputType="numberPassword"
         android:gravity="center"
         android:letterSpacing="0.5"
         android:textSize="18sp"
-        android:textColor="@color/textPrimary"
-        android:textColorHint="@color/textDisabled"
-        android:paddingHorizontal="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvMessage" />
 
     <com.google.android.material.button.MaterialButton

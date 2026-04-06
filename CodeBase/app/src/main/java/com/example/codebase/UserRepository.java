@@ -14,6 +14,7 @@ import com.google.firebase.firestore.WriteBatch;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
 
 /**
  * Repository class responsible for Firestore user profile operations.
@@ -153,6 +154,12 @@ public class UserRepository {
                     user.setEmail(email);
                     user.setPhoneNumber(phoneNumber);
                     user.setNotificationsEnabled(notificationsEnabled);
+                    User cachedUser = AppCache.getInstance().getCachedUser();
+                    if (cachedUser != null) {
+                        user.setOrganizerPrivilegesRevoked(cachedUser.isOrganizerPrivilegesRevoked());
+                        user.setOrganizerRevocationMessage(cachedUser.getOrganizerRevocationMessage());
+                        user.setOrganizerRevokedAt(cachedUser.getOrganizerRevokedAt());
+                    }
 
                     // Update the in-memory cache so callers get fresh data immediately.
                     AppCache.getInstance().setCachedUser(user);
@@ -240,6 +247,11 @@ public class UserRepository {
             String phoneNumber = documentSnapshot.getString("phoneNumber");
             Boolean notificationsEnabled =
                     documentSnapshot.getBoolean(NotificationPreferenceHelper.FIELD_NOTIFICATIONS_ENABLED);
+            Boolean organizerPrivilegesRevoked =
+                    documentSnapshot.getBoolean("organizerPrivilegesRevoked");
+            String organizerRevocationMessage =
+                    documentSnapshot.getString("organizerRevocationMessage");
+            Date organizerRevokedAt = documentSnapshot.getDate("organizerRevokedAt");
 
             user.setRole(role != null ? role : "entrant");
             user.setName(name != null ? name : "");
@@ -247,9 +259,63 @@ public class UserRepository {
             user.setPhoneNumber(phoneNumber != null ? phoneNumber : "");
             user.setNotificationsEnabled(
                     NotificationPreferenceHelper.isNotificationsEnabled(notificationsEnabled));
+            user.setOrganizerPrivilegesRevoked(Boolean.TRUE.equals(organizerPrivilegesRevoked));
+            user.setOrganizerRevocationMessage(
+                    organizerRevocationMessage != null ? organizerRevocationMessage : "");
+            user.setOrganizerRevokedAt(organizerRevokedAt);
         }
 
         return user;
+    }
+
+    /**
+     * Updates whether a target profile can access organizer functionality.
+     *
+     * @param deviceId target user device ID
+     * @param revoked whether organizer access is revoked
+     * @param message admin-facing reason shown to the affected user
+     * @param onSuccess success callback
+     * @param onFailure failure callback
+     */
+    public static void updateOrganizerPrivileges(String deviceId,
+                                                 boolean revoked,
+                                                 String message,
+                                                 Runnable onSuccess,
+                                                 ErrorCallback onFailure) {
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            if (onFailure != null) {
+                onFailure.onError(new IllegalArgumentException("Missing device ID"));
+            }
+            return;
+        }
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("organizerPrivilegesRevoked", revoked);
+        update.put("organizerRevocationMessage", revoked ? (message != null ? message : "") : "");
+        update.put("organizerRevokedAt", revoked ? new Date() : null);
+
+        AppDatabase.getInstance()
+                .usersRef
+                .document(deviceId)
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(unused -> {
+                    User cachedUser = AppCache.getInstance().getCachedUser();
+                    if (cachedUser != null && deviceId.equals(cachedUser.getDeviceId())) {
+                        cachedUser.setOrganizerPrivilegesRevoked(revoked);
+                        cachedUser.setOrganizerRevocationMessage(
+                                revoked ? (message != null ? message : "") : "");
+                        cachedUser.setOrganizerRevokedAt(revoked ? new Date() : null);
+                        AppCache.getInstance().setCachedUser(cachedUser);
+                    }
+                    if (onSuccess != null) {
+                        onSuccess.run();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (onFailure != null) {
+                        onFailure.onError(e);
+                    }
+                });
     }
 
     /**
@@ -275,6 +341,28 @@ public class UserRepository {
                                          Runnable onSuccess,
                                          ErrorCallback onFailure) {
         String deviceId = DeviceIdManager.getOrCreateDeviceId(context);
+        deleteUserProfileByDeviceId(deviceId, true, onSuccess, onFailure);
+    }
+
+    /**
+     * Deletes an arbitrary user profile and removes the device from related event and
+     * notification records.
+     *
+     * @param deviceId target device ID
+     * @param clearLocalCache whether to clear {@link AppCache} after success
+     * @param onSuccess success callback
+     * @param onFailure failure callback
+     */
+    public static void deleteUserProfileByDeviceId(String deviceId,
+                                                   boolean clearLocalCache,
+                                                   Runnable onSuccess,
+                                                   ErrorCallback onFailure) {
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            if (onFailure != null) {
+                onFailure.onError(new IllegalArgumentException("Missing device ID"));
+            }
+            return;
+        }
 
         com.google.android.gms.tasks.Task<QuerySnapshot> eventsTask =
                 AppDatabase.getInstance().eventsRef.get();
@@ -294,19 +382,26 @@ public class UserRepository {
 
                     for (DocumentSnapshot doc : eventsSnapshot.getDocuments()) {
                         Event event = EventSchema.normalizeLoadedEvent(doc);
-                        if (event == null || !containsDevice(event, deviceId)) {
+                        if (event == null) {
                             continue;
                         }
 
-                        // Remove the device from every entrant-facing array so deleting the
-                        // profile also withdraws the entrant from future event flows.
-                        batch.update(doc.getReference(),
-                                "waitingList", FieldValue.arrayRemove(deviceId),
-                                "selectedEntrants", FieldValue.arrayRemove(deviceId),
-                                "enrolledEntrants", FieldValue.arrayRemove(deviceId),
-                                "cancelledEntrants", FieldValue.arrayRemove(deviceId),
-                                "registeredEntrants", FieldValue.arrayRemove(deviceId),
-                                "coOrganizers", FieldValue.arrayRemove(deviceId));
+                        if (containsDevice(event, deviceId)) {
+                            // Remove the device from every entrant-facing array so deleting the
+                            // profile also withdraws the entrant from future event flows.
+                            batch.update(doc.getReference(),
+                                    "waitingList", FieldValue.arrayRemove(deviceId),
+                                    "selectedEntrants", FieldValue.arrayRemove(deviceId),
+                                    "invitedEntrants", FieldValue.arrayRemove(deviceId),
+                                    "enrolledEntrants", FieldValue.arrayRemove(deviceId),
+                                    "cancelledEntrants", FieldValue.arrayRemove(deviceId),
+                                    "declinedEntrants", FieldValue.arrayRemove(deviceId),
+                                    "registeredEntrants", FieldValue.arrayRemove(deviceId),
+                                    "coOrganizers", FieldValue.arrayRemove(deviceId));
+                        }
+                        batch.delete(doc.getReference().collection("entrantLocations").document(deviceId));
+                        batch.delete(doc.getReference().collection(PrivateEventInvite.SUBCOLLECTION)
+                                .document(deviceId));
                     }
 
                     for (DocumentSnapshot doc : notificationsSnapshot.getDocuments()) {
@@ -317,7 +412,9 @@ public class UserRepository {
 
                     batch.commit()
                             .addOnSuccessListener(unused -> {
-                                AppCache.getInstance().clear();
+                                if (clearLocalCache) {
+                                    AppCache.getInstance().clear();
+                                }
                                 if (onSuccess != null) {
                                     onSuccess.run();
                                 }
@@ -338,8 +435,10 @@ public class UserRepository {
     private static boolean containsDevice(Event event, String deviceId) {
         return event.getWaitingList().contains(deviceId)
                 || event.getSelectedEntrants().contains(deviceId)
+                || event.getInvitedEntrants().contains(deviceId)
                 || event.getEnrolledEntrants().contains(deviceId)
                 || event.getCancelledEntrants().contains(deviceId)
+                || event.getDeclinedEntrants().contains(deviceId)
                 || event.getRegisteredEntrants().contains(deviceId)
                 || event.getCoOrganizers().contains(deviceId);
     }

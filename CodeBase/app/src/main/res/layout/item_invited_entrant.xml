@@ -26,7 +26,8 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#111111"
+            android:textColor="@color/textPrimary"
+            android:fontFamily="serif"
             android:layout_marginBottom="2dp" />
 
         <!-- Email — shown when available -->
@@ -35,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/textMuted"
             android:visibility="gone" />
 
     </LinearLayout>
@@ -61,7 +62,7 @@
         android:layout_height="34dp"
         android:text="Cancel"
         android:textSize="11sp"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:backgroundTint="#CC3333"
         android:paddingStart="14dp"
         android:paddingEnd="14dp"

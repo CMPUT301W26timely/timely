@@ -4,13 +4,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -77,12 +77,8 @@ public class QrDisplayActivity extends AppCompatActivity {
         eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
         String title = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        ImageButton backButton = findViewById(R.id.toolbar);
+        backButton.setOnClickListener(v -> finish());
 
         tvTitle   = findViewById(R.id.tvEventNameDisplay);
         TextView tvEyebrow = findViewById(R.id.tvQrEyebrow);

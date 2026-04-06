@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0EDE8"
+    android:background="@color/pageBg"
     android:id="@+id/eventDetailActivity">
 
     <LinearLayout
@@ -44,10 +44,7 @@
 
                 <ImageButton
                     android:id="@+id/btnBack"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@android:drawable/ic_media_previous"
-                    android:background="@drawable/bg_icon_btn_light"
+                    style="@style/Widget.CodeBase.BackButton"
                     android:contentDescription="@string/back_button_desc" />
 
                 <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
@@ -490,14 +487,6 @@
                 android:text="@string/row_run_lottery"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- Send Notification -->
@@ -529,14 +518,6 @@
                 android:text="@string/row_send_notification"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- ── EVENT DATA ─────────────────────────────────────────────────── -->
@@ -589,14 +570,6 @@
                 android:textSize="14sp"
                 android:textColor="#AAAAAA"
                 android:layout_marginEnd="6dp" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- View Entrant Map -->
@@ -628,14 +601,6 @@
                 android:text="@string/row_view_entrant_map"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- View Event QR Code -->
@@ -667,14 +632,6 @@
                 android:text="@string/row_view_qr_code"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- ── SETTINGS ───────────────────────────────────────────────────── -->
@@ -719,14 +676,6 @@
                 android:text="@string/row_edit_event"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- Invite Entrants to private event (US 02.01.03) — hidden for public events -->
@@ -756,17 +705,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Invite Entrants"
+                android:text="@string/row_invite_entrants"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- Assign Co-Organizer (US 02.09.01) -->
@@ -798,14 +739,6 @@
                 android:text="@string/row_assign_co_organizer"
                 android:textSize="15sp"
                 android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
         </LinearLayout>
 
         <!-- Current co-organizer display — hidden until one is assigned -->
@@ -851,25 +784,26 @@
 
         </LinearLayout>
 
-        <!-- View Cancelled Users -->
+        <!-- Delete Event -->
         <LinearLayout
-            android:id="@+id/rowCancelledUsers"
+            android:id="@+id/rowDeleteEvent"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingStart="20dp"
             android:paddingEnd="16dp"
-            android:background="@drawable/bg_row_item_light"
+            android:background="@drawable/bg_row_item_danger"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="32dp">
 
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                app:tint="#CCCCCC"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="@color/error"
                 android:layout_marginEnd="14dp"
                 android:contentDescription="@string/decorative_image" />
 
@@ -877,17 +811,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/row_cancelled_users"
+                android:text="@string/row_delete_event"
                 android:textSize="15sp"
-                android:textColor="#111111" />
-
-            <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@android:drawable/ic_media_next"
-                app:tint="#CCCCCC"
-                android:contentDescription="@string/decorative_image" />
-
+                android:textColor="@color/error" />
         </LinearLayout>
         <!-- ═══════════════════════════════════════════════════════════════════════
              COMMENTS SECTION  (US 02.08.01 / US 02.08.02)
@@ -924,38 +850,53 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center">
+                android:orientation="vertical"
+                android:padding="12dp">
 
-                <!-- View entrant comments -->
-                <Button
-                    android:id="@+id/btnViewEntrantComments"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <LinearLayout
+                    android:id="@+id/layoutOrganizerCommentActions"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:text="View Entrant Comments"
-                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnViewEntrantComments"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:backgroundTint="#4A7A4A"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:text="View Entrant Comments"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <Button
+                        android:id="@+id/btnViewMyComments"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:backgroundTint="#E8F0E8"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:text="View My Comments"
+                        android:textColor="#4A7A4A"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnModerateAllComments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/comments_all_title"
                     android:textColor="#FFFFFF"
-                    android:backgroundTint="#4A7A4A"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp" />
-
-                <!-- View my (organizer) comments -->
-                <Button
-                    android:id="@+id/btnViewMyComments"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:text="View My Comments"
                     android:textSize="12sp"
-                    android:textColor="#4A7A4A"
-                    android:backgroundTint="#E8F0E8"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp" />
-
+                    android:backgroundTint="#4A7A4A"
+                    android:visibility="gone" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
@@ -982,14 +923,12 @@
                 <!-- Text input for new comment -->
                 <EditText
                     android:id="@+id/etNewComment"
+                    style="@style/Widget.CodeBase.EditText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="Write a comment…"
                     android:textSize="14sp"
-                    android:textColor="#222222"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="10dp"
                     android:maxLines="4"
                     android:inputType="textMultiLine|textCapSentences"
                     android:imeOptions="actionDone"

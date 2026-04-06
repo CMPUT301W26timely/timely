@@ -149,6 +149,8 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
     /** Date formatter used to display the event start date as {@code "MMM dd, yyyy · HH:mm"}. */
     private final SimpleDateFormat displayFormat =
             new SimpleDateFormat("MMM dd, yyyy · HH:mm", Locale.getDefault());
+    private final SimpleDateFormat dateOnlyFormat =
+            new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
     private FusedLocationProviderClient fusedLocationClient;
@@ -320,18 +322,15 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
         event = EventSchema.normalizeLoadedEvent(doc);
         if (event == null) return;
 
-        tvTitle.setText(event.getTitle());
-        tvLocation.setText(event.getLocation());
+        tvTitle.setText(resolveTitle(event));
+        tvLocation.setText(resolveLocation(event));
         // Keep the current waiting-list total visible so entrants understand demand.
         tvWaitingListCount.setText(getString(
                 R.string.entrant_waiting_list_count,
                 event.getWaitingList().size()
         ));
-        tvDescription.setText(event.getDescription());
-
-        if (event.getStartDate() != null) {
-            tvDate.setText(displayFormat.format(event.getStartDate()));
-        }
+        tvDescription.setText(resolveDescription(event));
+        tvDate.setText(resolveDateRange(event));
 
         if (event.getPoster() != null && event.getPoster().getPosterImageBase64() != null) {
             ivPoster.setImageBitmap(
@@ -339,6 +338,42 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
         }
 
         updateButtonStates();
+    }
+
+    private String resolveTitle(Event currentEvent) {
+        String title = currentEvent.getTitle();
+        return title == null || title.trim().isEmpty()
+                ? getString(R.string.untitled_event)
+                : title.trim();
+    }
+
+    private String resolveLocation(Event currentEvent) {
+        String location = currentEvent.getLocation();
+        return location == null || location.trim().isEmpty()
+                ? getString(R.string.history_location_not_set)
+                : location.trim();
+    }
+
+    private String resolveDescription(Event currentEvent) {
+        String description = currentEvent.getDescription();
+        return description == null || description.trim().isEmpty()
+                ? getString(R.string.entrant_event_description_fallback)
+                : description.trim();
+    }
+
+    private String resolveDateRange(Event currentEvent) {
+        Date startDate = currentEvent.getStartDate();
+        Date endDate = currentEvent.getEndDate();
+
+        if (startDate == null && endDate == null) {
+            return getString(R.string.date_not_set);
+        }
+        if (startDate != null && endDate != null) {
+            String start = dateOnlyFormat.format(startDate);
+            String end = dateOnlyFormat.format(endDate);
+            return start.equals(end) ? start : start + " - " + end;
+        }
+        return dateOnlyFormat.format(startDate != null ? startDate : endDate);
     }
 
     // ── Comment actions (US 01.08.01) ─────────────────────────────────────────
@@ -445,12 +480,11 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                 btnLeave.setEnabled(true);
                 btnLeave.setAlpha(1.0f);
             } else {
-                boolean isRegOpen = true;
-                if (event.getRegistrationDeadline() != null) {
-                    isRegOpen = new Date().before(event.getRegistrationDeadline());
-                }
+                boolean isRegOpen = isRegistrationOpenForJoin(event);
+                boolean isPendingSelection = event.getSelectedEntrants() != null
+                        && event.getSelectedEntrants().contains(deviceId);
 
-                if (isRegOpen) {
+                if (isRegOpen && !isPendingSelection) {
                     btnJoin.setEnabled(true);
                     btnJoin.setAlpha(1.0f);
                 } else {
@@ -539,16 +573,99 @@ public class EntrantEventDetailActivity extends AppCompatActivity {
                         return;
                     }
 
-                    if (GeoJoinPolicy.requiresLocationCapture(latestEvent)) {
-                        ensureLocationAndJoin();
+                    if (isAlreadyActiveParticipant(latestEvent)) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this, "You already have an active place in this event.", Toast.LENGTH_SHORT).show();
+                        loadEventDetails();
                         return;
                     }
 
-                    commitJoinToFirestore(null);
+                    if (!isRegistrationOpenForJoin(latestEvent)) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this, "Registration is not currently open for this event.", Toast.LENGTH_SHORT).show();
+                        loadEventDetails();
+                        return;
+                    }
+
+                    if (!hasWaitlistCapacity(latestEvent)) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(this, "This waiting list is full.", Toast.LENGTH_SHORT).show();
+                        loadEventDetails();
+                        return;
+                    }
+
+                    verifyPrivateInviteEligibility(snapshot.getReference(), latestEvent, () -> {
+                        if (GeoJoinPolicy.requiresLocationCapture(latestEvent)) {
+                            ensureLocationAndJoin();
+                            return;
+                        }
+
+                        commitJoinToFirestore(null);
+                    });
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Failed to join", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private boolean isRegistrationOpenForJoin(Event currentEvent) {
+        if (currentEvent == null) {
+            return false;
+        }
+
+        Date now = new Date();
+        Date regOpen = currentEvent.getRegistrationOpen();
+        Date regDeadline = currentEvent.getRegistrationDeadline();
+
+        if (regOpen != null && now.before(regOpen)) {
+            return false;
+        }
+        return regDeadline == null || !now.after(regDeadline);
+    }
+
+    private boolean isAlreadyActiveParticipant(Event currentEvent) {
+        return (currentEvent.getWaitingList() != null && currentEvent.getWaitingList().contains(deviceId))
+                || (currentEvent.getSelectedEntrants() != null && currentEvent.getSelectedEntrants().contains(deviceId))
+                || (currentEvent.getEnrolledEntrants() != null && currentEvent.getEnrolledEntrants().contains(deviceId));
+    }
+
+    private boolean hasWaitlistCapacity(Event currentEvent) {
+        int waitlistCap = currentEvent.getWaitlistCap();
+        return waitlistCap <= 0
+                || currentEvent.getWaitingList() == null
+                || currentEvent.getWaitingList().size() < waitlistCap;
+    }
+
+    private void verifyPrivateInviteEligibility(DocumentReference eventRef,
+                                                Event currentEvent,
+                                                Runnable onEligible) {
+        if (currentEvent == null || !currentEvent.isPrivate()) {
+            onEligible.run();
+            return;
+        }
+
+        eventRef.collection(PrivateEventInvite.SUBCOLLECTION)
+                .document(deviceId)
+                .get()
+                .addOnSuccessListener(inviteSnapshot -> {
+                    PrivateEventInvite invite = inviteSnapshot.toObject(PrivateEventInvite.class);
+                    if (invite == null
+                            || !PrivateEventInvite.STATUS_ACCEPTED.equals(invite.getStatus())) {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(
+                                this,
+                                "Accept your private event invitation before joining the waiting list.",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        loadEventDetails();
+                        return;
+                    }
+                    onEligible.run();
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Failed to verify your invitation", Toast.LENGTH_SHORT).show();
                 });
     }
 

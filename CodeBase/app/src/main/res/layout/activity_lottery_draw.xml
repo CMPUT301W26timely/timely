@@ -3,25 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/pageBg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingTop="36dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="12dp">
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp">
 
         <ImageButton
             android:id="@+id/btnBackCancelled"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_icon_btn_light"
+            style="@style/Widget.CodeBase.BackButton"
             android:contentDescription="@string/back_button_desc"
-            android:src="@android:drawable/ic_media_previous" />
+            />
 
         <LinearLayout
             android:layout_width="286dp"
@@ -34,15 +32,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Lottery Draw"
-                android:textColor="#111111"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                style="@style/TextAppearance.CodeBase.PageTitleCompact" />
 
             <TextView
                 android:id="@+id/eventTitleText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event" />
+                android:text="Event"
+                android:textColor="@color/textSecondary" />
         </LinearLayout>
 
         <Space
@@ -62,7 +59,7 @@
             android:layout_height="match_parent"
             android:layout_columnWeight="1"
             android:layout_marginEnd="6dp"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp">
 
@@ -79,7 +76,7 @@
                     android:layout_weight="1"
                     android:text="Waiting List"
                     android:textAllCaps="true"
-                    android:textColor="#AAAAAA"
+                    android:textColor="@color/textMuted"
                     android:textSize="11sp" />
 
                 <TextView
@@ -87,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#111111"
+                    android:textColor="@color/textPrimary"
                     android:textSize="26sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -98,7 +95,7 @@
             android:layout_height="match_parent"
             android:layout_columnWeight="1"
             android:layout_marginEnd="6dp"
-            app:cardBackgroundColor="#FFFFFF"
+            app:cardBackgroundColor="@color/surface"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp">
 
@@ -115,7 +112,7 @@
                     android:layout_weight="1"
                     android:text="Spot Open"
                     android:textAllCaps="true"
-                    android:textColor="#AAAAAA"
+                    android:textColor="@color/textMuted"
                     android:textSize="11sp" />
 
                 <TextView
@@ -123,7 +120,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#111111"
+                    android:textColor="@color/textPrimary"
                     android:textSize="26sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -159,7 +156,7 @@
 
             <EditText
                 android:id="@+id/numberOfSpotsEditText"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.CodeBase.EditText"
                 android:layout_width="240dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"

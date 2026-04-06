@@ -40,6 +40,9 @@ public class ViewCommentsFragment extends DialogFragment
     /** Show only comments where {@link Comment#isOrganizer()} is {@code false}. */
     public static final int MODE_ENTRANT = 1;
 
+    /** Show all event comments for administrator moderation. */
+    public static final int MODE_ALL = 2;
+
     private static final String ARG_EVENT_ID = "eventId";
     private static final String ARG_MODE = "mode";
 
@@ -82,7 +85,9 @@ public class ViewCommentsFragment extends DialogFragment
         f.setArguments(args);
 
         for (Comment c : allComments) {
-            if (mode == MODE_ORGANIZER && c.isOrganizer()) {
+            if (mode == MODE_ALL) {
+                f.filteredList.add(c);
+            } else if (mode == MODE_ORGANIZER && c.isOrganizer()) {
                 f.filteredList.add(c);
             } else if (mode == MODE_ENTRANT && !c.isOrganizer()) {
                 f.filteredList.add(c);
@@ -96,7 +101,7 @@ public class ViewCommentsFragment extends DialogFragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, android.R.style.Theme_Material_Light_Dialog_MinWidth);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_CodeBase);
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
             mode = getArguments().getInt(ARG_MODE, MODE_ENTRANT);
@@ -116,9 +121,13 @@ public class ViewCommentsFragment extends DialogFragment
         super.onViewCreated(view, savedInstanceState);
 
         TextView tvTitle = view.findViewById(R.id.tvViewCommentsTitle);
-        tvTitle.setText(mode == MODE_ORGANIZER
-                ? getString(R.string.comments_my_title)
-                : getString(R.string.comments_entrant_title));
+        if (mode == MODE_ORGANIZER) {
+            tvTitle.setText(getString(R.string.comments_my_title));
+        } else if (mode == MODE_ALL) {
+            tvTitle.setText(getString(R.string.comments_all_title));
+        } else {
+            tvTitle.setText(getString(R.string.comments_entrant_title));
+        }
 
         tvEmpty = view.findViewById(R.id.tvViewCommentsEmpty);
         tvEmpty.setVisibility(filteredList.isEmpty() ? View.VISIBLE : View.GONE);

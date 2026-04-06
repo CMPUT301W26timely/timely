@@ -71,8 +71,10 @@ public final class EventSchema {
 
         event.setWaitingList(toDeviceIdList(documentSnapshot.get("waitingList")));
         event.setSelectedEntrants(toDeviceIdList(documentSnapshot.get("selectedEntrants")));
+        event.setInvitedEntrants(toDeviceIdList(documentSnapshot.get("invitedEntrants")));
         event.setEnrolledEntrants(toDeviceIdList(documentSnapshot.get("enrolledEntrants")));
         event.setCancelledEntrants(toDeviceIdList(documentSnapshot.get("cancelledEntrants")));
+        event.setDeclinedEntrants(toDeviceIdList(documentSnapshot.get("declinedEntrants")));
         event.setRegisteredEntrants(toDeviceIdList(documentSnapshot.get("registeredEntrants")));
         event.setCoOrganizers(toDeviceIdList(documentSnapshot.get("coOrganizers")));
         return event;
@@ -122,11 +124,17 @@ public final class EventSchema {
         if (event.getSelectedEntrants() == null) {
             event.setSelectedEntrants(new ArrayList<>());
         }
+        if (event.getInvitedEntrants() == null) {
+            event.setInvitedEntrants(new ArrayList<>());
+        }
         if (event.getEnrolledEntrants() == null) {
             event.setEnrolledEntrants(new ArrayList<>());
         }
         if (event.getCancelledEntrants() == null) {
             event.setCancelledEntrants(new ArrayList<>());
+        }
+        if (event.getDeclinedEntrants() == null) {
+            event.setDeclinedEntrants(new ArrayList<>());
         }
         if (event.getRegisteredEntrants() == null) {
             event.setRegisteredEntrants(new ArrayList<>());

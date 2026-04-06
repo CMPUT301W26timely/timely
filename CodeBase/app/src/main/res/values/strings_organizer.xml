@@ -28,6 +28,7 @@
     <!-- Event card stats -->
     <string name="waitlist_count">Waitlist: %d</string>
     <string name="drawn_count">Drawn: %d Selected</string>
+    <string name="invited_enrolled_count">Invited: %1$d • Enrolled: %2$d</string>
     <string name="stat_drawn">Drawn</string>
 
     <!-- Status badges — event cards -->
@@ -119,8 +120,16 @@
     <string name="row_view_entrant_map">View Entrant Map</string>
     <string name="row_view_qr_code">View Event QR Code</string>
     <string name="row_edit_event">Edit Event Details</string>
+    <string name="row_delete_event">Delete Event</string>
     <string name="row_cancelled_users">View Cancelled Users</string>
     <string name="row_assign_co_organizer">Assign Co-Organizer</string>
+    <string name="row_invite_entrants">Invite Entrants</string>
+    <string name="delete_event_title">Delete Event</string>
+    <string name="delete_event_message">Are you sure you want to permanently delete "%1$s"? This action cannot be undone.</string>
+    <string name="delete_event_confirm">Delete</string>
+    <string name="delete_event_cancel">Cancel</string>
+    <string name="delete_event_success">Event deleted successfully</string>
+    <string name="delete_event_failed">Failed to delete event</string>
     <string name="entrant_map_header">Entrant Map</string>
     <string name="entrant_map_subtitle">See where current waitlist entrants joined from for this event.</string>
     <string name="entrant_map_empty_title">No join locations yet</string>
@@ -129,9 +138,6 @@
     <string name="entrant_map_error_subtitle">We could not load entrant join locations for this event.</string>
     <string name="entrant_map_load_failed">Failed to load entrant map</string>
     <string name="entrant_map_fallback_marker">Entrant</string>
-    <string name="entrant_map_disabled_title">Map setup needed</string>
-    <string name="entrant_map_disabled_subtitle">Add a Google Maps API key in app/credentials.properties to enable the entrant map.</string>
-    <string name="entrant_map_disabled_message">Entrant map is disabled until a Maps API key is configured.</string>
     <string name="co_organizer_notification_title">Co-Organizer Invitation</string>
     <string name="co_organizer_notification_message">You have been selected to be a co-organizer for this event.</string>
 

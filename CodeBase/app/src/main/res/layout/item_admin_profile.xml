@@ -10,15 +10,16 @@
     app:strokeColor="@color/border"
     app:strokeWidth="1dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="18dp">
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -58,6 +59,17 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/textViewAdminProfileAccess"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:textColor="@color/textPrimary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/textViewAdminProfileEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -82,19 +94,35 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
-        <!-- Admin Delete Button -->
-        <ImageButton
-            android:id="@+id/btnDeleteProfileAdmin"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="12dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_delete"
-            app:tint="@color/error"
-            android:contentDescription="Delete Profile" />
+        <LinearLayout
+            android:id="@+id/layoutAdminProfileActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
 
-    </RelativeLayout>
+            <Button
+                android:id="@+id/btnToggleOrganizerPrivilegesAdmin"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_button_secondary"
+                android:minWidth="0dp"
+                android:paddingHorizontal="14dp"
+                android:textColor="@color/textPrimary"
+                android:textSize="12sp" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteProfileAdmin"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Delete Profile"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="@color/error" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

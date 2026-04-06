@@ -17,12 +17,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0EDE8">
+    android:background="@color/pageBg">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/layoutButtons"
+        android:clipToPadding="false"
         android:fillViewport="true">
 
         <LinearLayout
@@ -39,9 +40,9 @@
                     android:id="@+id/ivEntrantHeroPoster"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:background="#CCCCCC"
-                    android:contentDescription="Event Poster" />
+                    android:background="@drawable/bg_hero_image"
+                    android:contentDescription="@string/event_poster_desc"
+                    android:scaleType="centerCrop" />
 
                 <!-- Dark overlay for text legibility -->
                 <View
@@ -51,14 +52,9 @@
 
                 <ImageButton
                     android:id="@+id/btnEntrantBack"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    style="@style/Widget.CodeBase.BackButton"
                     android:layout_margin="16dp"
-                    android:paddingTop="32dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_media_previous"
-                    app:tint="#FFFFFF"
-                    android:contentDescription="Back" />
+                    android:contentDescription="@string/back_button_desc" />
 
                 <TextView
                     android:id="@+id/tvEntrantEventTitle"
@@ -66,8 +62,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
                     android:layout_margin="20dp"
-                    android:text="Event Title"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/untitled_event"
+                    android:textColor="@color/white"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
@@ -86,8 +82,8 @@
                     android:layout_height="wrap_content"
                     app:drawableStartCompat="@android:drawable/ic_menu_today"
                     android:drawablePadding="8dp"
-                    android:text="Date not set"
-                    android:textColor="#555555"
+                    android:text="@string/date_not_set"
+                    android:textColor="@color/textSecondary"
                     android:textSize="16sp" />
 
                 <TextView
@@ -97,8 +93,8 @@
                     android:layout_marginTop="12dp"
                     app:drawableStartCompat="@android:drawable/ic_menu_mylocation"
                     android:drawablePadding="8dp"
-                    android:text="Location"
-                    android:textColor="#555555"
+                    android:text="@string/history_location_not_set"
+                    android:textColor="@color/textSecondary"
                     android:textSize="16sp" />
 
                 <!-- US 01.05.04 — show the total current waiting-list size to entrants -->
@@ -110,20 +106,20 @@
                     app:drawableStartCompat="@android:drawable/ic_menu_agenda"
                     android:drawablePadding="8dp"
                     android:text="Total waiting list entrants: 0"
-                    android:textColor="#555555"
+                    android:textColor="@color/textSecondary"
                     android:textSize="16sp" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="20dp"
-                    android:background="#DDDDDD" />
+                    android:background="@color/border" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="About this event"
-                    android:textColor="#111111"
+                    android:text="@string/entrant_event_about_title"
+                    android:textColor="@color/textPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -133,8 +129,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:lineSpacingMultiplier="1.2"
-                    android:text="Event description goes here..."
-                    android:textColor="#666666"
+                    android:text="@string/entrant_event_description_fallback"
+                    android:textColor="@color/textSecondary"
                     android:textSize="15sp" />
 
             </LinearLayout>
@@ -153,14 +149,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="16dp"
-                    android:background="#DDDDDD" />
+                    android:background="@color/border" />
 
                 <!-- Section header -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Comments"
-                    android:textColor="#111111"
+                    android:text="@string/comments_title"
+                    android:textColor="@color/textPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp" />
@@ -175,28 +171,25 @@
 
                     <EditText
                         android:id="@+id/etEntrantNewComment"
+                        style="@style/Widget.CodeBase.EditText"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="Write a comment…"
+                        android:hint="@string/entrant_event_comment_hint"
                         android:inputType="textMultiLine|textCapSentences"
                         android:maxLines="3"
                         android:textSize="14sp"
-                        android:textColor="#333333"
-                        android:textColorHint="#AAAAAA"
-                        android:padding="10dp"
-                        android:background="@android:drawable/edit_text"
                         android:layout_marginEnd="8dp"
-                        android:contentDescription="Comment input" />
+                        android:contentDescription="@string/entrant_event_comment_hint" />
 
                     <!-- US 01.08.01 — Post comment button -->
                     <Button
                         android:id="@+id/btnEntrantPostComment"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Post"
-                        android:textColor="#FFFFFF"
-                        android:backgroundTint="#4A7A4A"
+                        android:text="@string/entrant_event_post_comment"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/primaryAccent"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp" />
 
@@ -207,9 +200,9 @@
                     android:id="@+id/btnViewOrganizerComments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="View Organizer Comments"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#5C6BC0"
+                    android:text="@string/entrant_event_view_organizer_comments"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/primaryMid"
                     android:layout_marginBottom="8dp" />
 
                 <!-- US 01.08.02 — View All Entrant Comments button -->
@@ -217,18 +210,18 @@
                     android:id="@+id/btnViewAllEntrantComments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="View All Entrant Comments"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#5C6BC0"
+                    android:text="@string/entrant_event_view_all_comments"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/primaryMid"
                     android:layout_marginBottom="8dp"/>
 
                 <Button
                     android:id="@+id/btnViewLottoInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="View Lottery Info"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#5C6BC0" />
+                    android:text="@string/entrant_event_view_lottery_info"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/primaryMid" />
 
             </LinearLayout>
 
@@ -241,7 +234,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#FFFFFF"
+        android:background="@color/surface"
         android:elevation="8dp"
         android:padding="16dp">
 
@@ -250,9 +243,9 @@
             android:id="@+id/btnDropOut"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="#D32F2F"
-            android:text="Drop out of event"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/historyCancelledText"
+            android:text="@string/entrant_event_drop_out"
+            android:textColor="@color/white"
             android:visibility="gone"
             style="?android:attr/buttonBarButtonStyle" />
 
@@ -278,9 +271,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#D32F2F"
-                    android:text="Leave waiting list"
-                    android:textColor="#FFFFFF"
+                    android:backgroundTint="@color/historyCancelledText"
+                    android:text="@string/entrant_event_leave_waitlist"
+                    android:textColor="@color/white"
                     style="?android:attr/buttonBarButtonStyle" />
 
                 <Button
@@ -289,9 +282,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:backgroundTint="#4CAF50"
-                    android:text="Join waiting list"
-                    android:textColor="#FFFFFF"
+                    android:backgroundTint="@color/primaryAccent"
+                    android:text="@string/entrant_event_join_waitlist"
+                    android:textColor="@color/white"
                     style="?android:attr/buttonBarButtonStyle" />
 
             </LinearLayout>
@@ -301,9 +294,9 @@
                 android:id="@+id/tvCoOrgWarning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="You are a co-organizer for this event and cannot join the waiting list."
+                android:text="@string/entrant_event_coorganizer_warning"
                 android:textSize="12sp"
-                android:textColor="#CC3333"
+                android:textColor="@color/historyCancelledText"
                 android:gravity="center"
                 android:paddingTop="6dp"
                 android:visibility="gone" />

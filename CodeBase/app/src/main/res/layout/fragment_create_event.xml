@@ -99,6 +99,7 @@
 
                 <EditText
                     android:id="@+id/et_event_title"
+                    style="@style/Widget.CodeBase.EditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -110,6 +111,7 @@
 
                 <EditText
                     android:id="@+id/et_description"
+                    style="@style/Widget.CodeBase.EditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -121,6 +123,7 @@
 
                 <EditText
                     android:id="@+id/et_location"
+                    style="@style/Widget.CodeBase.EditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -153,6 +156,7 @@
 
                         <EditText
                             android:id="@+id/et_start_date"
+                            style="@style/Widget.CodeBase.EditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:clickable="true"
@@ -176,6 +180,7 @@
 
                         <EditText
                             android:id="@+id/et_end_date"
+                            style="@style/Widget.CodeBase.EditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:clickable="true"
@@ -194,6 +199,7 @@
 
                 <EditText
                     android:id="@+id/et_registration_deadline"
+                    style="@style/Widget.CodeBase.EditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clickable="true"

@@ -19,11 +19,16 @@ public class InvitationsTest {
     @Test
     public void respondToInvitation_acceptMovesEntrantToEnrolled() {
         Event event = baseEvent();
+        event.setDeclinedEntrants(new ArrayList<>(Arrays.asList("device-1")));
+        event.setCancelledEntrants(new ArrayList<>(Arrays.asList("device-1")));
 
         new Invitations().respondToInvitation(event, "device-1", true);
 
         assertFalse(event.getSelectedEntrants().contains("device-1"));
         assertTrue(event.getEnrolledEntrants().contains("device-1"));
+        assertTrue(event.getInvitedEntrants().contains("device-1"));
+        assertFalse(event.getDeclinedEntrants().contains("device-1"));
+        assertFalse(event.getCancelledEntrants().contains("device-1"));
     }
 
     /**
@@ -37,13 +42,17 @@ public class InvitationsTest {
 
         assertFalse(event.getSelectedEntrants().contains("device-1"));
         assertTrue(event.getCancelledEntrants().contains("device-1"));
+        assertTrue(event.getDeclinedEntrants().contains("device-1"));
+        assertTrue(event.getInvitedEntrants().contains("device-1"));
     }
 
     private Event baseEvent() {
         Event event = new Event();
         event.setSelectedEntrants(new ArrayList<>(Arrays.asList("device-1", "device-2")));
+        event.setInvitedEntrants(new ArrayList<>(Arrays.asList("device-1", "device-2")));
         event.setEnrolledEntrants(new ArrayList<>());
         event.setCancelledEntrants(new ArrayList<>());
+        event.setDeclinedEntrants(new ArrayList<>());
         return event;
     }
 }

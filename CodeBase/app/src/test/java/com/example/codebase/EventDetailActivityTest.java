@@ -43,7 +43,7 @@ public class EventDetailActivityTest {
 
     private String calculateStatus(Date regOpen, Date registrationDeadline,
                                    Date drawDate, Date startDate, Date endDate,
-                                   List<String> selectedEntrants,
+                                   List<String> invitedEntrants,
                                    List<String> enrolledEntrants) {
         if (regOpen == null || registrationDeadline == null || drawDate == null
                 || startDate == null || endDate == null) {
@@ -51,7 +51,7 @@ public class EventDetailActivityTest {
         }
 
         Date today = new Date();
-        boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
+        boolean invitedEmpty = invitedEntrants == null || invitedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
         if (today.before(regOpen)) {
@@ -59,10 +59,10 @@ public class EventDetailActivityTest {
         } else if (!today.before(regOpen) && !today.after(registrationDeadline)) {
             return "Registration Open";
         } else if (today.after(registrationDeadline)
-                && today.before(drawDate) && selectedEmpty) {
+                && today.before(drawDate) && invitedEmpty) {
             return "Registration Closed / Lottery Opening Soon";
         } else if (today.after(drawDate)
-                && today.before(startDate) && !selectedEmpty) {
+                && today.before(startDate) && (!invitedEmpty || !enrolledEmpty)) {
             return "Lottery Closed & Event Scheduled";
         } else if (!today.before(startDate)
                 && !today.after(endDate) && !enrolledEmpty) {
@@ -154,14 +154,28 @@ public class EventDetailActivityTest {
 
     @Test
     public void testStatus_lotteryClosedEventScheduled() {
-        // today > drawDate AND today < startDate AND selected not empty
+        // today > drawDate AND today < startDate AND invited history not empty
         String status = calculateStatus(
                 daysFromNow(-10), // regOpen
                 daysFromNow(-7),  // regClose
                 daysFromNow(-2),  // drawDate in past
                 daysFromNow(3),   // startDate in future
                 daysFromNow(6),   // endDate
-                Arrays.asList("user1", "user2"), null  // selected not empty
+                Arrays.asList("user1", "user2"), null
+        );
+        assertEquals("Lottery Closed & Event Scheduled", status);
+    }
+
+    @Test
+    public void testStatus_lotteryClosedWhenSelectionsConsumedButEnrolledExists() {
+        String status = calculateStatus(
+                daysFromNow(-10),
+                daysFromNow(-7),
+                daysFromNow(-2),
+                daysFromNow(3),
+                daysFromNow(6),
+                new ArrayList<>(),
+                Arrays.asList("user1")
         );
         assertEquals("Lottery Closed & Event Scheduled", status);
     }

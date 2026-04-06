@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A {@link RecyclerView.Adapter} for {@code ExplorePageActivity} that displays
@@ -67,6 +68,12 @@ public class ExploreEventAdapter extends RecyclerView.Adapter<ExploreEventAdapte
     /** Receives interaction callbacks from individual invitation rows. */
     private final OnInvitationActionListener listener;
 
+    /** Event IDs that represent pending private-event invitations rather than lottery wins. */
+    private final Set<String> privateInviteEventIds;
+
+    /** Event IDs that have already been accepted and should display as resolved. */
+    private final Set<String> acceptedInvitationEventIds;
+
     /**
      * Constructs an {@code ExploreEventAdapter} with the given invitation list
      * and interaction listener.
@@ -76,8 +83,13 @@ public class ExploreEventAdapter extends RecyclerView.Adapter<ExploreEventAdapte
      * @param listener       the {@link OnInvitationActionListener} that will receive
      *                       accept, decline, and card-tap callbacks; must not be {@code null}
      */
-    public ExploreEventAdapter(List<Event> invitationList, OnInvitationActionListener listener) {
+    public ExploreEventAdapter(List<Event> invitationList,
+                               Set<String> privateInviteEventIds,
+                               Set<String> acceptedInvitationEventIds,
+                               OnInvitationActionListener listener) {
         this.invitationList = invitationList;
+        this.privateInviteEventIds = privateInviteEventIds;
+        this.acceptedInvitationEventIds = acceptedInvitationEventIds;
         this.listener = listener;
     }
 
@@ -122,6 +134,22 @@ public class ExploreEventAdapter extends RecyclerView.Adapter<ExploreEventAdapte
         holder.tvEventTitle.setText(
                 event.getTitle() != null ? event.getTitle() : "Untitled Event"
         );
+        boolean isPrivateInvite = privateInviteEventIds != null
+                && event.getId() != null
+                && privateInviteEventIds.contains(event.getId());
+        boolean isAccepted = acceptedInvitationEventIds != null
+                && event.getId() != null
+                && acceptedInvitationEventIds.contains(event.getId());
+        holder.tvEventBody.setText(
+                isAccepted
+                        ? "You have already accepted this invitation."
+                        : isPrivateInvite
+                        ? "You've been invited to join this private event waiting list. Accept to join the waiting list or decline to dismiss the invitation."
+                        : "Congratulations! You have been selected in the lottery for this event. Please respond to secure your spot."
+        );
+        holder.btnAccept.setVisibility(isAccepted ? View.GONE : View.VISIBLE);
+        holder.btnDecline.setVisibility(isAccepted ? View.GONE : View.VISIBLE);
+        holder.tvAcceptedPill.setVisibility(isAccepted ? View.VISIBLE : View.GONE);
 
         holder.btnAccept.setOnClickListener(v -> listener.onAcceptClick(event));
         holder.btnDecline.setOnClickListener(v -> listener.onDeclineClick(event));
@@ -153,6 +181,12 @@ public class ExploreEventAdapter extends RecyclerView.Adapter<ExploreEventAdapte
         /** Button for declining the event invitation. */
         Button btnDecline;
 
+        /** Body copy explaining the type of invitation and next action. */
+        TextView tvEventBody;
+
+        /** Accepted-state pill shown once the user has already accepted. */
+        TextView tvAcceptedPill;
+
         /**
          * Constructs an {@code ExploreViewHolder} and binds view references
          * from the given row {@link View}.
@@ -163,8 +197,10 @@ public class ExploreEventAdapter extends RecyclerView.Adapter<ExploreEventAdapte
         public ExploreViewHolder(@NonNull View itemView) {
             super(itemView);
             tvEventTitle = itemView.findViewById(R.id.tvExploreEventTitle);
+            tvEventBody = itemView.findViewById(R.id.tvExploreEventBody);
             btnAccept = itemView.findViewById(R.id.btnExploreAccept);
             btnDecline = itemView.findViewById(R.id.btnExploreDecline);
+            tvAcceptedPill = itemView.findViewById(R.id.tvExploreAcceptedPill);
         }
     }
 }

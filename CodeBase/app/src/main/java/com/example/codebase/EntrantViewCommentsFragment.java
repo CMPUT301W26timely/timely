@@ -93,8 +93,7 @@ public class EntrantViewCommentsFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL,
-                android.R.style.Theme_Material_Light_Dialog_MinWidth);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.Theme_CodeBase);
         if (getArguments() != null) {
             mode = getArguments().getInt(ARG_MODE, MODE_ENTRANT);
         }
