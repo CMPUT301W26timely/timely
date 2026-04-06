@@ -53,7 +53,7 @@ public class AdminUiStoriesTest {
 
         onView(withText("Browse Events")).check(matches(isDisplayed()));
         onView(withText("Archived Admin Event")).check(matches(isDisplayed()));
-        onView(withId(R.id.navHistoryLabel)).check(matches(withText("Profiles")));
+        onView(withId(R.id.navHistoryLabel)).check(matches(withText("Users")));
     }
 
     /** US 03.05.01 - Browse user profiles as an administrator. */

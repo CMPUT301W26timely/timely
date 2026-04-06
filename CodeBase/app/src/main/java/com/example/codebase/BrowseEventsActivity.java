@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,8 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewEvents;
     private TextView textViewEmptyState;
+    private TextView navHistoryLabel;
+    private ImageView navHistoryIcon;
     private TextInputEditText editTextSearch;
     private ImageButton btnShowFilters;
     private ChipGroup chipGroupActiveFilters;
@@ -67,6 +70,8 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         recyclerViewEvents = findViewById(R.id.recyclerViewEvents);
         textViewEmptyState = findViewById(R.id.textViewEmptyState);
+        navHistoryLabel = findViewById(R.id.navHistoryLabel);
+        navHistoryIcon = findViewById(R.id.navHistoryIcon);
         editTextSearch = findViewById(R.id.editTextSearch);
         btnShowFilters = findViewById(R.id.btnShowFilters);
         chipGroupActiveFilters = findViewById(R.id.chipGroupActiveFilters);
@@ -101,6 +106,8 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         btnShowFilters.setOnClickListener(v -> showFilterDialog());
 
+        // Keep the second bottom-nav slot aligned with the current role.
+        RoleAwareNavHelper.configureSecondaryNav(this, navHistoryIcon, navHistoryLabel);
         setupBottomNavigation();
         loadEvents();
     }
@@ -202,8 +209,7 @@ public class BrowseEventsActivity extends AppCompatActivity {
         findViewById(R.id.navExplore).setOnClickListener(v -> {});
 
         findViewById(R.id.navHistory).setOnClickListener(v -> {
-            startActivity(new Intent(this, HistoryActivity.class));
-            finish();
+            RoleAwareNavHelper.openSecondaryNav(this, true);
         });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
