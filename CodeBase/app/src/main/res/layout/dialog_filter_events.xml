@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Filter Events"
+        android:text="@string/filter_events_title"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/textPrimary"
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
-            android:hint="Available From">
+            android:hint="@string/filter_available_from">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAvailableFrom"
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="4dp"
-            android:hint="Available Until">
+            android:hint="@string/filter_available_until">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAvailableTo"
@@ -66,7 +66,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Event Capacity">
+        android:hint="@string/filter_event_capacity">
 
         <AutoCompleteTextView
             android:id="@+id/actvCapacity"
@@ -88,7 +88,7 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reset"
+            android:text="@string/filter_reset"
             android:textColor="@color/textSecondary"
             android:layout_marginEnd="8dp"/>
 
@@ -96,7 +96,7 @@
             android:id="@+id/btnApplyFilters"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Apply"
+            android:text="@string/filter_apply"
             android:backgroundTint="@color/primaryAccent"
             android:textColor="@android:color/white"/>
     </LinearLayout>

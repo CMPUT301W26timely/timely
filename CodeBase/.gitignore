@@ -17,3 +17,5 @@ local.properties
 build/
 /.gradle-user-home/
 app/google-services.json
+app/credentials.properties
+.codex

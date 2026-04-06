@@ -106,7 +106,7 @@ public class OrganizerActivity extends AppCompatActivity {
      *   <li>My Events → no-op (already on this screen)</li>
      *   <li>Profile → {@link ProfileActivity}</li>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
-     *   <li>Search → {@link SearchEventsActivity}</li>
+     *   <li>History → {@link HistoryActivity}</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
      * </ul>
      */
@@ -125,8 +125,9 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
+        // The layout keeps the legacy ID, but the second slot now consistently opens History.
         findViewById(R.id.navSearch).setOnClickListener(v -> {
-            startActivity(new Intent(this, SearchEventsActivity.class));
+            startActivity(new Intent(this, HistoryActivity.class));
             finish();
         });
 

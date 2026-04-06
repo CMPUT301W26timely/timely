@@ -205,15 +205,23 @@ public class EventDetailActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show()
         );
 
-        findViewById(R.id.rowViewEntrantMap).setOnClickListener(v ->
+        findViewById(R.id.rowViewEntrantMap).setOnClickListener(v -> {
+            if (!BuildConfig.MAPS_ENABLED) {
                 Toast.makeText(this,
-                        getString(R.string.view_entrant_map_coming_soon),
-                        Toast.LENGTH_SHORT).show()
-        );
+                        getString(R.string.entrant_map_disabled_message),
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Intent intent = new Intent(this, ViewEntrantMapActivity.class);
+            intent.putExtra(ViewEntrantMapActivity.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(ViewEntrantMapActivity.EXTRA_EVENT_TITLE, eventTitle);
+            startActivity(intent);
+        });
 
         findViewById(R.id.rowViewQrCode).setOnClickListener(v -> {
             Intent intent = new Intent(this, QrDisplayActivity.class);
-            intent.putExtra("event_id", eventId);
+            intent.putExtra(QrDisplayActivity.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(QrDisplayActivity.EXTRA_EVENT_TITLE, eventTitle);
             startActivity(intent);
         });
 

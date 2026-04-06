@@ -65,4 +65,11 @@
     <string name="history_summary_not_selected">Lottery complete. You were not selected for a spot in this event.</string>
     <string name="history_summary_cancelled">This registration ended because you declined it or the organizer cancelled your spot.</string>
     <string name="entrant_waiting_list_count">Total waiting list entrants: %1$d</string>
+    <string name="location_required_join_message">This event requires your device location to join the waiting list. Continue and share your location?</string>
+    <string name="location_required_dialog_title">Location Required</string>
+    <string name="location_required_dialog_message">This organizer requires your device location when joining the waiting list for this event.</string>
+    <string name="location_required_dialog_continue">Continue</string>
+    <string name="location_required_dialog_cancel">Cancel</string>
+    <string name="location_required_join_denied">Location permission is required to join this waitlist.</string>
+    <string name="location_required_join_unavailable">We could not get your location. Try again from a place with better location access.</string>
 </resources>
