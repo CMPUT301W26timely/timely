@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,10 +17,22 @@ import java.util.List;
  */
 public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapter.ProfileViewHolder> {
 
-    private final List<User> profiles;
+    /** Listener interface for administrator profile actions. */
+    public interface OnProfileActionListener {
+        /**
+         * Called when the administrator taps the delete button for a profile.
+         *
+         * @param user The profile to be deleted.
+         */
+        void onProfileDelete(User user);
+    }
 
-    public AdminProfileAdapter(List<User> profiles) {
+    private final List<User> profiles;
+    private final OnProfileActionListener listener;
+
+    public AdminProfileAdapter(List<User> profiles, OnProfileActionListener listener) {
         this.profiles = profiles;
+        this.listener = listener;
     }
 
     @NonNull
@@ -27,7 +40,7 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
     public ProfileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_admin_profile, parent, false);
-        return new ProfileViewHolder(view);
+        return new ProfileViewHolder(view, listener);
     }
 
     @Override
@@ -48,15 +61,19 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
         private final TextView textViewEmail;
         private final TextView textViewPhone;
         private final TextView textViewDeviceId;
+        private final ImageButton btnDelete;
+        private final OnProfileActionListener listener;
 
-        ProfileViewHolder(@NonNull View itemView) {
+        ProfileViewHolder(@NonNull View itemView, OnProfileActionListener listener) {
             super(itemView);
+            this.listener = listener;
             textViewName = itemView.findViewById(R.id.textViewAdminProfileName);
             textViewRole = itemView.findViewById(R.id.textViewAdminProfileRole);
             textViewStatus = itemView.findViewById(R.id.textViewAdminProfileStatus);
             textViewEmail = itemView.findViewById(R.id.textViewAdminProfileEmail);
             textViewPhone = itemView.findViewById(R.id.textViewAdminProfilePhone);
             textViewDeviceId = itemView.findViewById(R.id.textViewAdminProfileDeviceId);
+            btnDelete = itemView.findViewById(R.id.btnDeleteProfileAdmin);
         }
 
         /**
@@ -97,6 +114,13 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
                     R.string.admin_profiles_device_id_value,
                     DeviceIdManager.getShortenedId(user.getDeviceId())
             ));
+
+            // Wire delete button for administrator use
+            btnDelete.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onProfileDelete(user);
+                }
+            });
         }
     }
 }
