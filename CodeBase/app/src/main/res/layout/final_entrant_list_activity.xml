@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_alignParentTop="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/pageBg">
 
 
     <LinearLayout
@@ -14,16 +15,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="36dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="12dp">
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp">
         <ImageButton
             android:id="@+id/btnBackCancelled"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:background="@drawable/bg_icon_btn_light"
+            style="@style/Widget.CodeBase.BackButton"
             android:contentDescription="@string/back_button_desc" />
 
         <TextView
@@ -32,12 +29,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Final Entrants"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:letterSpacing="-0.02"
-            android:textColor="#111111"
+            style="@style/TextAppearance.CodeBase.PageTitleCompact"
             android:gravity="center"
-            android:layout_marginEnd="40dp" />
+            android:layout_marginEnd="42dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -95,6 +89,9 @@
         android:id="@+id/entrantSearchView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_field"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 

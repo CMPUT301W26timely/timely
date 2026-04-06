@@ -1,15 +1,7 @@
 package com.example.codebase;
 
-import android.util.Log;
-
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Singleton database management class for Firebase Firestore.
@@ -47,6 +39,9 @@ public class AppDatabase {
      */
     public final CollectionReference notificationsRef;
 
+    /** Reference to admin-visible audit logs of organizer-sent notifications. */
+    public final CollectionReference notificationLogsRef;
+
     /**
      * Private constructor — initialises the Firestore connection and
      * all collection references.
@@ -57,6 +52,7 @@ public class AppDatabase {
         usersRef          = db.collection("users");
         eventsRef         = db.collection("events");
         notificationsRef  = db.collection("notifications");
+        notificationLogsRef = db.collection("notificationLogs");
     }
 
     /**
@@ -72,28 +68,4 @@ public class AppDatabase {
         }
         return instance;
     }
-
-    public synchronized void addSelectedEntrants(Event event, List<String> entrants){
-
-        Log.d("AppDatabase", entrants.toString());
-
-         db.collection("events")
-                .document(event.getId())
-                 .update("selectedEntrants", FieldValue.arrayUnion(entrants.toArray()));
-    }
-
-    public synchronized void deleteWaitingEntrants(Event event, List<String> entrants){
-
-        db.collection("events")
-                .document(event.getId())
-                .update("waitingList", FieldValue.arrayRemove(entrants.toArray()));
-    }
-
-    public synchronized void deleteCancelledEntrants(Event event, List<String> entrants){
-
-        db.collection("events")
-                .document(event.getId())
-                .update("cancelledEntrants", FieldValue.arrayRemove(entrants.toArray()));
-    }
-
 }

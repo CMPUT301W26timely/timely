@@ -148,10 +148,10 @@ public class OrganizerEventAdapter extends
         }
 
         Date today = new Date();
-        List<String> selectedEntrants = event.getSelectedEntrants();
+        List<String> invitedEntrants = EventRosterStatusHelper.invitedEntrants(event);
         List<String> enrolledEntrants = event.getEnrolledEntrants();
 
-        boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
+        boolean invitedEmpty = invitedEntrants == null || invitedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
         if (today.before(event.getRegistrationOpen())) {
@@ -163,12 +163,12 @@ public class OrganizerEventAdapter extends
 
         } else if (today.after(event.getRegistrationDeadline())
                 && today.before(event.getDrawDate())
-                && selectedEmpty) {
+                && invitedEmpty) {
             return "Registration Closed / Lottery Opening Soon";
 
         } else if (today.after(event.getDrawDate())
                 && today.before(event.getStartDate())
-                && !selectedEmpty) {
+                && (!invitedEmpty || !enrolledEmpty)) {
             return "Lottery Closed & Event Scheduled";
 
         } else if (!today.before(event.getStartDate())
@@ -281,12 +281,13 @@ public class OrganizerEventAdapter extends
             // ── Entrant counts ────────────────────────────────────────────────
             int waitlistCount = event.getWaitingList() != null
                     ? event.getWaitingList().size() : 0;
-            int selectedCount = event.getSelectedEntrants() != null
-                    ? event.getSelectedEntrants().size() : 0;
+            int invitedCount = EventRosterStatusHelper.invitedEntrants(event).size();
+            int enrolledCount = event.getEnrolledEntrants() != null
+                    ? event.getEnrolledEntrants().size() : 0;
             tvWaiting.setText(itemView.getContext()
                     .getString(R.string.waitlist_count, waitlistCount));
             tvSelected.setText(itemView.getContext()
-                    .getString(R.string.drawn_count, selectedCount));
+                    .getString(R.string.invited_enrolled_count, invitedCount, enrolledCount));
             tvSelected.setVisibility(View.VISIBLE);
 
             // ── Status badge ──────────────────────────────────────────────────

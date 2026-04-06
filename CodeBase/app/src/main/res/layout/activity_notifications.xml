@@ -19,6 +19,7 @@
             android:paddingBottom="16dp">
 
             <TextView
+                android:id="@+id/tvNotificationsTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/nav_notifications"
@@ -27,6 +28,17 @@
                 android:textStyle="bold"
                 android:textColor="@color/textPrimary" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvNotificationsSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingBottom="12dp"
+            android:text="@string/notifications_empty_subtitle"
+            android:textColor="@color/textSecondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -50,7 +62,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:paddingBottom="100dp"
+                    android:paddingBottom="124dp"
                     android:scrollbars="none"
                     android:divider="@android:color/transparent"
                     android:dividerHeight="0dp" />

@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -34,7 +35,7 @@ import java.util.Locale;
  *   <li>View QR code → {@link QrDisplayActivity} (hidden for private events)</li>
  *   <li>Edit event → {@link CreateEventActivity} in edit mode</li>
  *   <li>Send notification → {@link SendNotificationFragment}</li>
- *   <li>Run lottery, view waiting list, view entrant map (stubs)</li>
+ *   <li>Run lottery, view waiting list, and view entrant map</li>
  * </ul>
  *
  * <p>The event document is reloaded every time the activity resumes (via
@@ -91,6 +92,9 @@ public class EventDetailActivity extends AppCompatActivity {
     /** Display name of the organizer fetched from their Firestore profile. */
     private String organizerName = "Organizer";
 
+    /** Whether the current session is browsing this screen as an administrator. */
+    private boolean isAdminSession;
+
     /** Input field where the organizer types a new comment. */
     private EditText etNewComment;
 
@@ -127,6 +131,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventId    = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
         deviceId   = DeviceIdManager.getOrCreateDeviceId(this);
+        isAdminSession = WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this));
 
         tvDetailTitle         = findViewById(R.id.tvDetailTitle);
         tvDetailDate          = findViewById(R.id.tvDetailDate);
@@ -145,6 +150,7 @@ public class EventDetailActivity extends AppCompatActivity {
         progressBar           = findViewById(R.id.detailProgressBar);
         layoutCoOrganizerDisplay = findViewById(R.id.layoutCoOrganizerDisplay);
         tvCoOrganizerName        = findViewById(R.id.tvCoOrganizerName);
+        View organizerCommentActions = findViewById(R.id.layoutOrganizerCommentActions);
 
         // ── Bind comment views (US 02.08.02) ──────────────────────────────────
         etNewComment = findViewById(R.id.etNewComment);
@@ -163,6 +169,15 @@ public class EventDetailActivity extends AppCompatActivity {
                     eventId, commentList, ViewCommentsFragment.MODE_ORGANIZER);
             f.show(getSupportFragmentManager(), "myComments");
         });
+
+        findViewById(R.id.btnModerateAllComments).setOnClickListener(v -> {
+            ViewCommentsFragment f = ViewCommentsFragment.newInstance(
+                    eventId, commentList, ViewCommentsFragment.MODE_ALL);
+            f.show(getSupportFragmentManager(), "allComments");
+        });
+        organizerCommentActions.setVisibility(isAdminSession ? View.GONE : View.VISIBLE);
+        findViewById(R.id.btnModerateAllComments).setVisibility(
+                isAdminSession ? View.VISIBLE : View.GONE);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -220,12 +235,6 @@ public class EventDetailActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.rowViewEntrantMap).setOnClickListener(v -> {
-            if (!BuildConfig.MAPS_ENABLED) {
-                Toast.makeText(this,
-                        getString(R.string.entrant_map_disabled_message),
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
             Intent intent = new Intent(this, ViewEntrantMapActivity.class);
             intent.putExtra(ViewEntrantMapActivity.EXTRA_EVENT_ID, eventId);
             intent.putExtra(ViewEntrantMapActivity.EXTRA_EVENT_TITLE, eventTitle);
@@ -270,14 +279,15 @@ public class EventDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.cardCancelled).setOnClickListener(v -> {
-            Intent intent = new Intent(this, CancelledEntrantsActivity.class);
-            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
-            intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
-            startActivity(intent);
+        findViewById(R.id.rowDeleteEvent).setOnClickListener(v -> {
+            if (event == null) {
+                Toast.makeText(this, "Event not loaded yet", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showDeleteEventConfirmation();
         });
 
-        findViewById(R.id.rowCancelledUsers).setOnClickListener(v -> {
+        findViewById(R.id.cardCancelled).setOnClickListener(v -> {
             Intent intent = new Intent(this, CancelledEntrantsActivity.class);
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_ID, eventId);
             intent.putExtra(CancelledEntrantsActivity.EXTRA_EVENT_TITLE, eventTitle);
@@ -300,6 +310,80 @@ public class EventDetailActivity extends AppCompatActivity {
         findViewById(R.id.btnPostComment).setOnClickListener(v -> postComment());
         loadOrganizerName();
         loadComments();
+
+        OrganizerPrivilegeHelper.checkCurrentUser(this, new OrganizerPrivilegeHelper.AccessCallback() {
+            @Override
+            public void onAllowed(User user) {
+                // No-op.
+            }
+
+            @Override
+            public void onRevoked(User user) {
+                if (!isAdminSession) {
+                    Toast.makeText(
+                            EventDetailActivity.this,
+                            OrganizerPrivilegeHelper.getRevocationMessage(EventDetailActivity.this, user),
+                            Toast.LENGTH_LONG
+                    ).show();
+                    Intent intent = new Intent(EventDetailActivity.this, OrganizerActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                if (!isAdminSession) {
+                    Toast.makeText(
+                            EventDetailActivity.this,
+                            R.string.organizer_revoked_load_failed,
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }
+        });
+    }
+
+    private void showDeleteEventConfirmation() {
+        String title = event != null && !TextUtils.isEmpty(event.getTitle())
+                ? event.getTitle()
+                : getString(R.string.untitled_event);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.delete_event_title)
+                .setMessage(getString(R.string.delete_event_message, title))
+                .setPositiveButton(R.string.delete_event_confirm, (dialog, which) -> deleteCurrentEvent())
+                .setNegativeButton(R.string.delete_event_cancel, null)
+                .show();
+    }
+
+    private void deleteCurrentEvent() {
+        progressBar.setVisibility(View.VISIBLE);
+        AdminEventCleanupHelper.deleteEvent(eventId, new AdminEventCleanupHelper.Callback() {
+            @Override
+            public void onSuccess() {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(EventDetailActivity.this,
+                        R.string.delete_event_success,
+                        Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(EventDetailActivity.this, OrganizerActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                progressBar.setVisibility(View.GONE);
+                String message = e != null && !TextUtils.isEmpty(e.getMessage())
+                        ? getString(R.string.delete_event_failed) + ": " + e.getMessage()
+                        : getString(R.string.delete_event_failed);
+                Toast.makeText(EventDetailActivity.this,
+                        message,
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     /**
@@ -414,11 +498,12 @@ public class EventDetailActivity extends AppCompatActivity {
 
         List<String> waitingList       = event.getWaitingList();
         List<String> selectedEntrants  = event.getSelectedEntrants();
+        List<String> invitedEntrants   = EventRosterStatusHelper.invitedEntrants(event);
         List<String> enrolledEntrants  = event.getEnrolledEntrants();
         List<String> cancelledEntrants = event.getCancelledEntrants();
 
         int waitingCount   = waitingList       != null ? waitingList.size()       : 0;
-        int invitedCount   = selectedEntrants  != null ? selectedEntrants.size()  : 0;
+        int invitedCount   = invitedEntrants   != null ? invitedEntrants.size()   : 0;
         int enrolledCount  = enrolledEntrants  != null ? enrolledEntrants.size()  : 0;
         int cancelledCount = cancelledEntrants != null ? cancelledEntrants.size() : 0;
 
@@ -448,7 +533,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         String status = calculateStatus(
                 regOpen, registrationDeadline, drawDate, startDate, endDate,
-                selectedEntrants, enrolledEntrants
+                invitedEntrants, enrolledEntrants
         );
         applyStatusBadge(status);
 
@@ -503,7 +588,7 @@ public class EventDetailActivity extends AppCompatActivity {
      * @param drawDate             Date of the lottery draw; {@code null} triggers "Draft".
      * @param startDate            Event start date; {@code null} triggers "Draft".
      * @param endDate              Event end date; {@code null} triggers "Draft".
-     * @param selectedEntrants     List of selected entrant device IDs; may be {@code null}.
+     * @param invitedEntrants      List of historically invited entrant device IDs; may be {@code null}.
      * @param enrolledEntrants     List of enrolled entrant device IDs; may be {@code null}.
      * @return A non-null status string describing the event's current lifecycle phase.
      */
@@ -513,7 +598,7 @@ public class EventDetailActivity extends AppCompatActivity {
             Date drawDate,
             Date startDate,
             Date endDate,
-            List<String> selectedEntrants,
+            List<String> invitedEntrants,
             List<String> enrolledEntrants) {
 
         if (regOpen == null || registrationDeadline == null || drawDate == null
@@ -522,16 +607,16 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         Date today = new Date();
-        boolean selectedEmpty = selectedEntrants == null || selectedEntrants.isEmpty();
+        boolean invitedEmpty = invitedEntrants == null || invitedEntrants.isEmpty();
         boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
 
         if (today.before(regOpen)) {
             return "Registration Opening Soon";
         } else if (!today.before(regOpen) && !today.after(registrationDeadline)) {
             return "Registration Open";
-        } else if (today.after(registrationDeadline) && today.before(drawDate) && selectedEmpty) {
+        } else if (today.after(registrationDeadline) && today.before(drawDate) && invitedEmpty) {
             return "Registration Closed / Lottery Opening Soon";
-        } else if (today.after(drawDate) && today.before(startDate) && !selectedEmpty) {
+        } else if (today.after(drawDate) && today.before(startDate) && (!invitedEmpty || !enrolledEmpty)) {
             return "Lottery Closed & Event Scheduled";
         } else if (!today.before(startDate) && !today.after(endDate) && !enrolledEmpty) {
             return "In Progress";

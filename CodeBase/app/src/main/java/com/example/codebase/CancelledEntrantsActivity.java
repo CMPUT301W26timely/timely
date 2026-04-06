@@ -22,10 +22,8 @@ import java.util.List;
  * Displays all cancelled entrants for a given event, split across three tabs:
  * <ul>
  *   <li><b>All</b> — the full {@code cancelledEntrants} array from Firestore</li>
- *   <li><b>Declined</b> — entrants who actively declined their invitation:
- *       {@code cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)}</li>
- *   <li><b>Cancelled</b> — entrants removed by the organizer:
- *       {@code cancelledEntrants - declined}</li>
+ *   <li><b>Declined</b> — entrants present in {@code declinedEntrants}</li>
+ *   <li><b>Cancelled</b> — entrants in {@code cancelledEntrants - declinedEntrants}</li>
  * </ul>
  *
  * <p>Launched from {@code EventDetailActivity} via the cancelled users row.</p>
@@ -159,13 +157,6 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
     /**
      * Processes the loaded Firestore document and builds the three entrant lists.
      *
-     * <p>Calculates which cancelled entrants actively declined vs were removed
-     * by the organizer using the following logic:</p>
-     * <pre>
-     *   declined  = cancelledEntrants ∩ (selectedEntrants - enrolledEntrants)
-     *   cancelled = cancelledEntrants - declined
-     * </pre>
-     *
      * @param doc the Firestore {@link DocumentSnapshot} for the event
      */
     private void processDocument(DocumentSnapshot doc) {
@@ -184,15 +175,8 @@ public class CancelledEntrantsActivity extends AppCompatActivity {
             return;
         }
 
-        List<String> selected  = event.getSelectedEntrants();
-        List<String> enrolled  = event.getEnrolledEntrants();
-        List<String> cancelled = event.getCancelledEntrants();
-
-        List<String> selectedMinusEnrolled = new ArrayList<>(selected);
-        selectedMinusEnrolled.removeAll(enrolled);
-
-        List<String> declinedIds = new ArrayList<>(cancelled);
-        declinedIds.retainAll(selectedMinusEnrolled);
+        List<String> cancelled = EventRosterStatusHelper.cancelledEntrants(event);
+        List<String> declinedIds = EventRosterStatusHelper.declinedEntrants(event);
 
         allList.clear();
         declinedList.clear();

@@ -5,18 +5,16 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,25 +22,33 @@ import java.util.List;
 /**
  * Organizer map view for entrant join locations.
  */
-public class ViewEntrantMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class ViewEntrantMapActivity extends AppCompatActivity {
 
     public static final String EXTRA_EVENT_ID = "event_id";
     public static final String EXTRA_EVENT_TITLE = "event_title";
 
+    private static final GeoPoint EDMONTON_FALLBACK_POINT =
+            new GeoPoint(53.5461, -113.4938);
+
     private String eventId;
     private String eventTitle;
 
-    private GoogleMap googleMap;
+    private MapView mapView;
     private View progressBar;
     private View mapStateLayout;
     private TextView tvEventTitle;
     private TextView tvStateTitle;
     private TextView tvStateSubtitle;
-    private View mapFragmentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                getSharedPreferences("osmdroid", MODE_PRIVATE)
+        );
+        Configuration.getInstance().setUserAgentValue(getPackageName());
+
         setContentView(R.layout.activity_view_entrant_map);
 
         eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
@@ -51,29 +57,21 @@ public class ViewEntrantMapActivity extends AppCompatActivity implements OnMapRe
             eventTitle = getString(R.string.untitled_event);
         }
 
+        mapView = findViewById(R.id.entrantMapView);
         progressBar = findViewById(R.id.entrantMapProgressBar);
         mapStateLayout = findViewById(R.id.layoutEntrantMapState);
         tvEventTitle = findViewById(R.id.tvEntrantMapEventTitle);
         tvStateTitle = findViewById(R.id.tvEntrantMapStateTitle);
         tvStateSubtitle = findViewById(R.id.tvEntrantMapStateSubtitle);
-        mapFragmentView = findViewById(R.id.entrantMapFragment);
 
         tvEventTitle.setText(eventTitle);
         findViewById(R.id.btnEntrantMapBack).setOnClickListener(v -> finish());
 
-        if (!BuildConfig.MAPS_ENABLED) {
-            progressBar.setVisibility(View.GONE);
-            mapFragmentView.setVisibility(View.GONE);
-            showState(
-                    getString(R.string.entrant_map_disabled_title),
-                    getString(R.string.entrant_map_disabled_subtitle)
-            );
-            return;
-        }
+        configureMap();
 
         if (eventId == null || eventId.trim().isEmpty()) {
             progressBar.setVisibility(View.GONE);
-            mapFragmentView.setVisibility(View.GONE);
+            mapView.setVisibility(View.GONE);
             showState(
                     getString(R.string.entrant_map_error_title),
                     getString(R.string.entrant_map_error_subtitle)
@@ -82,27 +80,16 @@ public class ViewEntrantMapActivity extends AppCompatActivity implements OnMapRe
             return;
         }
 
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.entrantMapFragment);
-        if (mapFragment == null) {
-            mapFragmentView.setVisibility(View.GONE);
-            showState(
-                    getString(R.string.entrant_map_error_title),
-                    getString(R.string.entrant_map_error_subtitle)
-            );
-            progressBar.setVisibility(View.GONE);
-            return;
-        }
-        mapFragment.getMapAsync(this);
+        loadEntrantLocations();
     }
 
-    @Override
-    public void onMapReady(@NonNull GoogleMap readyMap) {
-        googleMap = readyMap;
-        googleMap.getUiSettings().setMapToolbarEnabled(false);
-        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-        googleMap.getUiSettings().setCompassEnabled(true);
-        loadEntrantLocations();
+    private void configureMap() {
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setMultiTouchControls(true);
+        mapView.setBuiltInZoomControls(false);
+        mapView.setTilesScaledToDpi(true);
+        mapView.getController().setZoom(10.0);
+        mapView.getController().setCenter(EDMONTON_FALLBACK_POINT);
     }
 
     private void loadEntrantLocations() {
@@ -137,49 +124,46 @@ public class ViewEntrantMapActivity extends AppCompatActivity implements OnMapRe
 
     private void renderEntrantLocations(List<EntrantLocation> entrantLocations) {
         progressBar.setVisibility(View.GONE);
-        if (googleMap == null) {
-            return;
-        }
+        mapView.getOverlays().clear();
 
-        googleMap.clear();
         if (entrantLocations.isEmpty()) {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(53.5461, -113.4938),
-                    10f
-            ));
+            mapView.getController().setZoom(10.0);
+            mapView.getController().setCenter(EDMONTON_FALLBACK_POINT);
             showState(
                     getString(R.string.entrant_map_empty_title),
                     getString(R.string.entrant_map_empty_subtitle)
             );
+            mapView.invalidate();
             return;
         }
 
         mapStateLayout.setVisibility(View.GONE);
-        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        List<GeoPoint> points = new ArrayList<>();
         for (EntrantLocation entrantLocation : entrantLocations) {
-            LatLng latLng = new LatLng(
+            GeoPoint point = new GeoPoint(
                     entrantLocation.getLatitude(),
                     entrantLocation.getLongitude()
             );
-            boundsBuilder.include(latLng);
-            googleMap.addMarker(new MarkerOptions()
-                    .position(latLng)
-                    .title(resolveMarkerTitle(entrantLocation))
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            points.add(point);
+
+            Marker marker = new Marker(mapView);
+            marker.setPosition(point);
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            marker.setTitle(resolveMarkerTitle(entrantLocation));
+            mapView.getOverlays().add(marker);
         }
 
-        if (entrantLocations.size() == 1) {
-            EntrantLocation single = entrantLocations.get(0);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(single.getLatitude(), single.getLongitude()),
-                    13.5f
-            ));
+        if (points.size() == 1) {
+            mapView.getController().setZoom(13.5);
+            mapView.getController().animateTo(points.get(0));
+            mapView.invalidate();
             return;
         }
 
-        mapFragmentView.post(() -> {
-            LatLngBounds bounds = boundsBuilder.build();
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 140));
+        mapView.post(() -> {
+            BoundingBox bounds = BoundingBox.fromGeoPointsSafe(points);
+            mapView.zoomToBoundingBox(bounds, true, 140);
+            mapView.invalidate();
         });
     }
 
@@ -195,5 +179,21 @@ public class ViewEntrantMapActivity extends AppCompatActivity implements OnMapRe
         tvStateTitle.setText(title);
         tvStateSubtitle.setText(subtitle);
         mapStateLayout.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if (mapView != null) {
+            mapView.onPause();
+        }
+        super.onPause();
     }
 }

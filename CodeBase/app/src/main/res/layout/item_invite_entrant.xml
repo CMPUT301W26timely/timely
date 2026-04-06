@@ -30,7 +30,8 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#111111"
+            android:textColor="@color/textPrimary"
+            android:fontFamily="serif"
             android:layout_marginBottom="2dp" />
 
         <TextView
@@ -38,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/textMuted"
             android:visibility="gone" />
 
     </LinearLayout>
@@ -50,8 +51,8 @@
         android:layout_height="48dp"
         android:text="@string/btn_invite"
         android:textSize="11sp"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#111111"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primaryAccent"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:stateListAnimator="@null" />

@@ -10,7 +10,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="16dp">
+    android:background="@color/surface"
+    android:paddingBottom="18dp">
 
     <!-- Dialog title -->
     <TextView
@@ -18,19 +19,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/comments_title"
-        android:textSize="17sp"
+        android:textSize="20sp"
+        android:fontFamily="serif"
         android:textStyle="bold"
-        android:textColor="#222222"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp" />
+        android:textColor="@color/textPrimary"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        android:paddingTop="22dp"
+        android:paddingBottom="14dp" />
 
     <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#EEEEEE" />
+        android:background="@color/border" />
 
     <!-- Empty state label -->
     <TextView
@@ -38,10 +40,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/comments_empty"
-        android:textSize="13sp"
-        android:textColor="#AAAAAA"
+        android:textSize="14sp"
+        android:textColor="@color/textMuted"
         android:gravity="center"
-        android:padding="24dp"
+        android:padding="28dp"
         android:visibility="gone" />
 
     <!-- Comment list -->
@@ -52,6 +54,7 @@
         android:maxHeight="400dp"
         android:nestedScrollingEnabled="true"
         android:overScrollMode="never"
+        android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp" />
 
@@ -61,12 +64,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="18dp"
         android:text="@string/comments_close"
-        android:textSize="13sp"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#4A7A4A"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/primaryAccent"
         android:paddingStart="20dp"
         android:paddingEnd="20dp" />
 

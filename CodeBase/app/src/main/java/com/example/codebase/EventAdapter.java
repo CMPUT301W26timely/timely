@@ -3,12 +3,14 @@ package com.example.codebase;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -88,25 +90,133 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
 
-        holder.textViewEventName.setText(
-                event.getTitle() == null || event.getTitle().isEmpty()
-                        ? "Untitled Event"
-                        : event.getTitle()
-        );
-
-        holder.textViewEventLocation.setText(
-                event.getLocation() == null || event.getLocation().isEmpty()
-                        ? "Not set"
-                        : event.getLocation()
-        );
-
-        if (event.getStartDate() != null) {
-            holder.textViewEventDate.setText(dateFormat.format(event.getStartDate()));
-        } else {
-            holder.textViewEventDate.setText("Date not set");
-        }
+        holder.textViewEventName.setText(resolveTitle(holder, event));
+        holder.textViewEventLocation.setText(resolveLocation(holder, event));
+        holder.textViewEventDate.setText(resolveDateRange(holder, event));
+        bindPoster(holder, event);
+        bindStatus(holder, event);
+        bindPrivacy(holder, event);
 
         holder.itemView.setOnClickListener(v -> listener.onEventClick(event));
+    }
+
+    private String resolveTitle(EventViewHolder holder, Event event) {
+        String title = event.getTitle();
+        return title == null || title.trim().isEmpty()
+                ? holder.itemView.getContext().getString(R.string.untitled_event)
+                : title.trim();
+    }
+
+    private String resolveLocation(EventViewHolder holder, Event event) {
+        String location = event.getLocation();
+        return location == null || location.trim().isEmpty()
+                ? holder.itemView.getContext().getString(R.string.history_location_not_set)
+                : location.trim();
+    }
+
+    private String resolveDateRange(EventViewHolder holder, Event event) {
+        Date startDate = event.getStartDate();
+        Date endDate = event.getEndDate();
+
+        if (startDate == null && endDate == null) {
+            return holder.itemView.getContext().getString(R.string.date_not_set);
+        }
+        if (startDate != null && endDate != null) {
+            String start = dateFormat.format(startDate);
+            String end = dateFormat.format(endDate);
+            return start.equals(end) ? start : start + " - " + end;
+        }
+        Date onlyDate = startDate != null ? startDate : endDate;
+        return dateFormat.format(onlyDate);
+    }
+
+    private void bindPoster(EventViewHolder holder, Event event) {
+        if (event.getPoster() != null
+                && event.getPoster().getPosterImageBase64() != null
+                && !event.getPoster().getPosterImageBase64().isEmpty()) {
+            try {
+                holder.imageViewThumbnail.setImageBitmap(
+                        EventPoster.decodeImage(event.getPoster().getPosterImageBase64())
+                );
+            } catch (Exception e) {
+                holder.imageViewThumbnail.setImageBitmap(null);
+            }
+        } else {
+            holder.imageViewThumbnail.setImageBitmap(null);
+        }
+    }
+
+    private void bindStatus(EventViewHolder holder, Event event) {
+        String status = calculateStatus(event);
+        holder.textViewEventStatus.setText(status);
+
+        switch (status) {
+            case "Registration Opening Soon":
+            case "Registration Closed / Lottery Opening Soon":
+            case "Lottery Closed & Event Scheduled":
+            case "Draft":
+                holder.textViewEventStatus.setBackgroundResource(R.drawable.bg_pill_amber);
+                holder.textViewEventStatus.setTextColor(0xFF8B7A2A);
+                break;
+            case "Registration Open":
+            case "In Progress":
+                holder.textViewEventStatus.setBackgroundResource(R.drawable.bg_pill_green);
+                holder.textViewEventStatus.setTextColor(0xFF4A7A4A);
+                break;
+            default:
+                holder.textViewEventStatus.setBackgroundResource(R.drawable.bg_pill_red);
+                holder.textViewEventStatus.setTextColor(0xFF8B3A3A);
+                break;
+        }
+    }
+
+    private void bindPrivacy(EventViewHolder holder, Event event) {
+        if (event.isPrivate()) {
+            holder.textViewEventPrivacy.setText("Private");
+            holder.textViewEventPrivacy.setBackgroundResource(R.drawable.bg_pill_amber);
+            holder.textViewEventPrivacy.setTextColor(0xFF8B7A2A);
+        } else {
+            holder.textViewEventPrivacy.setText("Public");
+            holder.textViewEventPrivacy.setBackgroundResource(R.drawable.bg_pill_green);
+            holder.textViewEventPrivacy.setTextColor(0xFF4A7A4A);
+        }
+    }
+
+    private String calculateStatus(Event event) {
+        if (event.getRegistrationOpen() == null || event.getRegistrationDeadline() == null
+                || event.getDrawDate() == null
+                || event.getStartDate() == null || event.getEndDate() == null) {
+            return "Draft";
+        }
+
+        Date today = new Date();
+        List<String> invitedEntrants = EventRosterStatusHelper.invitedEntrants(event);
+        List<String> enrolledEntrants = event.getEnrolledEntrants();
+
+        boolean invitedEmpty = invitedEntrants == null || invitedEntrants.isEmpty();
+        boolean enrolledEmpty = enrolledEntrants == null || enrolledEntrants.isEmpty();
+
+        if (today.before(event.getRegistrationOpen())) {
+            return "Registration Opening Soon";
+        } else if (!today.before(event.getRegistrationOpen())
+                && !today.after(event.getRegistrationDeadline())) {
+            return "Registration Open";
+        } else if (today.after(event.getRegistrationDeadline())
+                && today.before(event.getDrawDate())
+                && invitedEmpty) {
+            return "Registration Closed / Lottery Opening Soon";
+        } else if (today.after(event.getDrawDate())
+                && today.before(event.getStartDate())
+                && (!invitedEmpty || !enrolledEmpty)) {
+            return "Lottery Closed & Event Scheduled";
+        } else if (!today.before(event.getStartDate())
+                && !today.after(event.getEndDate())
+                && !enrolledEmpty) {
+            return "In Progress";
+        } else if (today.after(event.getEndDate())) {
+            return "Event Ended";
+        }
+        return "Draft";
     }
 
     /**
@@ -133,6 +243,15 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         /** Displays the event's location. */
         TextView textViewEventLocation;
 
+        /** Displays the status badge. */
+        TextView textViewEventStatus;
+
+        /** Displays the privacy badge. */
+        TextView textViewEventPrivacy;
+
+        /** Displays the event thumbnail. */
+        ImageView imageViewThumbnail;
+
         /**
          * Constructs an {@link EventViewHolder} and finds all child views.
          *
@@ -143,6 +262,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             textViewEventName     = itemView.findViewById(R.id.textViewEventName);
             textViewEventDate     = itemView.findViewById(R.id.textViewEventDate);
             textViewEventLocation = itemView.findViewById(R.id.textViewEventLocation);
+            textViewEventStatus   = itemView.findViewById(R.id.tvEventStatus);
+            textViewEventPrivacy  = itemView.findViewById(R.id.tvEventPrivacy);
+            imageViewThumbnail    = itemView.findViewById(R.id.ivEventThumbnail);
         }
     }
 }

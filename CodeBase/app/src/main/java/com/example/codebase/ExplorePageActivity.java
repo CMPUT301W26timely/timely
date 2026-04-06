@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,29 +143,25 @@ public class ExplorePageActivity extends AppCompatActivity {
      * is hidden.
      */
     private void loadInvitationsCount() {
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .whereArrayContains("selectedEntrants", deviceId)
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    int count = 0;
-                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                        Event event = doc.toObject(Event.class);
-                        if (event != null) {
-                            boolean isEnrolled  = event.getEnrolledEntrants()  != null && event.getEnrolledEntrants().contains(deviceId);
-                            boolean isCancelled = event.getCancelledEntrants() != null && event.getCancelledEntrants().contains(deviceId);
-                            if (!isEnrolled && !isCancelled) {
-                                count++;
-                            }
+        PendingInvitationHelper.loadPendingInvitationEventIds(deviceId,
+                new PendingInvitationHelper.PendingInvitationCallback() {
+                    @Override
+                    public void onLoaded(java.util.Set<String> eventIds) {
+                        int count = eventIds.size();
+                        layoutInvitationCard.setVisibility(View.VISIBLE);
+                        if (count > 0) {
+                            tvInvitationCountSummary.setText(
+                                    "You have " + count + " new invitation" + (count > 1 ? "s" : "") + "!"
+                            );
+                        } else {
+                            tvInvitationCountSummary.setText("No invitations are awaiting a response.");
                         }
                     }
 
-                    if (count > 0) {
+                    @Override
+                    public void onError(Exception e) {
                         layoutInvitationCard.setVisibility(View.VISIBLE);
-                        tvInvitationCountSummary.setText(
-                                "You have " + count + " new invitation" + (count > 1 ? "s" : "") + "!");
-                    } else {
-                        layoutInvitationCard.setVisibility(View.GONE);
+                        tvInvitationCountSummary.setText("No invitations are awaiting a response.");
                     }
                 });
     }

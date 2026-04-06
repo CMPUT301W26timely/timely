@@ -71,6 +71,15 @@ public class AdminUserStoriesTest {
         assertEquals("Avery Admin", profiles.get(0).getName());
     }
 
+    @Test
+    public void us030701_adminCanIdentifyRevokedOrganizerProfiles() {
+        User organizer = makeUser("org-001", "Riley Organizer", "riley@example.com", "entrant");
+        organizer.setOrganizerPrivilegesRevoked(true);
+
+        assertTrue("Revoked organizer profiles should be detectable in admin tools",
+                AdminBrowseHelper.isOrganizerRevoked(organizer));
+    }
+
     private Event makeEvent(String title, Date startDate) {
         Event event = new Event();
         event.setTitle(title);

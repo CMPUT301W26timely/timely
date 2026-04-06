@@ -50,9 +50,7 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this))) {
-            Toast.makeText(this, R.string.admin_profiles_no_access, Toast.LENGTH_SHORT).show();
-            finish();
+        if (AdminAccessHelper.finishIfNotAdmin(this, getString(R.string.admin_profiles_no_access))) {
             return;
         }
 
@@ -70,6 +68,11 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
             @Override
             public void onProfileDelete(User user) {
                 showDeleteProfileConfirmation(user);
+            }
+
+            @Override
+            public void onOrganizerPrivilegeToggle(User user) {
+                showOrganizerPrivilegeDialog(user);
             }
         });
         recyclerViewProfiles.setAdapter(adapter);
@@ -108,15 +111,64 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
      * @param user The profile document to delete.
      */
     private void deleteProfileFromDatabase(User user) {
-        AppDatabase.getInstance().usersRef.document(user.getDeviceId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
+        UserRepository.deleteUserProfileByDeviceId(user.getDeviceId(), false,
+                () -> {
                     Toast.makeText(this, "Profile deleted successfully", Toast.LENGTH_SHORT).show();
-                    loadProfiles(); // Refresh the list
-                })
-                .addOnFailureListener(e -> {
+                    loadProfiles();
+                },
+                e -> {
                     Toast.makeText(this, "Failed to delete profile", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void showOrganizerPrivilegeDialog(User user) {
+        boolean revoked = user.isOrganizerPrivilegesRevoked();
+        String displayName = user.getName() != null && !user.getName().trim().isEmpty()
+                ? user.getName()
+                : getString(R.string.admin_profiles_unnamed);
+
+        int title = revoked
+                ? R.string.admin_profiles_restore_organizer_title
+                : R.string.admin_profiles_revoke_organizer_title;
+        String message = revoked
+                ? getString(R.string.admin_profiles_restore_organizer_message, displayName)
+                : getString(R.string.admin_profiles_revoke_organizer_message, displayName);
+        int positive = revoked
+                ? R.string.admin_profiles_restore_organizer
+                : R.string.admin_profiles_revoke_organizer;
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positive, (dialog, which) ->
+                        updateOrganizerPrivileges(user, !revoked))
+                .setNegativeButton(R.string.delete_event_cancel, null)
+                .show();
+    }
+
+    private void updateOrganizerPrivileges(User user, boolean revoked) {
+        UserRepository.updateOrganizerPrivileges(
+                user.getDeviceId(),
+                revoked,
+                revoked ? getString(R.string.organizer_revoked_default_message) : "",
+                () -> {
+                    Toast.makeText(
+                            this,
+                            revoked
+                                    ? R.string.admin_profiles_revoke_success
+                                    : R.string.admin_profiles_restore_success,
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    loadProfiles();
+                },
+                e -> Toast.makeText(
+                        this,
+                        revoked
+                                ? R.string.admin_profiles_revoke_failed
+                                : R.string.admin_profiles_restore_failed,
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
     }
 
     @Override

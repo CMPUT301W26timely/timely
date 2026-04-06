@@ -1,13 +1,12 @@
 package com.example.codebase;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,8 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,84 +30,44 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Allows an organizer to search for entrants and invite them to a private event's
- * waiting list.
+ * Allows an organizer to invite entrants to a private event through targeted search.
  *
- * <p>Implements the following user stories:
- * <ul>
- *   <li><b>US 02.01.03</b> — Organizer can invite specific entrants to a private
- *       event's waiting list by searching via name, phone number and/or email.</li>
- *   <li><b>US 01.05.06</b> — Invited entrants receive a notification that they have
- *       been invited to join the waiting list for a private event.</li>
- * </ul>
- *
- * <p>Expected intent extras when launching this activity:
- * <ul>
- *   <li>{@code "eventId"} — Firestore document ID of the private event.</li>
- *   <li>{@code "eventTitle"} — Display name of the private event.</li>
- * </ul>
- *
- * <p>Search is performed client-side against all user profiles loaded from Firestore.
- * The query is matched case-insensitively against the user's name, email address,
- * and phone number. Entrants who are already on the event's waiting list are shown
- * as already invited and cannot be invited again.
- *
- * <p>On a successful invite:
- * <ol>
- *   <li>The entrant's device ID is appended to the event's {@code waitingList} array
- *       in Firestore using {@link FieldValue#arrayUnion}.</li>
- *   <li>A notification document is written to
- *       {@code notifications/{deviceId}/messages/{autoId}} so the entrant receives an
- *       in-app notification (US 01.05.06).</li>
- * </ol>
+ * <p>The screen only reveals matching search results after the organizer enters a
+ * name, email, and/or phone query, avoiding a full user-directory browser while
+ * still satisfying private-event invite search requirements.</p>
  */
 public class InviteEntrantsActivity extends AppCompatActivity {
 
-    /** Intent extra key for the private event's Firestore document ID. */
     public static final String EXTRA_EVENT_ID = "eventId";
-
-    /** Intent extra key for the private event's display title. */
     public static final String EXTRA_EVENT_TITLE = "eventTitle";
 
-    /** Firestore document ID of the private event being managed. */
     private String eventId;
-
-    /** Display title of the private event, used in notification messages. */
     private String eventTitle;
 
-    /** Search input field. */
-    private EditText etSearch;
-
-    /** Displayed while users are loading from Firestore. */
+    private TextInputLayout inputLayoutName;
+    private TextInputLayout inputLayoutEmail;
+    private TextInputLayout inputLayoutPhone;
+    private TextInputEditText etName;
+    private TextInputEditText etEmail;
+    private TextInputEditText etPhone;
     private TextView tvLoading;
+    private TextView tvStatus;
+    private TextView tvResultsLabel;
+    private TextView tvEmptyResults;
+    private Button btnInviteByContact;
+    private RecyclerView rvInviteResults;
+    private SearchResultsAdapter resultsAdapter;
 
-    /** Shown when the search returns no matching users. */
-    private TextView tvEmpty;
-
-    /** Shows the filtered list of users matching the current query. */
-    private RecyclerView recyclerView;
-
-    /** Adapter that renders search results and handles invite actions. */
-    private InviteSearchAdapter adapter;
-
-    /** Full list of all user profiles fetched from Firestore. */
-    private final List<User> allUsers = new ArrayList<>();
-
-    /**
-     * Device IDs of entrants who are already on the waiting list when this
-     * activity is opened. Used to pre-mark users as already invited.
-     */
     private final List<String> alreadyInvited = new ArrayList<>();
-
-    /** Device IDs of entrants who are already assigned as co-organizer for this event. */
     private final List<String> coOrganizerIds = new ArrayList<>();
+    private final List<User> loadedUsers = new ArrayList<>();
+    private final List<InviteCandidate> visibleCandidates = new ArrayList<>();
 
-    /**
-     * Initialises the activity, loads all user profiles from Firestore, then
-     * loads the event's current waiting list to determine which users are already invited.
-     *
-     * @param savedInstanceState Previously saved instance state, or {@code null}.
-     */
+    private String lastSearchName = "";
+    private String lastSearchEmail = "";
+    private String lastSearchPhone = "";
+    private boolean isBusy = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,187 +76,222 @@ public class InviteEntrantsActivity extends AppCompatActivity {
         eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
         eventTitle = getIntent().getStringExtra(EXTRA_EVENT_TITLE);
 
-        if (eventId == null || eventId.isEmpty()) {
+        if (TextUtils.isEmpty(eventId)) {
             Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        etSearch = findViewById(R.id.etInviteSearch);
+        inputLayoutName = findViewById(R.id.inputLayoutInviteName);
+        inputLayoutEmail = findViewById(R.id.inputLayoutInviteEmail);
+        inputLayoutPhone = findViewById(R.id.inputLayoutInvitePhone);
+        etName = findViewById(R.id.etInviteName);
+        etEmail = findViewById(R.id.etInviteEmail);
+        etPhone = findViewById(R.id.etInvitePhone);
         tvLoading = findViewById(R.id.tvInviteLoading);
-        tvEmpty = findViewById(R.id.tvInviteEmpty);
-        recyclerView = findViewById(R.id.recyclerViewInvite);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        tvStatus = findViewById(R.id.tvInviteStatus);
+        tvResultsLabel = findViewById(R.id.tvInviteResultsLabel);
+        tvEmptyResults = findViewById(R.id.tvInviteEmpty);
+        btnInviteByContact = findViewById(R.id.btnInviteByContact);
+        rvInviteResults = findViewById(R.id.rvInviteResults);
 
-        adapter = new InviteSearchAdapter(new ArrayList<>(), alreadyInvited, this::onInviteClicked);
-        adapter.setCoOrganizerIds(coOrganizerIds);
-        recyclerView.setAdapter(adapter);
+        rvInviteResults.setLayoutManager(new LinearLayoutManager(this));
+        rvInviteResults.setNestedScrollingEnabled(false);
+        resultsAdapter = new SearchResultsAdapter();
+        rvInviteResults.setAdapter(resultsAdapter);
 
-        Button btnBack = findViewById(R.id.btnInviteBack);
+        ImageButton btnBack = findViewById(R.id.btnInviteBack);
         btnBack.setOnClickListener(v -> finish());
 
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterAndDisplay(s.toString().trim());
-            }
-        });
+        btnInviteByContact.setOnClickListener(v -> searchEntrants());
 
-        loadData();
+        loadEventState();
     }
 
-    /**
-     * Loads all user profiles and the event's current waiting list from Firestore,
-     * then populates the search results.
-     *
-     * <p>The organizer's own device ID is excluded from results so they cannot
-     * invite themselves. Co-organizers are tracked separately so the adapter can
-     * show a clear "Co-Organizer" disabled label instead of an invite button.
-     */
-    private void loadData() {
-        tvLoading.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-        tvEmpty.setVisibility(View.GONE);
-
-        String organizerDeviceId = DeviceIdManager.getOrCreateDeviceId(this);
-
-        // Load the event's current waiting list first, then load all users
+    private void loadEventState() {
+        setLoadingState(true);
         AppDatabase.getInstance().eventsRef
                 .document(eventId)
                 .get()
                 .addOnSuccessListener(eventDoc -> {
                     Event event = EventSchema.normalizeLoadedEvent(eventDoc);
-                    if (event != null && event.getWaitingList() != null) {
-                        alreadyInvited.clear();
+                    alreadyInvited.clear();
+                    if (event != null) {
                         alreadyInvited.addAll(event.getWaitingList());
+                        alreadyInvited.addAll(event.getSelectedEntrants());
+                        alreadyInvited.addAll(event.getEnrolledEntrants());
                     }
 
-                    // Track co-organizers separately so the UI can show a clear "Co-Organizer" label
                     coOrganizerIds.clear();
                     if (event != null && event.getCoOrganizers() != null) {
                         coOrganizerIds.addAll(event.getCoOrganizers());
                     }
 
-                    // Now load all user profiles
-                    UserRepository.loadAllProfiles(new UserRepository.ProfilesCallback() {
-                        @Override
-                        public void onProfilesLoaded(List<User> users) {
-                            allUsers.clear();
-                            for (User u : users) {
-                                // Exclude the organizer from the invite list
-                                if (!organizerDeviceId.equals(u.getDeviceId())) {
-                                    allUsers.add(u);
-                                }
-                            }
-                            tvLoading.setVisibility(View.GONE);
-                            filterAndDisplay(etSearch.getText().toString().trim());
-                        }
+                    eventDoc.getReference()
+                            .collection(PrivateEventInvite.SUBCOLLECTION)
+                            .get()
+                            .addOnSuccessListener(inviteDocs -> {
+                                for (DocumentSnapshot inviteDoc : inviteDocs.getDocuments()) {
+                                    PrivateEventInvite invite =
+                                            inviteDoc.toObject(PrivateEventInvite.class);
+                                    if (invite == null) {
+                                        continue;
+                                    }
 
-                        @Override
-                        public void onError(Exception e) {
-                            tvLoading.setVisibility(View.GONE);
-                            Toast.makeText(InviteEntrantsActivity.this,
-                                    "Failed to load users", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                                    if (PrivateEventInvite.STATUS_PENDING.equals(invite.getStatus())
+                                            || PrivateEventInvite.STATUS_ACCEPTED.equals(invite.getStatus())) {
+                                        alreadyInvited.add(inviteDoc.getId());
+                                    }
+                                }
+                                setLoadingState(false);
+                                showStatus(
+                                        getString(R.string.invite_ready_state),
+                                        false
+                                );
+                            })
+                            .addOnFailureListener(e -> {
+                                setLoadingState(false);
+                                Toast.makeText(this, "Failed to load invites", Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    tvLoading.setVisibility(View.GONE);
+                    setLoadingState(false);
                     Toast.makeText(this, "Failed to load event", Toast.LENGTH_SHORT).show();
                 });
     }
 
-    /**
-     * Filters {@link #allUsers} against the given query string and updates the adapter.
-     *
-     * <p>The query is matched case-insensitively against each user's name, email,
-     * and phone number. An empty query shows all users (US 02.01.03 — search via
-     * name, phone number and/or email).
-     *
-     * @param query The current search query. May be empty.
-     */
-    private void filterAndDisplay(String query) {
-        List<User> filtered = new ArrayList<>();
-        String lowerQuery = query.toLowerCase(Locale.ROOT);
+    private void searchEntrants() {
+        clearErrors();
 
-        for (User user : allUsers) {
-            if (query.isEmpty()) {
-                filtered.add(user);
-                continue;
-            }
+        String name = normalizeName(readText(etName));
+        String email = normalizeEmail(readText(etEmail));
+        String phone = normalizePhone(readText(etPhone));
 
-            String name  = user.getName()        != null ? user.getName().toLowerCase(Locale.ROOT)        : "";
-            String email = user.getEmail()        != null ? user.getEmail().toLowerCase(Locale.ROOT)       : "";
-            String phone = user.getPhoneNumber()  != null ? user.getPhoneNumber().toLowerCase(Locale.ROOT) : "";
-
-            if (name.contains(lowerQuery) || email.contains(lowerQuery) || phone.contains(lowerQuery)) {
-                filtered.add(user);
-            }
-        }
-
-        adapter.updateList(filtered);
-        recyclerView.setVisibility(View.VISIBLE);
-        tvEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    /**
-     * Invites the given user to the private event's waiting list.
-     *
-     * <p>Two Firestore writes are performed atomically:
-     * <ol>
-     *   <li>The user's device ID is added to the event's {@code waitingList} via
-     *       {@link FieldValue#arrayUnion} (US 02.01.03).</li>
-     *   <li>A notification document is created under
-     *       {@code notifications/{deviceId}/messages} so the entrant is informed
-     *       of the invitation (US 01.05.06).</li>
-     * </ol>
-     *
-     * @param user The {@link User} to invite.
-     */
-    private void onInviteClicked(User user) {
-        String deviceId = user.getDeviceId();
-        if (deviceId == null || deviceId.isEmpty()) {
-            Toast.makeText(this, "Cannot invite user: missing device ID", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() && email.isEmpty() && phone.isEmpty()) {
+            inputLayoutName.setError(getString(R.string.invite_contact_required));
+            inputLayoutEmail.setError(getString(R.string.invite_contact_required));
+            inputLayoutPhone.setError(getString(R.string.invite_contact_required));
             return;
         }
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        lastSearchName = name;
+        lastSearchEmail = email;
+        lastSearchPhone = phone;
 
-        // US 02.01.03: Add entrant to the event's waiting list
-        db.collection("events")
-                .document(eventId)
-                .update("waitingList", FieldValue.arrayUnion(deviceId))
-                .addOnSuccessListener(aVoid -> {
-                    // Mark as invited locally so the UI updates immediately
-                    if (!alreadyInvited.contains(deviceId)) {
-                        alreadyInvited.add(deviceId);
-                    }
-                    adapter.notifyDataSetChanged();
+        setLoadingState(true);
+        showStatus(null, false);
 
-                    // US 01.05.06: Send in-app notification to the invited entrant
-                    sendPrivateInviteNotification(db, deviceId, user.isNotificationsEnabled());
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to invite entrant", Toast.LENGTH_SHORT).show());
+        UserRepository.loadAllProfiles(new UserRepository.ProfilesCallback() {
+            @Override
+            public void onProfilesLoaded(List<User> users) {
+                setLoadingState(false);
+                loadedUsers.clear();
+                loadedUsers.addAll(users);
+                applySearchResults(users, name, email, phone);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                setLoadingState(false);
+                showStatus(getString(R.string.invite_lookup_failed), true);
+            }
+        });
     }
 
-    /**
-     * Writes a private-invite notification document to Firestore for the invited entrant.
-     *
-     * <p>Implements <b>US 01.05.06</b>: the entrant receives a notification that they have
-     * been invited to join the waiting list for a private event. If the entrant has opted
-     * out of notifications ({@code notificationsEnabled == false}), the write is skipped
-     * and a toast informs the organizer.
-     *
-     * <p>Notification document path:
-     * {@code notifications/{deviceId}/messages/{autoId}}
-     *
-     * @param db                   The {@link FirebaseFirestore} instance to use.
-     * @param deviceId             The invited entrant's device ID.
-     * @param notificationsEnabled Whether the entrant accepts notifications.
-     */
+    private void applySearchResults(List<User> users, String name, String email, String phone) {
+        String organizerDeviceId = DeviceIdManager.getOrCreateDeviceId(this);
+        visibleCandidates.clear();
+        for (User user : users) {
+            if (user == null || TextUtils.isEmpty(user.getDeviceId())) {
+                continue;
+            }
+
+            if (matchesQuery(user, name, email, phone)) {
+                visibleCandidates.add(new InviteCandidate(
+                        user,
+                        canInviteUser(user, organizerDeviceId)
+                ));
+            }
+        }
+
+        resultsAdapter.notifyDataSetChanged();
+        boolean hasResults = !visibleCandidates.isEmpty();
+        tvResultsLabel.setVisibility(hasResults ? View.VISIBLE : View.GONE);
+        rvInviteResults.setVisibility(hasResults ? View.VISIBLE : View.GONE);
+        tvEmptyResults.setVisibility(hasResults ? View.GONE : View.VISIBLE);
+
+        if (hasResults) {
+            showStatus(getString(R.string.invite_results_found, visibleCandidates.size()), false);
+        } else {
+            showStatus(getString(R.string.invite_no_match), true);
+        }
+    }
+
+    private boolean matchesQuery(User user, String name, String email, String phone) {
+        boolean hasQuery = !name.isEmpty() || !email.isEmpty() || !phone.isEmpty();
+        if (!hasQuery) {
+            return false;
+        }
+
+        boolean nameMatches = name.isEmpty()
+                || normalizeName(user.getName()).contains(name);
+        boolean emailMatches = email.isEmpty()
+                || normalizeEmail(user.getEmail()).equals(email);
+        boolean phoneMatches = phone.isEmpty()
+                || normalizePhone(user.getPhoneNumber()).equals(phone);
+
+        return nameMatches && emailMatches && phoneMatches;
+    }
+
+    private boolean canInviteUser(User user, String organizerDeviceId) {
+        String targetDeviceId = user.getDeviceId();
+        if (TextUtils.isEmpty(targetDeviceId)) {
+            return false;
+        }
+        if (organizerDeviceId.equals(targetDeviceId)) {
+            return false;
+        }
+        if (coOrganizerIds.contains(targetDeviceId)) {
+            return false;
+        }
+        return !alreadyInvited.contains(targetDeviceId);
+    }
+
+    private void createInvite(User user) {
+        String targetDeviceId = user.getDeviceId();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+        PrivateEventInvite invite = new PrivateEventInvite(
+                targetDeviceId,
+                eventId,
+                eventTitle,
+                PrivateEventInvite.STATUS_PENDING,
+                new Date()
+        );
+
+        batch.set(db.collection("events")
+                .document(eventId)
+                .collection(PrivateEventInvite.SUBCOLLECTION)
+                .document(targetDeviceId), invite);
+
+        setLoadingState(true);
+        batch.commit()
+                .addOnSuccessListener(aVoid -> {
+                    setLoadingState(false);
+                    alreadyInvited.add(targetDeviceId);
+                    sendPrivateInviteNotification(db, targetDeviceId, user.isNotificationsEnabled());
+                    rerenderSearchResults();
+                    showStatus(
+                            getString(R.string.invite_success_summary, buildDisplayTarget(user)),
+                            false
+                    );
+                })
+                .addOnFailureListener(e -> {
+                    setLoadingState(false);
+                    showStatus(getString(R.string.invite_save_failed), true);
+                });
+    }
+
     private void sendPrivateInviteNotification(FirebaseFirestore db,
                                                String deviceId,
                                                boolean notificationsEnabled) {
@@ -306,162 +303,186 @@ public class InviteEntrantsActivity extends AppCompatActivity {
         }
 
         Map<String, Object> notif = new HashMap<>();
-        notif.put("userId",      deviceId);
-        notif.put("eventId",     eventId);
-        notif.put("eventTitle",  eventTitle);
-        notif.put("title",       "You've been invited!");
-        notif.put("message",     "You've been personally invited to join the waiting list for: " + eventTitle);
-        notif.put("status",      "Waiting List");
-        notif.put("type",        "privateInvite");
-        notif.put("sentAt",      new Timestamp(new Date()));
-        notif.put("read",        false);
+        notif.put("userId", deviceId);
+        notif.put("eventId", eventId);
+        notif.put("eventTitle", eventTitle);
+        notif.put("title", "You've been invited!");
+        notif.put("message", "You've been personally invited to a private event: "
+                + eventTitle + ". Accept the invitation before joining the waiting list.");
+        notif.put("status", "Private Invite");
+        notif.put("type", "privateInvite");
+        notif.put("sentAt", new Timestamp(new Date()));
+        notif.put("read", false);
 
         db.collection("notifications")
                 .document(deviceId)
                 .collection("messages")
                 .add(notif)
-                .addOnSuccessListener(ref ->
-                        Toast.makeText(this, "Entrant invited successfully", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
-                                "Entrant added to waitlist but notification failed",
+                                "Invite saved, but notification failed",
                                 Toast.LENGTH_SHORT).show());
     }
 
-    // -------------------------------------------------------------------------
-    // Inner RecyclerView adapter
-    // -------------------------------------------------------------------------
-
-    /**
-     * Callback interface for invite button taps in {@link InviteSearchAdapter}.
-     */
-    interface OnInviteClickListener {
-        /**
-         * Called when the organizer taps the Invite button for a user row.
-         *
-         * @param user The {@link User} to invite.
-         */
-        void onInviteClicked(User user);
+    private void setLoadingState(boolean isLoading) {
+        isBusy = isLoading;
+        tvLoading.setVisibility(isLoading ? TextView.VISIBLE : TextView.GONE);
+        btnInviteByContact.setEnabled(!isLoading);
+        etName.setEnabled(!isLoading);
+        etEmail.setEnabled(!isLoading);
+        etPhone.setEnabled(!isLoading);
+        if (resultsAdapter != null) {
+            resultsAdapter.notifyDataSetChanged();
+        }
     }
 
-    /**
-     * RecyclerView adapter that renders a list of {@link User} search results, each
-     * with an Invite button. Users who are already on the waiting list are shown with
-     * a disabled "Invited" button so the organizer cannot invite them twice.
-     * Users who are co-organizers are shown with a disabled "Co-Organizer" button.
-     */
-    static class InviteSearchAdapter extends RecyclerView.Adapter<InviteSearchAdapter.ViewHolder> {
+    private void clearErrors() {
+        inputLayoutName.setError(null);
+        inputLayoutEmail.setError(null);
+        inputLayoutPhone.setError(null);
+        inputLayoutName.setErrorEnabled(false);
+        inputLayoutEmail.setErrorEnabled(false);
+        inputLayoutPhone.setErrorEnabled(false);
+    }
 
-        /** Currently displayed user list (filtered subset of all users). */
-        private List<User> users;
-
-        /** Device IDs of entrants already on the waiting list. */
-        private final List<String> alreadyInvited;
-
-        /** Device IDs of co-organizers — shown with a disabled "Co-Organizer" button label. */
-        private List<String> coOrganizerIds = new ArrayList<>();
-
-        /** Delegate that handles invite taps. */
-        private final OnInviteClickListener listener;
-
-        /**
-         * Creates a new adapter.
-         *
-         * @param users          Initial user list to display.
-         * @param alreadyInvited Device IDs already on the waitlist.
-         * @param listener       Callback for invite button taps.
-         */
-        InviteSearchAdapter(List<User> users,
-                            List<String> alreadyInvited,
-                            OnInviteClickListener listener) {
-            this.users = users;
-            this.alreadyInvited = alreadyInvited;
-            this.listener = listener;
+    private void rerenderSearchResults() {
+        if (loadedUsers.isEmpty()) {
+            return;
         }
+        applySearchResults(loadedUsers, lastSearchName, lastSearchEmail, lastSearchPhone);
+    }
 
-        /**
-         * Replaces the displayed list with {@code newList} and refreshes the RecyclerView.
-         *
-         * @param newList The updated filtered user list.
-         */
-        void updateList(List<User> newList) {
-            this.users = newList;
-            notifyDataSetChanged();
-        }
+    private void clearInputs() {
+        etName.setText("");
+        etEmail.setText("");
+        etPhone.setText("");
+    }
 
-        /** Updates the co-organizer ID list and refreshes the RecyclerView. */
-        void setCoOrganizerIds(List<String> ids) {
-            this.coOrganizerIds = ids;
-            notifyDataSetChanged();
+    private void showStatus(String message, boolean isError) {
+        if (TextUtils.isEmpty(message)) {
+            tvStatus.setVisibility(TextView.GONE);
+            return;
         }
+        tvStatus.setVisibility(TextView.VISIBLE);
+        tvStatus.setText(message);
+        tvStatus.setTextColor(getColor(isError ? R.color.historyCancelledText : R.color.primaryAccent));
+    }
+
+    private String readText(TextInputEditText editText) {
+        return editText.getText() == null ? "" : editText.getText().toString();
+    }
+
+    private String normalizeEmail(String rawEmail) {
+        return rawEmail == null ? "" : rawEmail.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeName(String rawName) {
+        return rawName == null ? "" : rawName.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizePhone(String rawPhone) {
+        if (rawPhone == null) {
+            return "";
+        }
+        return rawPhone.replaceAll("[^0-9+]", "");
+    }
+
+    private String buildDisplayTarget(User user) {
+        if (!TextUtils.isEmpty(user.getName())) {
+            return user.getName();
+        }
+        if (!TextUtils.isEmpty(user.getEmail())) {
+            return user.getEmail();
+        }
+        if (!TextUtils.isEmpty(user.getPhoneNumber())) {
+            return user.getPhoneNumber();
+        }
+        return getString(R.string.invite_fallback_target);
+    }
+
+    private String buildSecondaryLine(User user) {
+        String email = normalizeEmail(user.getEmail());
+        String phone = user.getPhoneNumber() == null ? "" : user.getPhoneNumber().trim();
+
+        if (!email.isEmpty() && !phone.isEmpty()) {
+            return email + " • " + phone;
+        }
+        if (!email.isEmpty()) {
+            return email;
+        }
+        if (!phone.isEmpty()) {
+            return phone;
+        }
+        return user.getDeviceId();
+    }
+
+    private int resolveInviteButtonLabel(User user, boolean canInvite) {
+        if (canInvite) {
+            return R.string.btn_invite;
+        }
+        if (alreadyInvited.contains(user.getDeviceId())) {
+            return R.string.btn_invited;
+        }
+        return R.string.btn_unavailable;
+    }
+
+    private final class SearchResultsAdapter
+            extends RecyclerView.Adapter<SearchResultsAdapter.ResultViewHolder> {
 
         @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext())
+        public ResultViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_invite_entrant, parent, false);
-            return new ViewHolder(v);
+            return new ResultViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            User user = users.get(position);
-            boolean invited = alreadyInvited.contains(user.getDeviceId());
+        public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
+            InviteCandidate candidate = visibleCandidates.get(position);
+            User user = candidate.user;
 
-            // Name (fall back to device ID when name is blank)
-            String displayName = (user.getName() != null && !user.getName().isEmpty())
+            String displayName = !TextUtils.isEmpty(user.getName())
                     ? user.getName()
-                    : user.getDeviceId();
+                    : getString(R.string.invite_fallback_target);
+
             holder.tvName.setText(displayName);
+            holder.tvSub.setText(buildSecondaryLine(user));
+            holder.tvSub.setVisibility(View.VISIBLE);
 
-            // Email and phone sub-line
-            String email = user.getEmail() != null ? user.getEmail() : "";
-            String phone = user.getPhoneNumber() != null ? user.getPhoneNumber() : "";
-            String sub = email;
-            if (!phone.isEmpty()) {
-                sub = sub.isEmpty() ? phone : sub + " · " + phone;
-            }
-            holder.tvSub.setText(sub);
-            holder.tvSub.setVisibility(sub.isEmpty() ? View.GONE : View.VISIBLE);
-
-            // Co-organizers cannot be invited — show a clear disabled label
-            if (coOrganizerIds.contains(user.getDeviceId())) {
-                holder.btnInvite.setText("Co-Organizer");
-                holder.btnInvite.setEnabled(false);
-                return;
-            }
-
-            // Invite button state
-            if (invited) {
-                holder.btnInvite.setText(R.string.btn_invited);
-                holder.btnInvite.setEnabled(false);
-            } else {
-                holder.btnInvite.setText(R.string.btn_invite);
-                holder.btnInvite.setEnabled(true);
-                holder.btnInvite.setOnClickListener(v -> listener.onInviteClicked(user));
-            }
+            boolean buttonEnabled = candidate.canInvite && !isBusy;
+            holder.btnInvite.setEnabled(buttonEnabled);
+            holder.btnInvite.setAlpha(buttonEnabled ? 1f : 0.65f);
+            holder.btnInvite.setText(resolveInviteButtonLabel(user, candidate.canInvite));
+            holder.btnInvite.setOnClickListener(v -> createInvite(user));
         }
 
         @Override
         public int getItemCount() {
-            return users.size();
+            return visibleCandidates.size();
         }
 
-        /** ViewHolder for a single user search result row. */
-        static class ViewHolder extends RecyclerView.ViewHolder {
-            /** Displays the user's name (or device ID as fallback). */
-            TextView tvName;
-            /** Displays the user's email and/or phone number. */
-            TextView tvSub;
-            /** Triggers an invite for this user. Disabled once the user is already invited. */
-            Button btnInvite;
+        final class ResultViewHolder extends RecyclerView.ViewHolder {
+            private final TextView tvName;
+            private final TextView tvSub;
+            private final Button btnInvite;
 
-            ViewHolder(@NonNull View itemView) {
+            ResultViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvName    = itemView.findViewById(R.id.tvInviteName);
-                tvSub     = itemView.findViewById(R.id.tvInviteSub);
+                tvName = itemView.findViewById(R.id.tvInviteName);
+                tvSub = itemView.findViewById(R.id.tvInviteSub);
                 btnInvite = itemView.findViewById(R.id.btnInvite);
             }
+        }
+    }
+
+    private static final class InviteCandidate {
+        private final User user;
+        private final boolean canInvite;
+
+        InviteCandidate(User user, boolean canInvite) {
+            this.user = user;
+            this.canInvite = canInvite;
         }
     }
 }

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F0EDE8">
+    android:background="@color/pageBg">
 
     <!-- ── TOP BAR ──────────────────────────────────────────────────────── -->
     <LinearLayout
@@ -12,18 +12,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingTop="36dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="12dp"
-        android:background="#F0EDE8">
+        android:paddingHorizontal="24dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp"
+        android:background="@color/pageBg">
 
         <ImageButton
             android:id="@+id/btnBackInvited"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:background="@drawable/bg_icon_btn_light"
+            style="@style/Widget.CodeBase.BackButton"
             android:contentDescription="@string/back_button_desc" />
 
         <TextView
@@ -32,12 +28,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Invited Entrants"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:letterSpacing="-0.02"
-            android:textColor="#111111"
+            style="@style/TextAppearance.CodeBase.PageTitleCompact"
             android:gravity="center"
-            android:layout_marginEnd="40dp" />
+            android:layout_marginEnd="42dp" />
 
     </LinearLayout>
 
@@ -46,8 +39,8 @@
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:gravity="center_vertical">
 
         <TextView
@@ -116,9 +109,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="0 ENTRANTS"
-            android:textSize="9sp"
-            android:textColor="#AAAAAA"
-            android:letterSpacing="0.18" />
+            style="@style/TextAppearance.CodeBase.Eyebrow"
+            android:textAllCaps="true" />
 
         <ProgressBar
             android:id="@+id/invitedProgressBar"
@@ -136,7 +128,7 @@
         android:gravity="center"
         android:text="No entrants found"
         android:textSize="14sp"
-        android:textColor="#AAAAAA"
+        android:textColor="@color/textSecondary"
         android:paddingTop="48dp"
         android:visibility="gone" />
 

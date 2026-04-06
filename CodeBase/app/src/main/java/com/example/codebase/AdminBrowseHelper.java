@@ -104,6 +104,16 @@ public final class AdminBrowseHelper {
         return "admin".equalsIgnoreCase(safeText(user != null ? user.getRole() : null));
     }
 
+    /**
+     * Returns whether the given profile has lost organizer privileges.
+     *
+     * @param user the profile to inspect
+     * @return {@code true} when organizer access is revoked
+     */
+    public static boolean isOrganizerRevoked(User user) {
+        return user != null && user.isOrganizerPrivilegesRevoked();
+    }
+
     private static int compareDates(Date left, Date right) {
         if (left == null && right == null) {
             return 0;

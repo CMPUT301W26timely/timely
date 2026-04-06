@@ -14,7 +14,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Displays the current device's notifications and pending event invitations.
@@ -56,6 +61,12 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Describes the number of pending invitations inside {@link #invitationCard}. */
     private TextView invitationCountSummary;
 
+    /** Top title, adapted for admin log review mode. */
+    private TextView titleView;
+
+    /** Optional subtitle shown in admin log review mode. */
+    private TextView subtitleView;
+
     /**
      * Row data for {@link NotificationListAdapter}. Each map contains
      * {@code "status"} and {@code "message"} keys.
@@ -68,11 +79,18 @@ public class NotificationsActivity extends AppCompatActivity {
      */
     private final ArrayList<String> eventIds = new ArrayList<>();
 
+    /** Event IDs that currently have an actionable invitation for this entrant. */
+    private final Set<String> actionableInvitationEventIds = new HashSet<>();
+
     /** Device ID of the current user, used as the Firestore notifications document key. */
     private String deviceId;
 
     /** Whether the current app session is using the administrator role. */
     private boolean isAdminSession;
+
+    /** Formats admin log timestamps for display. */
+    private final SimpleDateFormat logDateFormat =
+            new SimpleDateFormat("MMM dd, yyyy · h:mm a", Locale.getDefault());
 
     /**
      * Initialises the activity, binds views, sets up the invitation card click listener,
@@ -101,6 +119,8 @@ public class NotificationsActivity extends AppCompatActivity {
         emptyState            = findViewById(R.id.tvNotificationsEmptyState);
         emptyStateSubtitle    = findViewById(R.id.tvNotificationsEmptySubtitle);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
+        titleView             = findViewById(R.id.tvNotificationsTitle);
+        subtitleView          = findViewById(R.id.tvNotificationsSubtitle);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
         listViewNotifications.setDivider(null);
@@ -109,8 +129,17 @@ public class NotificationsActivity extends AppCompatActivity {
         invitationCard.setOnClickListener(v ->
                 startActivity(new Intent(this, InvitationsActivity.class)));
 
+        if (isAdminSession) {
+            titleView.setText(R.string.admin_notification_logs_title);
+            subtitleView.setVisibility(View.VISIBLE);
+            subtitleView.setText(R.string.admin_notification_logs_subtitle);
+            invitationCard.setVisibility(View.GONE);
+        }
+
         setupBottomNavigation();
-        loadInvitationSummary();
+        if (!isAdminSession) {
+            loadInvitationSummary();
+        }
         loadNotifications();
     }
 
@@ -122,7 +151,9 @@ public class NotificationsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadInvitationSummary();
+        if (!isAdminSession) {
+            loadInvitationSummary();
+        }
         loadNotifications();
     }
 
@@ -134,6 +165,20 @@ public class NotificationsActivity extends AppCompatActivity {
      * <p>Shows a toast on failure.
      */
     private void loadNotifications() {
+        if (isAdminSession) {
+            AppDatabase.getInstance()
+                    .notificationLogsRef
+                    .orderBy("sentAt", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots ->
+                            populateNotificationLogs(queryDocumentSnapshots.getDocuments()))
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this,
+                                    R.string.admin_notification_logs_load_failed,
+                                    Toast.LENGTH_SHORT).show());
+            return;
+        }
+
         AppDatabase.getInstance()
                 .notificationsRef
                 .document(deviceId)
@@ -160,34 +205,21 @@ public class NotificationsActivity extends AppCompatActivity {
      * <p>Hides the card on query failure.
      */
     private void loadInvitationSummary() {
-        AppDatabase.getInstance()
-                .eventsRef
-                .whereArrayContains("selectedEntrants", deviceId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    int invitationCount = 0;
-                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
-                        Event event = EventSchema.normalizeLoadedEvent(doc);
-                        if (event == null) continue;
-
-                        boolean isEnrolled = event.getEnrolledEntrants() != null
-                                && event.getEnrolledEntrants().contains(deviceId);
-                        if (!isEnrolled) {
-                            invitationCount++;
-                        }
+        PendingInvitationHelper.loadPendingInvitationEventIds(deviceId,
+                new PendingInvitationHelper.PendingInvitationCallback() {
+                    @Override
+                    public void onLoaded(Set<String> eventIds) {
+                        actionableInvitationEventIds.clear();
+                        actionableInvitationEventIds.addAll(eventIds);
+                        updateInvitationCard();
                     }
 
-                    if (invitationCount > 0) {
-                        invitationCard.setVisibility(View.VISIBLE);
-                        invitationCountSummary.setText(
-                                "You have " + invitationCount + " invitation"
-                                        + (invitationCount > 1 ? "s" : "")
-                                        + " awaiting a response.");
-                    } else {
-                        invitationCard.setVisibility(View.GONE);
+                    @Override
+                    public void onError(Exception e) {
+                        actionableInvitationEventIds.clear();
+                        updateInvitationCard();
                     }
-                })
-                .addOnFailureListener(e -> invitationCard.setVisibility(View.GONE));
+                });
     }
 
     /**
@@ -211,7 +243,9 @@ public class NotificationsActivity extends AppCompatActivity {
                 addNotification(
                         getNotificationLabel(notification),
                         notification.getMessage() != null ? notification.getMessage() : "No message",
-                        notification.getEventId()
+                        notification.getEventTitle(),
+                        notification.getEventId(),
+                        notification.getType()
                 );
             }
         }
@@ -226,8 +260,63 @@ public class NotificationsActivity extends AppCompatActivity {
         listViewNotifications.setVisibility(hasNotifications ? View.VISIBLE : View.GONE);
 
         listViewNotifications.setOnItemClickListener((parent, view, position, id) -> {
+            String eventId = eventIds.get(position);
+            if (eventId == null || eventId.trim().isEmpty()) {
+                return;
+            }
+
             Intent intent = new Intent(this, EntrantEventDetailActivity.class);
-            intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventIds.get(position));
+            intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventId);
+            startActivity(intent);
+        });
+    }
+
+    private void populateNotificationLogs(java.util.List<DocumentSnapshot> documents) {
+        items.clear();
+        eventIds.clear();
+
+        for (DocumentSnapshot doc : documents) {
+            NotificationLogEntry logEntry = doc.toObject(NotificationLogEntry.class);
+            if (logEntry == null) {
+                continue;
+            }
+
+            String targetGroup = logEntry.getTargetGroup() != null
+                    ? logEntry.getTargetGroup()
+                    : getString(R.string.admin_notification_logs_default_group);
+            String message = logEntry.getTitle() != null && !logEntry.getTitle().trim().isEmpty()
+                    ? logEntry.getTitle()
+                    : getString(R.string.admin_notification_logs_default_title);
+            String meta = buildLogMeta(logEntry);
+
+            addNotification(
+                    targetGroup,
+                    message,
+                    meta,
+                    logEntry.getEventId(),
+                    "adminLog"
+            );
+        }
+
+        NotificationListAdapter adapter = new NotificationListAdapter(this, items);
+        listViewNotifications.setAdapter(adapter);
+
+        boolean hasLogs = !items.isEmpty();
+        emptyStateCard.setVisibility(hasLogs ? View.GONE : View.VISIBLE);
+        emptyState.setVisibility(hasLogs ? View.GONE : View.VISIBLE);
+        emptyStateSubtitle.setVisibility(hasLogs ? View.GONE : View.VISIBLE);
+        listViewNotifications.setVisibility(hasLogs ? View.VISIBLE : View.GONE);
+        emptyState.setText(R.string.admin_notification_logs_empty_title);
+        emptyStateSubtitle.setText(R.string.admin_notification_logs_empty_subtitle);
+
+        listViewNotifications.setOnItemClickListener((parent, view, position, id) -> {
+            String eventId = eventIds.get(position);
+            if (eventId == null || eventId.trim().isEmpty()) {
+                return;
+            }
+
+            Intent intent = new Intent(this, EventDetailActivity.class);
+            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, eventId);
             startActivity(intent);
         });
     }
@@ -299,13 +388,49 @@ public class NotificationsActivity extends AppCompatActivity {
      * @param status  The status label to display (e.g. "Selected", "Cancelled").
      * @param message The notification message body.
      * @param eventId The Firestore event document ID associated with this notification.
+     * @param type    The notification recipient group type.
      */
-    private void addNotification(String status, String message, String eventId) {
+    private void addNotification(String status,
+                                 String message,
+                                 String meta,
+                                 String eventId,
+                                 String type) {
         HashMap<String, String> row = new HashMap<>();
         row.put("status", status);
         row.put("message", message);
+        row.put("meta", meta != null ? meta : "");
         items.add(row);
         eventIds.add(eventId);
+    }
+
+    private String buildLogMeta(NotificationLogEntry logEntry) {
+        String eventTitle = logEntry.getEventTitle() != null && !logEntry.getEventTitle().trim().isEmpty()
+                ? logEntry.getEventTitle().trim()
+                : getString(R.string.untitled_event);
+        Date sentAt = logEntry.getSentAt();
+        String timestamp = sentAt != null
+                ? logDateFormat.format(sentAt)
+                : getString(R.string.admin_notification_logs_unknown_time);
+
+        return getString(
+                R.string.admin_notification_logs_meta,
+                eventTitle,
+                logEntry.getRecipientCount(),
+                timestamp
+        );
+    }
+
+    private void updateInvitationCard() {
+        int invitationCount = actionableInvitationEventIds.size();
+        invitationCard.setVisibility(View.VISIBLE);
+        if (invitationCount > 0) {
+            invitationCountSummary.setText(
+                    "You have " + invitationCount + " invitation"
+                            + (invitationCount > 1 ? "s" : "")
+                            + " awaiting a response.");
+        } else {
+            invitationCountSummary.setText("No invitations are awaiting a response.");
+        }
     }
 
     /**
@@ -337,6 +462,7 @@ public class NotificationsActivity extends AppCompatActivity {
         if ("selectedEntrants".equals(type))  return "Selected";
         if ("cancelledEntrants".equals(type)) return "Cancelled";
         if ("waitingList".equals(type))       return "Waiting List";
+        if ("privateInvite".equals(type))     return "Private Invite";
         return "Notification";
     }
 }

@@ -12,6 +12,9 @@ public class User {
     private String email;
     private String phoneNumber;
     private boolean notificationsEnabled;
+    private boolean organizerPrivilegesRevoked;
+    private String organizerRevocationMessage;
+    private java.util.Date organizerRevokedAt;
 
     /**
      * Default constructor required for Firebase Firestore serialization.
@@ -33,6 +36,9 @@ public class User {
         this.email = "";
         this.phoneNumber = "";
         this.notificationsEnabled = true;
+        this.organizerPrivilegesRevoked = false;
+        this.organizerRevocationMessage = "";
+        this.organizerRevokedAt = null;
     }
 
     /**
@@ -131,5 +137,29 @@ public class User {
      */
     public void setNotificationsEnabled(boolean notificationsEnabled) {
         this.notificationsEnabled = notificationsEnabled;
+    }
+
+    public boolean isOrganizerPrivilegesRevoked() {
+        return organizerPrivilegesRevoked;
+    }
+
+    public void setOrganizerPrivilegesRevoked(boolean organizerPrivilegesRevoked) {
+        this.organizerPrivilegesRevoked = organizerPrivilegesRevoked;
+    }
+
+    public String getOrganizerRevocationMessage() {
+        return organizerRevocationMessage;
+    }
+
+    public void setOrganizerRevocationMessage(String organizerRevocationMessage) {
+        this.organizerRevocationMessage = organizerRevocationMessage;
+    }
+
+    public java.util.Date getOrganizerRevokedAt() {
+        return organizerRevokedAt;
+    }
+
+    public void setOrganizerRevokedAt(java.util.Date organizerRevokedAt) {
+        this.organizerRevokedAt = organizerRevokedAt;
     }
 }

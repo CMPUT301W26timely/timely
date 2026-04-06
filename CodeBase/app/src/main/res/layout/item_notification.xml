@@ -62,13 +62,15 @@
                 android:layout_marginTop="10dp"
                 android:textSize="14sp"
                 android:textColor="@color/textPrimary" />
-        </LinearLayout>
 
-        <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@android:drawable/ic_media_next"
-            app:tint="@color/textMuted"
-            android:contentDescription="@string/decorative_image" />
+            <TextView
+                android:id="@+id/tvNotificationMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="@color/textSecondary"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

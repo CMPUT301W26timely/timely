@@ -44,11 +44,10 @@
 
         <EditText
             android:id="@+id/etEventName"
+            style="@style/Widget.CodeBase.EditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="e.g., Art Workshop"
-            android:background="@drawable/bg_input_field"
-            android:padding="16dp"
             android:layout_marginBottom="24dp" />
 
         <TextView
@@ -62,13 +61,12 @@
 
         <EditText
             android:id="@+id/etDescription"
+            style="@style/Widget.CodeBase.EditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Provide details about your event"
             android:minLines="4"
             android:gravity="top"
-            android:background="@drawable/bg_input_field"
-            android:padding="16dp"
             android:layout_marginBottom="24dp" />
 
         <TextView
@@ -82,11 +80,10 @@
 
         <EditText
             android:id="@+id/etLocation"
+            style="@style/Widget.CodeBase.EditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="e.g., St. Albert Public Library"
-            android:background="@drawable/bg_input_field"
-            android:padding="16dp"
             android:layout_marginBottom="24dp" />
 
         <TextView
@@ -100,12 +97,11 @@
 
         <EditText
             android:id="@+id/etPrice"
+            style="@style/Widget.CodeBase.EditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="e.g., 60.00 (Leave 0 for free)"
             android:inputType="numberDecimal"
-            android:background="@drawable/bg_input_field"
-            android:padding="16dp"
             android:layout_marginBottom="16dp" />
 
     </LinearLayout>

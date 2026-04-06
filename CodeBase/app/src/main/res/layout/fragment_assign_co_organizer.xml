@@ -42,16 +42,14 @@
 
     <EditText
         android:id="@+id/etCoOrgSearch"
+        style="@style/Widget.CodeBase.EditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:backgroundTint="#D8D8D8"
         android:hint="Search entrants"
         android:imeOptions="actionSearch"
         android:inputType="text"
-        android:maxLines="1"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp" />
+        android:maxLines="1" />
 
     <!-- Loading spinner -->
     <ProgressBar

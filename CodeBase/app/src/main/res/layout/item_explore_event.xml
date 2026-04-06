@@ -6,7 +6,7 @@
     android:layout_marginBottom="12dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="3dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@color/surface"
     android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
@@ -22,15 +22,35 @@
             android:text="Event Title"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#000000" />
+            android:textColor="@color/textPrimary"
+            android:fontFamily="serif" />
 
         <TextView
+            android:id="@+id/tvExploreAcceptedPill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:text="Accepted"
+            android:textAllCaps="true"
+            android:textColor="@color/primaryMid"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:background="@drawable/bg_pill_green"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvExploreEventBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Congratulations! You have been selected in the lottery for this event. Please respond to secure your spot."
             android:textSize="14sp"
-            android:textColor="#666666" />
+            android:textColor="@color/textSecondary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,8 +66,8 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:text="Decline"
-                android:textColor="#D32F2F"
-                app:strokeColor="#D32F2F"
+                android:textColor="@color/textSecondary"
+                app:strokeColor="@color/border"
                 app:strokeWidth="1dp"
                 style="?attr/materialButtonOutlinedStyle" />
 
@@ -58,7 +78,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:text="Accept"
-                android:backgroundTint="#4CAF50"
+                android:backgroundTint="@color/primaryAccent"
                 android:textColor="#FFFFFF" />
         </LinearLayout>
     </LinearLayout>

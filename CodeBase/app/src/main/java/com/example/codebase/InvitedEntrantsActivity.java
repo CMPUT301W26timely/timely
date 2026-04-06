@@ -24,13 +24,12 @@ import java.util.Map;
  * Displays all selected entrants for an event, split across four tabs:
  * All, Pending, Accepted, and Declined.
  *
- * <p>Entrant status is derived from the three Firestore lists as follows:
+ * <p>Entrant status is derived from the event's organizer-facing participant state:
  * <ul>
+ *   <li><b>All</b> — present in {@code invitedEntrants}</li>
  *   <li><b>Accepted</b> — present in {@code enrolledEntrants}</li>
- *   <li><b>Declined</b> — present in {@code cancelledEntrants} ∩
- *       ({@code selectedEntrants} − {@code enrolledEntrants})</li>
- *   <li><b>Pending</b> — present in {@code selectedEntrants} but absent from
- *       both {@code enrolledEntrants} and the derived declined set</li>
+ *   <li><b>Declined</b> — present in {@code declinedEntrants}</li>
+ *   <li><b>Pending</b> — present in {@code selectedEntrants}</li>
  * </ul>
  *
  * <p>Implements US 02.06.04 (organizer cancel entrant): the Cancel action is
@@ -178,15 +177,6 @@ public class InvitedEntrantsActivity extends AppCompatActivity
      * Parses the Firestore {@link DocumentSnapshot} into categorised entrant lists
      * and refreshes the UI.
      *
-     * <p>Derives entrant status using the following set logic:
-     * <ul>
-     *   <li>{@code declined} = {@code cancelledEntrants} ∩
-     *       ({@code selectedEntrants} − {@code enrolledEntrants})</li>
-     *   <li>{@code pending} = {@code selectedEntrants} − {@code enrolledEntrants}
-     *       − {@code declined}</li>
-     *   <li>{@code accepted} = {@code enrolledEntrants} ∩ {@code selectedEntrants}</li>
-     * </ul>
-     *
      * <p>Finishes the activity with a toast if the document does not exist or cannot
      * be normalised.
      *
@@ -211,30 +201,22 @@ public class InvitedEntrantsActivity extends AppCompatActivity
         registrationDeadlineDate = event.getRegistrationDeadline();
         adapter.setRegistrationDeadlineDate(registrationDeadlineDate);
 
-        List<String> selected  = event.getSelectedEntrants();
-        List<String> enrolled  = event.getEnrolledEntrants();
-        List<String> cancelled = event.getCancelledEntrants();
-
-        List<String> selectedMinusEnrolled = new ArrayList<>(selected);
-        selectedMinusEnrolled.removeAll(enrolled);
-
-        List<String> declined = new ArrayList<>(cancelled);
-        declined.retainAll(selectedMinusEnrolled);
-
-        List<String> pending = new ArrayList<>(selected);
-        pending.removeAll(enrolled);
-        pending.removeAll(declined);
+        List<String> invited = EventRosterStatusHelper.invitedEntrants(event);
+        List<String> accepted = EventRosterStatusHelper.acceptedEntrants(event);
+        List<String> declined = EventRosterStatusHelper.declinedEntrants(event);
+        List<String> pending = EventRosterStatusHelper.pendingEntrants(event);
 
         allList.clear();
         pendingList.clear();
         acceptedList.clear();
         declinedList.clear();
 
-        for (String deviceId : selected) {
+        for (String deviceId : invited) {
             String status;
-            if (enrolled.contains(deviceId))      status = "Accepted";
+            if (accepted.contains(deviceId))      status = "Accepted";
             else if (declined.contains(deviceId)) status = "Declined";
-            else                                  status = "Pending";
+            else if (pending.contains(deviceId))  status = "Pending";
+            else                                  status = "Invited";
 
             InvitedEntrant entrant = new InvitedEntrant(deviceId, status);
             allList.add(entrant);
@@ -290,6 +272,7 @@ public class InvitedEntrantsActivity extends AppCompatActivity
         Map<String, Object> updates = new HashMap<>();
         updates.put("selectedEntrants",  FieldValue.arrayRemove(deviceId));
         updates.put("cancelledEntrants", FieldValue.arrayUnion(deviceId));
+        updates.put("invitedEntrants", FieldValue.arrayUnion(deviceId));
 
         FirebaseFirestore.getInstance()
                 .collection("events")

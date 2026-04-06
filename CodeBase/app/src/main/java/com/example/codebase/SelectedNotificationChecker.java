@@ -134,8 +134,7 @@ public class SelectedNotificationChecker {
             return false;
         }
 
-        Intent intent = new Intent(context, EntrantEventDetailActivity.class);
-        intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, appNotification.getEventId());
+        Intent intent = new Intent(context, NotificationsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(

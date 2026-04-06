@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -25,6 +26,13 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
          * @param user The profile to be deleted.
          */
         void onProfileDelete(User user);
+
+        /**
+         * Called when the administrator toggles organizer privileges for a profile.
+         *
+         * @param user The profile being updated.
+         */
+        void onOrganizerPrivilegeToggle(User user);
     }
 
     private final List<User> profiles;
@@ -58,10 +66,12 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
         private final TextView textViewName;
         private final TextView textViewRole;
         private final TextView textViewStatus;
+        private final TextView textViewAccess;
         private final TextView textViewEmail;
         private final TextView textViewPhone;
         private final TextView textViewDeviceId;
         private final ImageButton btnDelete;
+        private final Button btnToggleOrganizerPrivileges;
         private final OnProfileActionListener listener;
 
         ProfileViewHolder(@NonNull View itemView, OnProfileActionListener listener) {
@@ -70,10 +80,13 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
             textViewName = itemView.findViewById(R.id.textViewAdminProfileName);
             textViewRole = itemView.findViewById(R.id.textViewAdminProfileRole);
             textViewStatus = itemView.findViewById(R.id.textViewAdminProfileStatus);
+            textViewAccess = itemView.findViewById(R.id.textViewAdminProfileAccess);
             textViewEmail = itemView.findViewById(R.id.textViewAdminProfileEmail);
             textViewPhone = itemView.findViewById(R.id.textViewAdminProfilePhone);
             textViewDeviceId = itemView.findViewById(R.id.textViewAdminProfileDeviceId);
             btnDelete = itemView.findViewById(R.id.btnDeleteProfileAdmin);
+            btnToggleOrganizerPrivileges =
+                    itemView.findViewById(R.id.btnToggleOrganizerPrivilegesAdmin);
         }
 
         /**
@@ -84,6 +97,7 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
             android.content.Context context = itemView.getContext();
             boolean isComplete = AdminBrowseHelper.isProfileComplete(user);
             boolean isAdmin = AdminBrowseHelper.isAdminProfile(user);
+            boolean isRevoked = AdminBrowseHelper.isOrganizerRevoked(user);
 
             textViewName.setText(
                     TextUtils.isEmpty(user.getName())
@@ -99,6 +113,13 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
             textViewStatus.setBackgroundResource(isComplete
                     ? R.drawable.bg_pill_green
                     : R.drawable.bg_pill_amber);
+
+            textViewAccess.setText(isRevoked
+                    ? R.string.admin_profiles_access_revoked
+                    : R.string.admin_profiles_access_allowed);
+            textViewAccess.setBackgroundResource(isRevoked
+                    ? R.drawable.bg_pill_red
+                    : R.drawable.bg_pill_green);
 
             textViewEmail.setText(
                     TextUtils.isEmpty(user.getEmail())
@@ -119,6 +140,20 @@ public class AdminProfileAdapter extends RecyclerView.Adapter<AdminProfileAdapte
             btnDelete.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onProfileDelete(user);
+                }
+            });
+
+            btnToggleOrganizerPrivileges.setVisibility(isAdmin ? View.GONE : View.VISIBLE);
+            if (isAdmin) {
+                btnToggleOrganizerPrivileges.setText("");
+            } else {
+                btnToggleOrganizerPrivileges.setText(isRevoked
+                        ? R.string.admin_profiles_restore_organizer
+                        : R.string.admin_profiles_revoke_organizer);
+            }
+            btnToggleOrganizerPrivileges.setOnClickListener(v -> {
+                if (listener != null && !isAdmin) {
+                    listener.onOrganizerPrivilegeToggle(user);
                 }
             });
         }

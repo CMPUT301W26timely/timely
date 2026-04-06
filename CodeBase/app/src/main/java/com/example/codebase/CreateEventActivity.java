@@ -1,6 +1,7 @@
 package com.example.codebase;
 
 import android.graphics.Bitmap;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -96,6 +97,36 @@ public class CreateEventActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
+
+        OrganizerPrivilegeHelper.checkCurrentUser(this, new OrganizerPrivilegeHelper.AccessCallback() {
+            @Override
+            public void onAllowed(User user) {
+                // Continue loading the screen.
+            }
+
+            @Override
+            public void onRevoked(User user) {
+                Toast.makeText(
+                        CreateEventActivity.this,
+                        OrganizerPrivilegeHelper.getRevocationMessage(CreateEventActivity.this, user),
+                        Toast.LENGTH_LONG
+                ).show();
+                Intent intent = new Intent(CreateEventActivity.this, OrganizerActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(
+                        CreateEventActivity.this,
+                        R.string.organizer_revoked_load_failed,
+                        Toast.LENGTH_SHORT
+                ).show();
+                finish();
+            }
+        });
 
         viewModel = new ViewModelProvider(this).get(CreateEventViewModel.class);
         if (getIntent().getBooleanExtra("isEditMode", false)) {

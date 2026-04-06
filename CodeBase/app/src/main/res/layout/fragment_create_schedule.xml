@@ -42,13 +42,12 @@
 
             <EditText
                 android:id="@+id/etEventStart"
+                style="@style/Widget.CodeBase.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Select date"
                 android:focusable="false"
-                android:cursorVisible="false"
-                android:background="@drawable/bg_input_field"
-                android:padding="16dp" />
+                android:cursorVisible="false" />
         </LinearLayout>
 
         <!-- End Date -->
@@ -69,13 +68,12 @@
 
             <EditText
                 android:id="@+id/etEventEnd"
+                style="@style/Widget.CodeBase.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Select date"
                 android:focusable="false"
-                android:cursorVisible="false"
-                android:background="@drawable/bg_input_field"
-                android:padding="16dp" />
+                android:cursorVisible="false" />
         </LinearLayout>
     </LinearLayout>
 
@@ -116,13 +114,12 @@
 
             <EditText
                 android:id="@+id/etRegOpen"
+                style="@style/Widget.CodeBase.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Select date"
                 android:focusable="false"
-                android:cursorVisible="false"
-                android:background="@drawable/bg_input_field"
-                android:padding="16dp" />
+                android:cursorVisible="false" />
         </LinearLayout>
 
         <!-- Close Date -->
@@ -143,13 +140,12 @@
 
             <EditText
                 android:id="@+id/etRegClose"
+                style="@style/Widget.CodeBase.EditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Select date"
                 android:focusable="false"
-                android:cursorVisible="false"
-                android:background="@drawable/bg_input_field"
-                android:padding="16dp" />
+                android:cursorVisible="false" />
         </LinearLayout>
     </LinearLayout>
 
@@ -175,11 +171,10 @@
 
     <EditText
         android:id="@+id/etCapacity"
+        style="@style/Widget.CodeBase.EditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="e.g., 50"
-        android:inputType="number"
-        android:background="@drawable/bg_input_field"
-        android:padding="16dp" />
+        android:inputType="number" />
 
 </LinearLayout>

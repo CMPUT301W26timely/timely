@@ -93,6 +93,9 @@ public class Event implements Serializable {
     /** Device IDs of entrants chosen by the lottery draw but not yet responded. */
     private ArrayList<String> selectedEntrants = new ArrayList<>();
 
+    /** Device IDs of entrants who have ever been selected in any lottery draw for this event. */
+    private ArrayList<String> invitedEntrants = new ArrayList<>();
+
     /** Device IDs of entrants who accepted their lottery invitation. */
     private ArrayList<String> enrolledEntrants = new ArrayList<>();
 
@@ -123,6 +126,9 @@ public class Event implements Serializable {
 
     /** Device IDs of entrants who declined their invitation or were removed. */
     private ArrayList<String> cancelledEntrants = new ArrayList<>();
+
+    /** Device IDs of entrants who explicitly declined an invitation. */
+    private ArrayList<String> declinedEntrants = new ArrayList<>();
 
     /**
      * Device IDs of entrants who have ever registered for this event.
@@ -388,6 +394,24 @@ public class Event implements Serializable {
     }
 
     /**
+     * Returns the history of entrants who have been invited/selected for this event.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getInvitedEntrants() {
+        return invitedEntrants;
+    }
+
+    /**
+     * Replaces the invited-entrants history collection.
+     *
+     * @param invitedEntrants The new list of device IDs.
+     */
+    public void setInvitedEntrants(ArrayList<String> invitedEntrants) {
+        this.invitedEntrants = invitedEntrants;
+    }
+
+    /**
      * Returns the list of device IDs for entrants who accepted their invitation.
      *
      * @return A non-null {@link ArrayList} of device ID strings.
@@ -421,6 +445,24 @@ public class Event implements Serializable {
      */
     public void setCancelledEntrants(ArrayList<String> cancelledEntrants) {
         this.cancelledEntrants = cancelledEntrants;
+    }
+
+    /**
+     * Returns the list of device IDs for entrants who explicitly declined their invitation.
+     *
+     * @return A non-null {@link ArrayList} of device ID strings.
+     */
+    public ArrayList<String> getDeclinedEntrants() {
+        return declinedEntrants;
+    }
+
+    /**
+     * Replaces the declined-entrants collection.
+     *
+     * @param declinedEntrants The new list of device IDs.
+     */
+    public void setDeclinedEntrants(ArrayList<String> declinedEntrants) {
+        this.declinedEntrants = declinedEntrants;
     }
 
     /**

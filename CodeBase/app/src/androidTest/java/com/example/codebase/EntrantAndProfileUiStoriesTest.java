@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -21,6 +22,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.containsString;
 
 /**
@@ -163,6 +165,31 @@ public class EntrantAndProfileUiStoriesTest {
 
         onView(withText("Selected")).check(matches(isDisplayed()));
         onView(withText("You have been selected for the event.")).check(matches(isDisplayed()));
+    }
+
+    /** The invitation summary card should be the route into the invitation response flow. */
+    @Test
+    public void invitationSummaryCard_clickingCardOpensInvitationsFlow() throws Exception {
+        String eventId = seedInvitationEvent("Notification Routed Event");
+        String notificationId = UiTestDataHelper.seedNotification(
+                UiTestDataHelper.TEST_DEVICE_ID,
+                eventId,
+                "Lottery result",
+                "You have been selected for Notification Routed Event.",
+                "Selected",
+                "selectedEntrants"
+        );
+        seededNotificationIds.add(notificationId);
+
+        ActivityScenario.launch(NotificationsActivity.class);
+        UiTestDataHelper.waitForUi();
+
+        onView(withId(R.id.cardInvitations)).perform(click());
+        UiTestDataHelper.waitForUi();
+
+        onView(withText("My Invitations")).check(matches(isDisplayed()));
+        onView(withText("Notification Routed Event")).check(matches(isDisplayed()));
+        onView(withId(R.id.btnExploreAccept)).check(matches(isDisplayed()));
     }
 
     /** US 01.04.02 - Receive notification when not chosen. */
