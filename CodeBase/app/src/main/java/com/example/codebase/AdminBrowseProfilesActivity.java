@@ -87,8 +87,8 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
      * Wires the shared bottom navigation for the administrator profile screen.
      */
     private void setupBottomNavigation() {
-        findViewById(R.id.navImage).setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminBrowseImagesActivity.class));
+        findViewById(R.id.navExplore).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
             finish();
         });
 
@@ -98,6 +98,10 @@ public class AdminBrowseProfilesActivity extends AppCompatActivity {
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> navigateToAdminHome());
 
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
