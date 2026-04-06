@@ -2,13 +2,12 @@ package com.example.codebase;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -73,16 +72,16 @@ public class AppDatabase {
         return instance;
     }
 
-    public synchronized void addSelectedEntrants(Event event, List<String> entrants){
+    public synchronized Task<Void> addSelectedEntrants(Event event, List<String> entrants){
+        if (event == null || event.getId() == null || entrants == null || entrants.isEmpty()) {
+            return Tasks.forResult((Void) null);
+        }
 
-        HashMap<String, List<String>> newData = new HashMap<>();
-        newData.put("selectedEntrants", entrants);
+        Log.d("AppDatabase", "Adding selected entrants: " + entrants);
 
-        Log.d("AppDatabase", newData.toString());
-
-         db.collection("events")
+        return db.collection("events")
                 .document(event.getId())
-                .set(newData, SetOptions.merge());
+                .update("selectedEntrants", FieldValue.arrayUnion(entrants.toArray()));
     }
 
     public synchronized void deleteWaitingEntrants(Event event, List<String> entrants){

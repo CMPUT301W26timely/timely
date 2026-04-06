@@ -189,7 +189,9 @@ public class EventDetailActivity extends AppCompatActivity {
                 return;
             }
             Intent intent = new Intent(this, LotteryDrawActivity.class);
-            intent.putExtra("EXTRA_EVENT", (Serializable) event);
+            intent.putExtra(LotteryDrawActivity.EXTRA_EVENT, (Serializable) event);
+            intent.putExtra(LotteryDrawActivity.EXTRA_EVENT_ID, eventId);
+            intent.putExtra(LotteryDrawActivity.EXTRA_EVENT_TITLE, eventTitle);
             startActivity(intent);
         });
 

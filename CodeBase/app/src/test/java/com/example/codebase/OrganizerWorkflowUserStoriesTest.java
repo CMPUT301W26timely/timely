@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
  *
  * Covered stories:
  *   US 02.05.01 — Notify chosen entrants / notification logged
+ *   US 02.05.03 — Draw a replacement applicant after a decline/cancellation
  *   US 02.06.01 — View selected / invited entrants
  *   US 02.06.02 — View cancelled entrants
  *   US 02.06.04 — Cancel entrant
@@ -151,6 +152,29 @@ public class OrganizerWorkflowUserStoriesTest {
         assertEquals("Selected", notification.get("status"));
         assertEquals(TYPE_SELECTED, notification.get("type"));
         assertEquals(Boolean.FALSE, notification.get("read"));
+    }
+
+    @Test
+    public void us020503_replacementDraw_usesRemainingEligibleWaitingListEntrants() {
+        Event event = new Event();
+        event.setMaxCapacity(3L);
+        event.setWaitingList(new ArrayList<>(Arrays.asList(
+                "declined-user",
+                "selected-user",
+                "eligible-user-1",
+                "eligible-user-2"
+        )));
+        event.setSelectedEntrants(new ArrayList<>(Arrays.asList("selected-user")));
+        event.setCancelledEntrants(new ArrayList<>(Arrays.asList("declined-user")));
+        event.setEnrolledEntrants(new ArrayList<>(Arrays.asList("enrolled-user")));
+
+        LotterySelectionEngine.DrawResult result =
+                LotterySelectionEngine.drawEntrants(event, 2, new java.util.Random(9));
+
+        assertEquals("The organizer should be able to draw the remaining eligible entrants",
+                1, result.getActualCount());
+        assertFalse(result.getDrawnEntrants().contains("declined-user"));
+        assertFalse(result.getDrawnEntrants().contains("selected-user"));
     }
 
     @Ignore("Actual Firestore delivery and notification log persistence require integration testing.")

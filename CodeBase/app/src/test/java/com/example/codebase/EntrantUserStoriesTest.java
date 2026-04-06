@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
  *   US 01.01.02 — Leave waiting list
  *   US 01.01.03 — Browse events
  *   US 01.02.03 — View registration history
+ *   US 01.05.01 — Receive another chance after a decline through replacement draw
  *   US 01.05.04 — View total waiting-list count
  *   US 01.05.02 — Accept invitation
  *   US 01.05.03 — Decline invitation
@@ -287,10 +288,32 @@ public class EntrantUserStoriesTest {
                 invitationEvent.getCancelledEntrants().contains(deviceId));
     }
 
-    @Ignore("Replacement draw logic is not implemented in the current invitation flow.")
     @Test
-    public void us010503_declineInvitation_triggersReplacementDraw() {
-        // This acceptance criterion needs production logic before it can be unit tested.
+    public void us010501_replacementDraw_selectsAnotherEligibleWaitingEntrant() {
+        Event event = makeEvent(
+                "replacement-event",
+                "Beginner Canoeing",
+                "River Centre",
+                daysFromNow(12),
+                daysFromNow(-5),
+                daysFromNow(-1)
+        );
+        event.setMaxCapacity(2L);
+        event.setWaitingList(new ArrayList<>(Arrays.asList(
+                "declined-user",
+                "replacement-user-1",
+                "replacement-user-2"
+        )));
+        event.setCancelledEntrants(new ArrayList<>(Arrays.asList("declined-user")));
+        event.setSelectedEntrants(new ArrayList<>());
+        event.setEnrolledEntrants(new ArrayList<>(Arrays.asList(deviceId)));
+
+        LotterySelectionEngine.DrawResult result =
+                LotterySelectionEngine.drawEntrants(event, 1, new java.util.Random(4));
+
+        assertEquals("Exactly one replacement should be drawn", 1, result.getActualCount());
+        assertFalse("A declined entrant must not be drawn again",
+                result.getDrawnEntrants().contains("declined-user"));
     }
 
     private Event makeEvent(String id,

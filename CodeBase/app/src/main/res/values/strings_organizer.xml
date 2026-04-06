@@ -133,6 +133,23 @@
     <string name="entrant_map_disabled_message">Entrant map is disabled until a Maps API key is configured.</string>
     <string name="co_organizer_notification_title">Co-Organizer Invitation</string>
     <string name="co_organizer_notification_message">You have been selected to be a co-organizer for this event.</string>
+    <string name="lottery_draw_title">Lottery Draw</string>
+    <string name="lottery_draw_spots_open">Spots Open</string>
+    <string name="lottery_draw_eligible">Eligible</string>
+    <string name="lottery_draw_configuration">Draw Configuration</string>
+    <string name="lottery_draw_spots_label">Number of spots to fill</string>
+    <string name="lottery_draw_button_initial">Run Lottery Draw</string>
+    <string name="lottery_draw_button_replacement">Draw Replacement Entrants</string>
+    <string name="lottery_draw_summary_initial_default">Review the current waiting list and fill the first open spots for this event.</string>
+    <string name="lottery_draw_summary_initial">%1$d eligible entrants are available for the next draw from the waiting list.</string>
+    <string name="lottery_draw_summary_replacement">%1$d eligible entrants remain on the waiting list for replacement draws.</string>
+    <string name="lottery_draw_summary_empty">No eligible entrants remain on the waiting list for another draw.</string>
+    <string name="lottery_draw_summary_full">No open spots remain for this event.</string>
+    <string name="lottery_draw_invalid_count">Enter a valid number of spots to fill.</string>
+    <string name="lottery_draw_no_capacity">This event does not have any open spots remaining.</string>
+    <string name="lottery_draw_no_eligible">No eligible entrants remain for another draw.</string>
+    <string name="lottery_draw_failed">Unable to save the draw results. Please try again.</string>
+    <string name="lottery_draw_success">Selected %1$d entrant(s) from %2$d requested.</string>
 
     <!-- Coming soon placeholders -->
     <string name="lottery_draw_coming_soon">Run Lottery Draw — Coming Soon</string>
