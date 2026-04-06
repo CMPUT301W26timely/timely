@@ -53,12 +53,6 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Supporting copy under the empty-state headline. */
     private TextView emptyStateSubtitle;
 
-    /** Shared second-tab label, which becomes "Profiles" for admin sessions. */
-    private TextView navHistoryLabel;
-
-    /** Shared second-tab icon, swapped for the admin profile browser. */
-    private ImageView navHistoryIcon;
-
     /** Describes the number of pending invitations inside {@link #invitationCard}. */
     private TextView invitationCountSummary;
 
@@ -77,6 +71,9 @@ public class NotificationsActivity extends AppCompatActivity {
     /** Device ID of the current user, used as the Firestore notifications document key. */
     private String deviceId;
 
+    /** Whether the current app session is using the administrator role. */
+    private boolean isAdminSession;
+
     /**
      * Initialises the activity, binds views, sets up the invitation card click listener,
      * configures bottom navigation, and triggers the initial data loads.
@@ -88,13 +85,21 @@ public class NotificationsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
+        isAdminSession = WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this));
+
+        if (isAdminSession) {
+            findViewById(R.id.navBarEntrant).setVisibility(View.GONE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.navBarEntrant).setVisibility(View.VISIBLE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.GONE);
+        }
+
         listViewNotifications = findViewById(R.id.listViewNotifications);
         emptyStateCard        = findViewById(R.id.cardNotificationsEmptyState);
         invitationCard        = findViewById(R.id.invitationSummaryInclude);
         emptyState            = findViewById(R.id.tvNotificationsEmptyState);
         emptyStateSubtitle    = findViewById(R.id.tvNotificationsEmptySubtitle);
-        navHistoryLabel       = findViewById(R.id.navHistoryLabel);
-        navHistoryIcon        = findViewById(R.id.navHistoryIcon);
         invitationCountSummary = findViewById(R.id.tvInvitationCountSummary);
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
 
@@ -104,8 +109,6 @@ public class NotificationsActivity extends AppCompatActivity {
         invitationCard.setOnClickListener(v ->
                 startActivity(new Intent(this, InvitationsActivity.class)));
 
-        // Keep the shared second nav slot aligned with the active role.
-        RoleAwareNavHelper.configureSecondaryNav(this, navHistoryIcon, navHistoryLabel);
         setupBottomNavigation();
         loadInvitationSummary();
         loadNotifications();
@@ -241,6 +244,29 @@ public class NotificationsActivity extends AppCompatActivity {
      * </ul>
      */
     private void setupBottomNavigation() {
+        if (isAdminSession) {
+            findViewById(R.id.navImage).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseImagesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfiles).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminMyEvents).setOnClickListener(v -> {
+                startActivity(new Intent(this, OrganizerActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminNotifications).setOnClickListener(v -> {
+                // already here
+            });
+            findViewById(R.id.navAdminProfile).setOnClickListener(v -> {
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
+            });
+            return;
+        }
+
         findViewById(R.id.navExplore).setOnClickListener(v -> {
             startActivity(new Intent(this, BrowseEventsActivity.class));
             finish();

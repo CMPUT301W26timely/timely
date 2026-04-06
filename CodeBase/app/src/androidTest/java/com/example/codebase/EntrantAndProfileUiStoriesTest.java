@@ -257,6 +257,23 @@ public class EntrantAndProfileUiStoriesTest {
                 .check(matches(withText(containsString(UiTestDataHelper.TEST_DEVICE_ID))));
     }
 
+    /** US 01.05.05 - Understand lottery selection criteria */
+    @Test
+    public void us010505_understandLotterySelectionCriteria() throws Exception {
+        String eventId = seedEntrantEvent("Lottery Info Event", new ArrayList<>());
+
+        Intent intent = new Intent(UiTestDataHelper.context(), EntrantEventDetailActivity.class);
+        intent.putExtra(EntrantEventDetailActivity.EXTRA_EVENT_ID, eventId);
+        ActivityScenario.launch(intent);
+        UiTestDataHelper.waitForUi();
+
+        onView(withId(R.id.btnViewLottoInfo)).perform(scrollTo(), click());
+        UiTestDataHelper.waitForUi();
+
+        onView(withText("How the Lottery Works")).check(matches(isDisplayed()));
+        onView(withText("Fair Random Draw")).check(matches(isDisplayed()));
+    }
+
     private String seedEntrantEvent(String title, ArrayList<String> waitingList) throws Exception {
         String eventId = UiTestDataHelper.uniqueId("entrant-event");
         UiTestDataHelper.seedEvent(
