@@ -16,6 +16,13 @@ public class HistoryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Administrators share this nav slot with the profile browser instead of entrant history.
+        if (RoleAwareNavHelper.isAdminSession(this)) {
+            RoleAwareNavHelper.openSecondaryNav(this, true);
+            return;
+        }
+
         setContentView(R.layout.activity_history);
 
         if (savedInstanceState == null) {

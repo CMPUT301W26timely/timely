@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     /** Displays the user's phone number, or a placeholder if not set. */
     private TextView tvPhone;
+    private TextView navHistoryLabel;
+    private ImageView navHistoryIcon;
     private TextView tvProfileStatus;
     private TextView tvProfileSummary;
     private TextView tvAvatarInitials;
@@ -97,6 +100,8 @@ public class ProfileActivity extends AppCompatActivity {
         tvName = findViewById(R.id.tvName);
         tvEmail = findViewById(R.id.tvEmail);
         tvPhone = findViewById(R.id.tvPhone);
+        navHistoryLabel = findViewById(R.id.navHistoryLabel);
+        navHistoryIcon = findViewById(R.id.navHistoryIcon);
         tvProfileStatus = findViewById(R.id.tvProfileStatus);
         tvProfileSummary = findViewById(R.id.tvProfileSummary);
         tvAvatarInitials = findViewById(R.id.tvAvatarInitials);
@@ -129,6 +134,8 @@ public class ProfileActivity extends AppCompatActivity {
         btnEditProfile.setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileSettingsActivity.class)));
 
+        // The shared second nav slot swaps between History and Profiles by role.
+        RoleAwareNavHelper.configureSecondaryNav(this, navHistoryIcon, navHistoryLabel);
         setupBottomNavigation();
         loadProfile();
     }
@@ -276,10 +283,9 @@ public class ProfileActivity extends AppCompatActivity {
                 finish();
         });
 
-        // Keep the profile screen in sync with the updated entrant navigation bar.
+        // Keep the shared second nav slot consistent with the current role.
         findViewById(R.id.navHistory).setOnClickListener(v -> {
-                startActivity(new Intent(this, HistoryActivity.class));
-                finish();
+                RoleAwareNavHelper.openSecondaryNav(this, true);
         });
 
         findViewById(R.id.navNotifications).setOnClickListener(v -> {

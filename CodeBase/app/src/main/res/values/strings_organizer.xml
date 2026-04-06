@@ -8,7 +8,7 @@
     <string name="admin_browse_events_subtitle">Review every event in the system, including closed or archived ones.</string>
     <string name="admin_browse_events_empty">No events are available in the system yet.</string>
     <string name="admin_nav_events">Events</string>
-    <string name="admin_nav_profiles">Profiles</string>
+    <string name="admin_nav_profiles">Users</string>
     <string name="no_events_yet">No events yet.\nTap + to create your first event.</string>
     <string name="create_event_coming_soon">Create Event — Coming Soon</string>
     <string name="create_event_fab_desc">Create new event</string>

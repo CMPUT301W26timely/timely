@@ -158,12 +158,14 @@
                 android:focusable="true"
                 android:baselineAligned="false">
                 <ImageView
+                    android:id="@+id/navHistoryIcon"
                     android:layout_width="22dp"
                     android:layout_height="22dp"
                     android:src="@android:drawable/ic_menu_recent_history"
                     app:tint="@color/textDisabled"
                     android:contentDescription="@string/nav_history" />
                 <TextView
+                    android:id="@+id/navHistoryLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/nav_history"
