@@ -3,6 +3,7 @@ package com.example.codebase;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,12 +20,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * "My Events" screen for the organizer role.
+ * Shared home screen for organizer and administrator sessions.
  *
- * <p>Displays a {@link RecyclerView} of all events whose {@code organizerDeviceId}
- * field matches the current device, loaded from Firestore. Tapping an event row
- * opens {@link EventDetailActivity}. The floating action button opens
- * {@link CreateEventActivity} to create a new event.
+ * <p>Organizer sessions keep the original "My Events" behaviour and only show events
+ * created by the current device. Administrator sessions reuse this screen as a system
+ * browser entry point, so the second bottom-nav slot becomes "Profiles" and opens
+ * {@link AdminBrowseProfilesActivity}. Tapping an event row always opens
+ * {@link EventDetailActivity}. The floating action button opens
+ * {@link CreateEventActivity} for organizers only.
  *
  * <p>An empty-state label is shown when no events exist for the device.
  * The event list is reloaded on every {@link #onResume()} so it stays current
@@ -45,6 +48,21 @@ public class OrganizerActivity extends AppCompatActivity {
     /** Opens {@link CreateEventActivity} when tapped. */
     private FloatingActionButton fabCreate;
 
+    /** Title at the top of the shared organizer/admin home screen. */
+    private TextView tvTitle;
+
+    /** Admin-only subtitle that explains the broader browse scope. */
+    private TextView tvSubtitle;
+
+    /** Shared second-tab label, shown as History for entrants and Profiles for admins. */
+    private TextView navHistoryLabel;
+
+    /** Shared second-tab icon, swapped for admin profile browsing. */
+    private ImageView navHistoryIcon;
+
+    /** Shared third-tab label, renamed from "My Events" to "Events" for admins. */
+    private TextView navMyEventsLabel;
+
     /** Adapter binding {@link #eventList} to {@link #rvEvents}. */
     private OrganizerEventAdapter adapter;
 
@@ -53,6 +71,9 @@ public class OrganizerActivity extends AppCompatActivity {
 
     /** Device ID used to filter events by {@code organizerDeviceId} in Firestore. */
     private String deviceId;
+
+    /** Whether the current app session is using the administrator role. */
+    private boolean isAdminSession;
 
     /**
      * Initialises the activity, resolves the device ID, binds views, sets up the
@@ -66,10 +87,16 @@ public class OrganizerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_organizer);
 
         deviceId = DeviceIdManager.getOrCreateDeviceId(this);
+        isAdminSession = WelcomeActivity.ROLE_ADMIN.equals(WelcomeActivity.getSessionRole(this));
 
         rvEvents  = findViewById(R.id.rvEvents);
         tvNoEvents = findViewById(R.id.tvNoEvents);
         fabCreate = findViewById(R.id.fabCreateEvent);
+        tvTitle = findViewById(R.id.tvOrganizerTitle);
+        tvSubtitle = findViewById(R.id.tvOrganizerSubtitle);
+        navHistoryLabel = findViewById(R.id.navHistoryLabel);
+        navHistoryIcon = findViewById(R.id.navHistoryIcon);
+        navMyEventsLabel = findViewById(R.id.navMyEventsLabel);
 
         adapter = new OrganizerEventAdapter(eventList, event -> {
             Intent intent = new Intent(this, EventDetailActivity.class);
@@ -84,8 +111,9 @@ public class OrganizerActivity extends AppCompatActivity {
         fabCreate.setOnClickListener(v ->
                 startActivity(new Intent(this, CreateEventActivity.class)));
 
+        configureRoleSpecificUi();
         setupBottomNavigation();
-        loadOrganizerEvents();
+        loadHomeEvents();
     }
 
     /**
@@ -96,7 +124,32 @@ public class OrganizerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrganizerEvents();
+        loadHomeEvents();
+    }
+
+    /**
+     * Applies the small UI differences between organizer and administrator sessions.
+     *
+     * <p>This keeps the original organizer screen intact while making the shared admin
+     * entry points obvious: admins browse events here and open the profile directory
+     * from the second navigation slot.</p>
+     */
+    private void configureRoleSpecificUi() {
+        if (!isAdminSession) {
+            return;
+        }
+
+        tvTitle.setText(R.string.browse_events_title);
+        tvSubtitle.setVisibility(View.VISIBLE);
+        tvNoEvents.setText(R.string.admin_browse_events_empty);
+
+        navHistoryLabel.setText(R.string.admin_nav_profiles);
+        navHistoryIcon.setImageResource(R.drawable.ic_nav_profile);
+        navHistoryIcon.setContentDescription(getString(R.string.admin_nav_profiles));
+        navMyEventsLabel.setText(R.string.admin_nav_events);
+
+        // Administrators browse system data here and do not create events from this screen.
+        fabCreate.setVisibility(View.GONE);
     }
 
     /**
@@ -107,7 +160,8 @@ public class OrganizerActivity extends AppCompatActivity {
      *   <li>Profile → {@link ProfileActivity}</li>
      *   <li>Explore → {@link BrowseEventsActivity}</li>
      *   <li>Notifications → {@link NotificationsActivity}</li>
-     *   <li>History → {@link HistoryActivity}</li>
+     *   <li>History/Profiles → {@link HistoryActivity} for organizers,
+     *       {@link AdminBrowseProfilesActivity} for administrators</li>
      * </ul>
      */
     private void setupBottomNavigation() {
@@ -125,8 +179,14 @@ public class OrganizerActivity extends AppCompatActivity {
             finish();
         });
 
+        // Reuse the shared second nav slot so admins can open the profile browser
+        // without changing the organizer flow for other roles.
         findViewById(R.id.navHistory).setOnClickListener(v -> {
-            startActivity(new Intent(this, HistoryActivity.class));
+            Intent intent = new Intent(
+                    this,
+                    isAdminSession ? AdminBrowseProfilesActivity.class : HistoryActivity.class
+            );
+            startActivity(intent);
             finish();
         });
 
@@ -137,12 +197,29 @@ public class OrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * Queries Firestore for all events where {@code organizerDeviceId} equals
-     * {@link #deviceId} and delegates rendering to {@link #populateList(QuerySnapshot)}.
+     * Loads the event list that matches the current role.
      *
-     * <p>Shows a localised error toast on failure.
+     * <p>Organizers still see only their own events, while administrators browse
+     * the full event catalogue before drilling into profile management.</p>
      */
-    private void loadOrganizerEvents() {
+    private void loadHomeEvents() {
+        if (isAdminSession) {
+            EventRepository.loadAllEvents(new EventRepository.EventsCallback() {
+                @Override
+                public void onEventsLoaded(List<Event> events) {
+                    showEvents(AdminBrowseHelper.sortEventsForAdmin(events));
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(OrganizerActivity.this,
+                            getString(R.string.error_loading_events),
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .whereEqualTo("organizerDeviceId", deviceId)
@@ -165,13 +242,27 @@ public class OrganizerActivity extends AppCompatActivity {
      * @param snapshot The {@link QuerySnapshot} returned by the Firestore events query.
      */
     private void populateList(QuerySnapshot snapshot) {
-        eventList.clear();
+        List<Event> normalizedEvents = new ArrayList<>();
 
         for (DocumentSnapshot doc : snapshot.getDocuments()) {
             Event event = EventSchema.normalizeLoadedEvent(doc);
             if (event != null) {
-                eventList.add(event);
+                normalizedEvents.add(event);
             }
+        }
+
+        showEvents(normalizedEvents);
+    }
+
+    /**
+     * Replaces the visible event list and updates the shared empty state.
+     *
+     * @param events normalized events ready for display
+     */
+    private void showEvents(List<Event> events) {
+        eventList.clear();
+        if (events != null) {
+            eventList.addAll(events);
         }
 
         adapter.notifyDataSetChanged();
