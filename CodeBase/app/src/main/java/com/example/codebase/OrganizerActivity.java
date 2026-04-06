@@ -7,10 +7,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -98,11 +100,21 @@ public class OrganizerActivity extends AppCompatActivity {
         navHistoryIcon = findViewById(R.id.navHistoryIcon);
         navMyEventsLabel = findViewById(R.id.navMyEventsLabel);
 
-        adapter = new OrganizerEventAdapter(eventList, event -> {
-            Intent intent = new Intent(this, EventDetailActivity.class);
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getId());
-            intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
-            startActivity(intent);
+        adapter = new OrganizerEventAdapter(eventList, isAdminSession, new OrganizerEventAdapter.OnEventClickListener() {
+            @Override
+            public void onEventClick(Event event) {
+                Intent intent = new Intent(OrganizerActivity.this, EventDetailActivity.class);
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_ID, event.getId());
+                intent.putExtra(EventDetailActivity.EXTRA_EVENT_TITLE, event.getTitle());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onEventDelete(Event event) {
+                if (isAdminSession) {
+                    showDeleteConfirmationDialog(event);
+                }
+            }
         });
 
         rvEvents.setLayoutManager(new LinearLayoutManager(this));
@@ -114,6 +126,37 @@ public class OrganizerActivity extends AppCompatActivity {
         configureRoleSpecificUi();
         setupBottomNavigation();
         loadHomeEvents();
+    }
+
+    /**
+     * Shows a confirmation dialog before deleting an event as an administrator.
+     *
+     * @param event The event to be deleted.
+     */
+    private void showDeleteConfirmationDialog(Event event) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to permanently delete this event: \"" + event.getTitle() + "\"? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteEventFromDatabase(event))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Deletes the specified event from Firestore.
+     *
+     * @param event The event to delete.
+     */
+    private void deleteEventFromDatabase(Event event) {
+        AppDatabase.getInstance().eventsRef.document(event.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                    loadHomeEvents(); // Refresh the list
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
