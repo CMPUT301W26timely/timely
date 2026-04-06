@@ -135,21 +135,25 @@ public class OrganizerActivity extends AppCompatActivity {
      * from the second navigation slot.</p>
      */
     private void configureRoleSpecificUi() {
-        if (!isAdminSession) {
+        if (isAdminSession) {
+            findViewById(R.id.navBarOrganizer).setVisibility(View.GONE);
+            findViewById(R.id.navBarAdmin).setVisibility(View.VISIBLE);
+
+            tvTitle.setText(R.string.browse_events_title);
+            tvSubtitle.setVisibility(View.VISIBLE);
+            tvNoEvents.setText(R.string.admin_browse_events_empty);
+            navMyEventsLabel.setText(R.string.admin_nav_events);
+            fabCreate.setVisibility(View.GONE);
             return;
         }
 
-        tvTitle.setText(R.string.browse_events_title);
-        tvSubtitle.setVisibility(View.VISIBLE);
-        tvNoEvents.setText(R.string.admin_browse_events_empty);
+        findViewById(R.id.navBarOrganizer).setVisibility(View.VISIBLE);
+        findViewById(R.id.navBarAdmin).setVisibility(View.GONE);
 
-        navHistoryLabel.setText(R.string.admin_nav_profiles);
-        navHistoryIcon.setImageResource(R.drawable.ic_nav_profile);
-        navHistoryIcon.setContentDescription(getString(R.string.admin_nav_profiles));
-        navMyEventsLabel.setText(R.string.admin_nav_events);
-
-        // Administrators browse system data here and do not create events from this screen.
-        fabCreate.setVisibility(View.GONE);
+        tvTitle.setText(R.string.my_events_title);
+        tvSubtitle.setVisibility(View.GONE);
+        tvNoEvents.setText(R.string.no_events_yet);
+        fabCreate.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -166,6 +170,29 @@ public class OrganizerActivity extends AppCompatActivity {
      * </ul>
      */
     private void setupBottomNavigation() {
+        if (isAdminSession) {
+            findViewById(R.id.navImage).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseImagesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfiles).setOnClickListener(v -> {
+                startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminMyEvents).setOnClickListener(v -> {
+                // already here
+            });
+            findViewById(R.id.navAdminNotifications).setOnClickListener(v -> {
+                startActivity(new Intent(this, NotificationsActivity.class));
+                finish();
+            });
+            findViewById(R.id.navAdminProfile).setOnClickListener(v -> {
+                startActivity(new Intent(this, ProfileActivity.class));
+                finish();
+            });
+            return;
+        }
+
         findViewById(R.id.navMyEvents).setOnClickListener(v -> {
             // already here
         });

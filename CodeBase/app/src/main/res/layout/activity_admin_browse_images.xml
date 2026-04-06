@@ -10,28 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="26dp"
         android:background="@color/surface">
 
-        <!-- Toolbar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingVertical="8dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="8dp">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="IMAGES"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:layout_marginStart="8dp"
+                android:text="Browse Images"
                 android:textColor="@color/textPrimary"
-                android:gravity="center"
-                android:layout_marginEnd="56dp" />
-
+                android:textSize="28sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -86,38 +82,12 @@
             app:strokeWidth="1dp">
 
             <LinearLayout
-                android:id="@+id/navImage"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:baselineAligned="false">
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@android:drawable/ic_menu_gallery"
-                    app:tint="@color/primaryAccent"
-                    android:contentDescription="@string/nav_images" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nav_images"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
 
-
                 <LinearLayout
-                    android:id="@+id/navHistory"
+                    android:id="@+id/navImage"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -135,17 +105,43 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_nav_profile"
-                            app:tint="@color/textDisabled"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            app:tint="@color/primaryAccent"
                             android:contentDescription="@string/admin_nav_profiles" />
                     </FrameLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nav_images"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/primaryAccent"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_profile"
+                        app:tint="@color/textDisabled"
+                        android:contentDescription="@string/admin_nav_profiles" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/admin_nav_profiles"
                         android:textSize="9sp"
                         android:fontFamily="sans-serif-medium"
-                        android:textColor="@color/primaryAccent"
+                        android:textColor="@color/textDisabled"
                         android:layout_marginTop="2dp" />
                 </LinearLayout>
 
@@ -169,6 +165,32 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/admin_nav_events"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/textDisabled"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navNotifications"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_notifications"
+                        app:tint="@color/textDisabled"
+                        android:contentDescription="@string/nav_notifications" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nav_notifications"
                         android:textSize="9sp"
                         android:fontFamily="sans-serif-medium"
                         android:textColor="@color/textDisabled"

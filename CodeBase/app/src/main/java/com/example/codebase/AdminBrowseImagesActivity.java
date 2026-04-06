@@ -106,16 +106,20 @@ public class AdminBrowseImagesActivity extends AppCompatActivity {
      */
     private void setupBottomNavigation() {
         findViewById(R.id.navImage).setOnClickListener(v -> {
-            // Already here
+            //already here
         });
 
         findViewById(R.id.navHistory).setOnClickListener(v -> {
-            startActivity(new Intent(this, BrowseEventsActivity.class));
+            startActivity(new Intent(this, AdminBrowseProfilesActivity.class));
             finish();
         });
 
         findViewById(R.id.navMyEvents).setOnClickListener(v -> navigateToAdminHome());
 
+        findViewById(R.id.navNotifications).setOnClickListener(v -> {
+            startActivity(new Intent(this, NotificationsActivity.class));
+            finish();
+        });
 
         findViewById(R.id.navProfile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
