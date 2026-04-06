@@ -88,7 +88,7 @@
             android:orientation="horizontal">
 
             <LinearLayout
-                android:id="@+id/navExplore"
+                android:id="@+id/navImage"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -100,13 +100,13 @@
                 <ImageView
                     android:layout_width="22dp"
                     android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_explore"
+                    android:src="@android:drawable/ic_menu_gallery"
                     app:tint="@color/textDisabled"
-                    android:contentDescription="@string/nav_explore" />
+                    android:contentDescription="@string/nav_images" />
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/nav_explore"
+                    android:text="@string/nav_images"
                     android:textSize="9sp"
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/textDisabled"
@@ -166,32 +166,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/admin_nav_events"
-                    android:textSize="9sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:textColor="@color/textDisabled"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/navNotifications"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:baselineAligned="false">
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_nav_notifications"
-                    app:tint="@color/textDisabled"
-                    android:contentDescription="@string/nav_notifications" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/nav_notifications"
                     android:textSize="9sp"
                     android:fontFamily="sans-serif-medium"
                     android:textColor="@color/textDisabled"

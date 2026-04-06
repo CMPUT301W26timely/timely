@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/surface">
 
 
     <LinearLayout
@@ -10,7 +11,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="26dp"
-        android:background="@color/pageBg">
+        android:background="@color/surface">
 
         <!-- Toolbar -->
         <LinearLayout
@@ -19,16 +20,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:paddingVertical="8dp">
-
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_media_previous"
-                app:tint="#000000"
-                android:contentDescription="Back" />
 
             <TextView
                 android:layout_width="0dp"
@@ -56,6 +47,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@color/surface"
+            android:layout_marginHorizontal="20dp"
             android:padding="12dp">
 
             <Button
@@ -80,6 +72,136 @@
                 android:visibility="gone" />
 
         </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_gravity="bottom"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/navImage"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:tint="@color/primaryAccent"
+                        android:contentDescription="@string/nav_images" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nav_images"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/textDisabled"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <FrameLayout
+                        android:layout_width="48dp"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_role_icon_blue"
+                        android:backgroundTint="@color/accentTint">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_nav_profile"
+                            app:tint="@color/textDisabled"
+                            android:contentDescription="@string/admin_nav_profiles" />
+                    </FrameLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_nav_profiles"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/primaryAccent"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navMyEvents"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_events"
+                        app:tint="@color/textDisabled"
+                        android:contentDescription="@string/admin_nav_events" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_nav_events"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/textDisabled"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/navProfile"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:baselineAligned="false">
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_nav_profile"
+                        app:tint="@color/textDisabled"
+                        android:contentDescription="@string/nav_profile" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nav_profile"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/textDisabled"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

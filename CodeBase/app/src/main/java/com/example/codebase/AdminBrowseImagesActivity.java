@@ -1,6 +1,7 @@
 package com.example.codebase;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -96,8 +97,44 @@ public class AdminBrowseImagesActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         btnCancelSelection.setOnClickListener(v -> exitSelectionMode());
+        setupBottomNavigation();
+    }
+
+    /**
+     * Wires the shared bottom navigation for the administrator profile screen.
+     */
+    private void setupBottomNavigation() {
+        findViewById(R.id.navImage).setOnClickListener(v -> {
+            // Already here
+        });
+
+        findViewById(R.id.navHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, BrowseEventsActivity.class));
+            finish();
+        });
+
+        findViewById(R.id.navMyEvents).setOnClickListener(v -> navigateToAdminHome());
+
+
+        findViewById(R.id.navProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+            finish();
+        });
+    }
+
+    /**
+     * Returns to the shared administrator event browser.
+     *
+     * <p>This screen is often opened from a navigation action that already finished the
+     * previous activity, so we start the admin home explicitly instead of relying on
+     * {@link #finish()} to reveal an existing screen.</p>
+     */
+    private void navigateToAdminHome() {
+        Intent intent = new Intent(this, OrganizerActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     /**
